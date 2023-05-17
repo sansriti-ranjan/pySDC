@@ -160,7 +160,7 @@ class LogGlobalErrorPostRun(hooks):
                 iter=step.status.iter,
                 sweep=L.status.sweep,
                 type='e_global_rel_post_run',
-                value=abs((u_num - u_ref) / u_ref),
+                value=abs(u_num - u_ref) / abs(u_ref),
             )
 
     def get_final_solution(self, lvl):
