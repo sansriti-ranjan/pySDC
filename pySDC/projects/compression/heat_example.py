@@ -15,7 +15,7 @@ def run_heat(Tend=1):
 
     # initialize problem parameters
     problem_params = {}
-    problem_params['nu'] = 1
+    problem_params['nu'] = 1.0
     problem_params['freq'] = (4, 4, 4)
     problem_params['order'] = 4
     problem_params['lintol'] = 1e-7
