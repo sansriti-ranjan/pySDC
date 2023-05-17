@@ -1,6 +1,7 @@
 # from pySDC.implementations.datatype_classes.compressed_mesh import compressed_mesh
 import numpy as np
 from pySDC.projects.compression.CRAM_Manager import CRAM_Manager
+from pySDC.core.Errors import DataError
 
 
 class compressed_mesh(object):

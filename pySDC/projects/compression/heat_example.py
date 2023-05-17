@@ -74,7 +74,7 @@ def run_heat(Tend=1):
 def main():
     stats = run_heat(Tend=1)
     error = max([me[1] for me in get_sorted(stats, type='e_global_post_run')])
-    u = get_sorted(stats, type='u')
+    #u = get_sorted(stats, type='u')
     print(error)
 
 
