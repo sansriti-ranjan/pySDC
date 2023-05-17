@@ -10,9 +10,8 @@ from pySDC.projects.compression.heat_compressed import heat_ND_compressed
 
 
 def run_heat(Tend=1):
-
     # setup communicator
-   # comm = MPI.COMM_WORLD if comm is None else comm
+    # comm = MPI.COMM_WORLD if comm is None else comm
 
     # initialize problem parameters
     problem_params = {}
@@ -22,7 +21,7 @@ def run_heat(Tend=1):
     problem_params['lintol'] = 1e-7
     problem_params['liniter'] = 99
     problem_params['solver_type'] = 'CG'
-    problem_params['nvars'] = (32, 32, 32) #Have to be the same, Nx = Ny = Nz
+    problem_params['nvars'] = (32, 32, 32)  # Have to be the same, Nx = Ny = Nz
     problem_params['bc'] = 'periodic'
 
     # initialize level parameters
@@ -51,7 +50,7 @@ def run_heat(Tend=1):
 
     # fill description dictionary for easy step instantiation
     description = {}
-    #description['problem_class'] = heatNd_forced#     heat_ND_compressed
+    # description['problem_class'] = heatNd_forced#     heat_ND_compressed
     description['problem_class'] = heat_ND_compressed
     description['problem_params'] = problem_params
     description['sweeper_class'] = imex_1st_order
@@ -64,10 +63,10 @@ def run_heat(Tend=1):
 
     # get initial values on finest level
     P = controller.MS[0].levels[0].prob
-    uinit = P.u_exact(0.)
+    uinit = P.u_exact(0.0)
 
     # call main function to get things done...
-    uend, stats = controller.run(u0=uinit, t0=0., Tend=Tend)
+    uend, stats = controller.run(u0=uinit, t0=0.0, Tend=Tend)
 
     return stats
 

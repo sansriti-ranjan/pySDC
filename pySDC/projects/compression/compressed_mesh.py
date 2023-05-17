@@ -2,6 +2,7 @@
 import numpy as np
 from pySDC.projects.compression.CRAM_Manager import CRAM_Manager
 
+
 class compressed_mesh(object):
     """
     Mesh data type with arbitrary dimensions
@@ -11,8 +12,9 @@ class compressed_mesh(object):
     Attributes:
         values (np.ndarray): contains the ndarray of the values
     """
-    manager = CRAM_Manager("ABS","sz",1)
-    
+
+    manager = CRAM_Manager("ABS", "sz", 1)
+
     def __init__(self, init=None, val=0.0):
         """
         Initialization routine
@@ -24,25 +26,29 @@ class compressed_mesh(object):
         Raises:
             DataError: if init is none of the types above
         """
-        self.name = str(self.manager.name+1)
+        self.name = str(self.manager.name + 1)
         self.manager.name += 1
 
         # if init is another mesh, do a copy (init by copy)
         if isinstance(init, compressed_mesh):
-            values = self.manager.decompress(init.name,0) #TODO: Modify manager to copy compressed buffer
-            self.manager.registerVar(self.name, values.shape,values.dtype, numVectors=1, errBoundMode="ABS", compType="sz", errBound=1e-5)
-            self.manager.compress(values.copy(),self.name,0 )
+            values = self.manager.decompress(init.name, 0)  # TODO: Modify manager to copy compressed buffer
+            self.manager.registerVar(
+                self.name, values.shape, values.dtype, numVectors=1, errBoundMode="ABS", compType="sz", errBound=1e-5
+            )
+            self.manager.compress(values.copy(), self.name, 0)
         # if init is a number or a tuple of numbers, create mesh object with val as initial value
         elif isinstance(init, tuple) or isinstance(init, int):
-            self.manager.registerVar(self.name, init[0],init[2], numVectors=1, errBoundMode="ABS", compType="sz", errBound=1e-5)
-            self.manager.compress(np.full(init[0], fill_value=val),self.name, 0)
+            self.manager.registerVar(
+                self.name, init[0], init[2], numVectors=1, errBoundMode="ABS", compType="sz", errBound=1e-5
+            )
+            self.manager.compress(np.full(init[0], fill_value=val), self.name, 0)
         # something is wrong, if none of the ones above hit
         else:
             raise DataError('something went wrong during %s initialization' % type(self))
 
     def __del__(self):
-        #print('Delete'+' ' +self.name)
-        self.manager.remove(self.name,0)
+        # print('Delete'+' ' +self.name)
+        self.manager.remove(self.name, 0)
 
     def __add__(self, other):
         """
@@ -59,8 +65,8 @@ class compressed_mesh(object):
         if isinstance(other, compressed_mesh):
             # always create new mesh, since otherwise c = a + b changes a as well!
             me = compressed_mesh(self)
-            values = self.manager.decompress(self.name,0)
-            ov = self.manager.decompress(other.name,0)
+            values = self.manager.decompress(self.name, 0)
+            ov = self.manager.decompress(other.name, 0)
             self.manager.compress(values + ov, me.name, 0)
             return me
         else:
@@ -81,8 +87,8 @@ class compressed_mesh(object):
         if isinstance(other, compressed_mesh):
             # always create new mesh, since otherwise c = a - b changes a as well!
             me = compressed_mesh(self)
-            values = self.manager.decompress(self.name,0)
-            ov = self.manager.decompress(other.name,0)
+            values = self.manager.decompress(self.name, 0)
+            ov = self.manager.decompress(other.name, 0)
             self.manager.compress(values - ov, me.name, 0)
             return me
         else:
@@ -102,14 +108,13 @@ class compressed_mesh(object):
 
         if isinstance(other, float) or isinstance(other, complex):
             # always create new mesh, since otherwise c = f*a changes a as well!
-            values = self.manager.decompress(self.name,0)
+            values = self.manager.decompress(self.name, 0)
             me = compressed_mesh(self)
-            self.manager.compress(values*other, me.name, 0)
+            self.manager.compress(values * other, me.name, 0)
             return me
         else:
             raise DataError("Type error: cannot multiply %s to %s" % (type(other), type(self)))
 
-    
     def __abs__(self):
         """
         Overloading the abs operator for mesh types
@@ -119,31 +124,33 @@ class compressed_mesh(object):
         """
 
         # take absolute values of the mesh values
-        values = self.manager.decompress(self.name,0)
+        values = self.manager.decompress(self.name, 0)
         absval = abs(values)
 
         # return maximum
         return np.amax(absval)
 
     def __setitem__(self, key, newvalue):
-        #print("SET: ", key, newvalue)
-        if type(newvalue)==type(self):#Assigning compressed mesh
-            arr_temp = self.manager.decompress(newvalue.name,0)
-            self.manager.compress(arr_temp,self.name,0)
+        # print("SET: ", key, newvalue)
+        if type(newvalue) == type(self):  # Assigning compressed mesh
+            arr_temp = self.manager.decompress(newvalue.name, 0)
+            self.manager.compress(arr_temp, self.name, 0)
         else:
-            array = self.manager.decompress(self.name,0)
+            array = self.manager.decompress(self.name, 0)
             array.__setitem__(key, newvalue)
-            self.manager.compress(array, self.name,0)
+            self.manager.compress(array, self.name, 0)
 
     def __getitem__(self, key):
-        array = self.manager.decompress(self.name,0)
+        array = self.manager.decompress(self.name, 0)
         return array.__getitem__(key)
 
     def __str__(self):
-        return(str(self[:]))
+        return str(self[:])
 
     def flatten(self):
-        return self.manager.decompress(self.name,0).flatten()
+        return self.manager.decompress(self.name, 0).flatten()
+
+
 '''
     def apply_mat(self, A):
         """
@@ -204,6 +211,7 @@ class compressed_mesh(object):
         """
         return comm.bcast(self, root=root)
 '''
+
 
 class imex_mesh_compressed(object):
     """

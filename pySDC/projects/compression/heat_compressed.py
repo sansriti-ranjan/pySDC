@@ -6,5 +6,3 @@ from pySDC.projects.compression.compressed_mesh import compressed_mesh, imex_mes
 class heat_ND_compressed(heatNd_forced):
     dtype_f = imex_mesh_compressed
     dtype_u = compressed_mesh
-
-
