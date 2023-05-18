@@ -63,9 +63,7 @@ class CRAM_Manager:
         self.cache.pop(name + "_" + str(index), None)
         self.mem_map.pop(name, None)
 
-    def compress(
-        self, data, varName, index, errBoundMode="ABS", compType="sz3", errBound=None
-    ):
+    def compress(self, data, varName, index, errBoundMode="ABS", compType="sz3", errBound=None):
         # print("Cprss: ", varName, index)
         # print("Array: ", data)
         # print("Error bound: ",errBound)
@@ -111,9 +109,7 @@ class CRAM_Manager:
             # if comp_data != None:
             tmp = compressor.decode(comp_data, decomp_data)
 
-            if (
-                len(self.cache) + 1 > self.max_cache_size
-            ):  # TODO: Add LRU replacement policy
+            if len(self.cache) + 1 > self.max_cache_size:  # TODO: Add LRU replacement policy
                 k = list(self.cache.keys())[0]
                 self.cache.pop(k)
             self.cache[combineName] = tmp
