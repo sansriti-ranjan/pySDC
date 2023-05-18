@@ -14,7 +14,7 @@ class compressed_mesh(object):
         values (np.ndarray): contains the ndarray of the values
     """
 
-    manager = CRAM_Manager("ABS", "sz", 1)
+    manager = CRAM_Manager("ABS", "sz3", 1)
 
     def __init__(self, init=None, val=0.0):
         """
@@ -29,23 +29,38 @@ class compressed_mesh(object):
         """
         self.name = str(self.manager.name + 1)
         self.manager.name += 1
-
         # if init is another mesh, do a copy (init by copy)
         if isinstance(init, compressed_mesh):
-            values = self.manager.decompress(init.name, 0)  # TODO: Modify manager to copy compressed buffer
+            values = self.manager.decompress(
+                init.name, 0
+            )  # TODO: Modify manager to copy compressed buffer
             self.manager.registerVar(
-                self.name, values.shape, values.dtype, numVectors=1, errBoundMode="ABS", compType="sz", errBound=1e-5
+                self.name,
+                values.shape,
+                values.dtype,
+                numVectors=1,
+                errBoundMode="ABS",
+                compType="sz3",
+                errBound=self.manager.errBound,
             )
             self.manager.compress(values.copy(), self.name, 0)
         # if init is a number or a tuple of numbers, create mesh object with val as initial value
         elif isinstance(init, tuple) or isinstance(init, int):
             self.manager.registerVar(
-                self.name, init[0], init[2], numVectors=1, errBoundMode="ABS", compType="sz", errBound=1e-5
+                self.name,
+                init[0],
+                init[2],
+                numVectors=1,
+                errBoundMode="ABS",
+                compType="sz3",
+                errBound=self.manager.errBound,
             )
             self.manager.compress(np.full(init[0], fill_value=val), self.name, 0)
         # something is wrong, if none of the ones above hit
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )
 
     def __del__(self):
         # print('Delete'+' ' +self.name)
@@ -71,7 +86,9 @@ class compressed_mesh(object):
             self.manager.compress(values + ov, me.name, 0)
             return me
         else:
-            raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot add %s to %s" % (type(other), type(self))
+            )
 
     def __sub__(self, other):
         """
@@ -93,7 +110,9 @@ class compressed_mesh(object):
             self.manager.compress(values - ov, me.name, 0)
             return me
         else:
-            raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot subtract %s from %s" % (type(other), type(self))
+            )
 
     def __rmul__(self, other):
         """
@@ -114,7 +133,9 @@ class compressed_mesh(object):
             self.manager.compress(values * other, me.name, 0)
             return me
         else:
-            raise DataError("Type error: cannot multiply %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot multiply %s to %s" % (type(other), type(self))
+            )
 
     def __abs__(self):
         """
@@ -247,7 +268,9 @@ class imex_mesh_compressed(object):
             self.expl = compressed_mesh(init, val=val)
         # something is wrong, if none of the ones above hit
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )
 
     # def __sub__(self, other):
     #     """

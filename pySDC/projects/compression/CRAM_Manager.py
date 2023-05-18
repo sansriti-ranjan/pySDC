@@ -26,7 +26,14 @@ class CRAM_Manager:
 
     # numVectors is M
     def registerVar(
-        self, varName, shape, dtype=np.float64, numVectors=100, errBoundMode="ABS", compType="sz", errBound=1e-5
+        self,
+        varName,
+        shape,
+        dtype=np.float64,
+        numVectors=1,
+        errBoundMode="ABS",
+        compType="sz3",
+        errBound=1e-5,
     ):
         if varName not in self.mem_map:
             # print("Register: ", varName, "-", shape, len(self.mem_map.keys()))
@@ -46,25 +53,57 @@ class CRAM_Manager:
                 }
             )
 
-            self.mem_map[varName] = (
+            self.mem_map[varName] = [
                 compressor,
                 [compressor.encode(np.ones(shape)) for i in range(numVectors)],
                 shape,
-            )  # TODO finish
+            ]  # TODO finish
 
     def remove(self, name, index):
-        self.cache.pop(name + '_' + str(index), None)
+        self.cache.pop(name + "_" + str(index), None)
         self.mem_map.pop(name, None)
 
-    def compress(self, data, varName, index, errBoundMode=0, errBound=1e-5, compType=0):
+    def compress(
+        self, data, varName, index, errBoundMode="ABS", compType="sz3", errBound=None
+    ):
         # print("Cprss: ", varName, index)
-        compressor = self.mem_map[varName][0]
+        # print("Array: ", data)
+        # print("Error bound: ",errBound)
+        if errBound is not None:
+            compressor = libpressio.PressioCompressor.from_config(
+                {
+                    # configure which compressor to use
+                    "compressor_id": compType,
+                    # configure the set of metrics to be gathered
+                    "early_config": {
+                        "pressio:metric": "composite",
+                        "composite:plugins": ["time", "size", "error_stat"],
+                    },
+                    # configure SZ
+                    "compressor_config": {
+                        "pressio:abs": errBound,
+                    },
+                }
+            )
+            # cfg = compressor.get_config()
+            # print(errBound)
+            # cfg['compressor_config']['pressio:abs'] = errBound
+
+            # compressor.set_config(cfg)
+            self.mem_map[varName][0] = compressor
+        else:
+            compressor = self.mem_map[varName][0]
+        # print(compressor.get_config()['compressor_id'])
+        # print(compressor.get_config()['compressor_config'])
         self.mem_map[varName][1][index] = compressor.encode(data)
-        self.cache.pop(varName + str(index), None)
+        self.cache.pop(self.cacheName(varName, index), None)
+
+    def cacheName(self, varName, index):
+        return varName + "_" + str(index)
 
     def decompress(self, varName, index, compType=0):
         # print("Decprss: ", varName, index)
-        combineName = varName + '_' + str(index)
+        combineName = self.cacheName(varName, index)
         if combineName not in self.cache:
             compressor = self.mem_map[varName][0]
             comp_data = self.mem_map[varName][1][index]
@@ -72,7 +111,9 @@ class CRAM_Manager:
             # if comp_data != None:
             tmp = compressor.decode(comp_data, decomp_data)
 
-            if len(self.cache) + 1 > self.max_cache_size:  # TODO: Add LRU replacement policy
+            if (
+                len(self.cache) + 1 > self.max_cache_size
+            ):  # TODO: Add LRU replacement policy
                 k = list(self.cache.keys())[0]
                 self.cache.pop(k)
             self.cache[combineName] = tmp
@@ -85,17 +126,18 @@ class CRAM_Manager:
             tmp_mesh[:] = tmp
 
         else:
+            # print ("Found in Cache")
             return self.cache[combineName]
 
     def __str__(self):
         # print values in the dictionary
-        s = 'Memory\n'
+        s = "Memory\n"
         for k in self.mem_map.keys():
-            s += k + str(self.mem_map[k]) + '\n'
+            s += k + str(self.mem_map[k]) + "\n"
 
-        s += '\nCache\n'
+        s += "\nCache\n"
         for k in self.cache.keys():
-            s += k + str(self.cache[k]) + '\n'
+            s += k + str(self.cache[k]) + "\n"
 
         return s
 
@@ -108,20 +150,25 @@ class CRAM_Manager:
         return compressor.get_metrics()
 
 
-# declare global instance of memory
-memory = CRAM_Manager(errBoundMode="ABS", compType="sz", errBound=1e-5)
-
 if __name__ == "__main__":
     arr = np.random.rand(100, 100)
+    # declare global instance of memory
+    memory = CRAM_Manager(errBoundMode="ABS", compType="sz3", errBound=1e-5)
 
     memory.registerVar(
-        "cat", arr.shape, dtype=np.float64, numVectors=1, errBoundMode="ABS", compType="sz", errBound=0.1
+        "cat",
+        arr.shape,
+        dtype=np.float64,
+        numVectors=1,
+        errBoundMode="ABS",
+        compType="sz3",
+        errBound=0.1,
     )
     memory.compress(arr, "cat", 0)
     result = memory.decompress("cat", 0, shape=arr.shape)
     print(arr)
-    print('\n')
+    print("\n")
     print(result)
-    print('\n')
+    print("\n")
     error = arr - result
     print(error)
