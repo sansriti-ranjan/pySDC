@@ -20,7 +20,9 @@ class mymesh(np.ndarray):
             obj.part1 = obj[0, :]
             obj.part2 = obj[1, :]
         elif isinstance(init, tuple):
-            obj = np.ndarray.__new__(cls, shape=(2, init[0]), dtype=init[1], buffer=None)
+            obj = np.ndarray.__new__(
+                cls, shape=(2, init[0]), dtype=init[1], buffer=None
+            )
             obj.fill(val)
             obj.part1 = obj[0, :]
             obj.part2 = obj[1, :]
@@ -34,11 +36,11 @@ class mymesh(np.ndarray):
         """
         if obj is None:
             return
-        self.part1 = getattr(obj, 'part1', None)
-        self.part2 = getattr(obj, 'part2', None)
+        self.part1 = getattr(obj, "part1", None)
+        self.part2 = getattr(obj, "part2", None)
 
 
-m = mymesh((10, np.dtype('float64')))
+m = mymesh((10, np.dtype("float64")))
 m.part1[:] = 1
 m.part2[:] = 2
 print(m.part1, m.part2)

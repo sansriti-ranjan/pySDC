@@ -28,7 +28,10 @@ class dedalus_field_transfer(space_transfer):
         # invoke super initialization
         super(dedalus_field_transfer, self).__init__(fine_prob, coarse_prob, params)
 
-        self.ratio = list(fine_prob.domain.global_grid_shape() / coarse_prob.domain.global_grid_shape())
+        self.ratio = list(
+            fine_prob.domain.global_grid_shape()
+            / coarse_prob.domain.global_grid_shape()
+        )
 
         assert self.ratio.count(self.ratio[0]) == len(self.ratio)
 
@@ -43,22 +46,22 @@ class dedalus_field_transfer(space_transfer):
             G = self.coarse_prob.dtype_u(self.coarse_prob.init)
             for l in range(self.coarse_prob.init[0][-1]):
                 FG = self.fine_prob.domain.new_field()
-                FG['g'] = F[..., l]
+                FG["g"] = F[..., l]
                 FG.set_scales(scales=1.0 / self.ratio[0])
-                G[..., l] = FG['g']
+                G[..., l] = FG["g"]
         elif isinstance(F, imex_mesh):
             G = self.coarse_prob.dtype_f(self.coarse_prob.init)
             for l in range(self.fine_prob.init[0][-1]):
                 FG = self.fine_prob.domain.new_field()
-                FG['g'] = F.impl[..., l]
+                FG["g"] = F.impl[..., l]
                 FG.set_scales(scales=1.0 / self.ratio[0])
-                G.impl[..., l] = FG['g']
+                G.impl[..., l] = FG["g"]
                 FG = self.fine_prob.domain.new_field()
-                FG['g'] = F.expl[..., l]
+                FG["g"] = F.expl[..., l]
                 FG.set_scales(scales=1.0 / self.ratio[0])
-                G.expl[..., l] = FG['g']
+                G.expl[..., l] = FG["g"]
         else:
-            raise TransferError('Unknown data type, got %s' % type(F))
+            raise TransferError("Unknown data type, got %s" % type(F))
         return G
 
     def prolong(self, G):
@@ -72,20 +75,20 @@ class dedalus_field_transfer(space_transfer):
             F = self.fine_prob.dtype_u(self.fine_prob.init)
             for l in range(self.fine_prob.init[0][-1]):
                 GF = self.coarse_prob.domain.new_field()
-                GF['g'] = G[..., l]
+                GF["g"] = G[..., l]
                 GF.set_scales(scales=self.ratio[0])
-                F[..., l] = GF['g']
+                F[..., l] = GF["g"]
         elif isinstance(G, imex_mesh):
             F = self.fine_prob.dtype_f(self.fine_prob.init)
             for l in range(self.coarse_prob.init[0][-1]):
                 GF = self.coarse_prob.domain.new_field()
-                GF['g'] = G.impl[..., l]
+                GF["g"] = G.impl[..., l]
                 GF.set_scales(scales=self.ratio[0])
-                F.impl[..., l] = GF['g']
+                F.impl[..., l] = GF["g"]
                 GF = self.coarse_prob.init[0].new_field()
-                GF['g'] = G.expl[..., l]
+                GF["g"] = G.expl[..., l]
                 GF.set_scales(scales=self.ratio[0])
-                F.expl[..., l] = GF['g']
+                F.expl[..., l] = GF["g"]
         else:
-            raise TransferError('Unknown data type, got %s' % type(G))
+            raise TransferError("Unknown data type, got %s" % type(G))
         return F

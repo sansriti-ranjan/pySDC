@@ -27,45 +27,45 @@ def setup_parameters():
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-07
-    level_params['dt'] = 1e-03
-    level_params['nsweeps'] = None
+    level_params["restol"] = 1e-07
+    level_params["dt"] = 1e-03
+    level_params["nsweeps"] = None
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = [3]
-    sweeper_params['QI'] = ['LU']
-    sweeper_params['QE'] = ['EE']
-    sweeper_params['initial_guess'] = 'zero'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = [3]
+    sweeper_params["QI"] = ["LU"]
+    sweeper_params["QE"] = ["EE"]
+    sweeper_params["initial_guess"] = "zero"
 
     # This comes as read-in for the problem class
     problem_params = dict()
-    problem_params['nu'] = 2
-    problem_params['L'] = 1.0
-    problem_params['nvars'] = None
-    problem_params['eps'] = 0.04
-    problem_params['radius'] = 0.25
-    problem_params['init_type'] = 'circle'
+    problem_params["nu"] = 2
+    problem_params["L"] = 1.0
+    problem_params["nvars"] = None
+    problem_params["eps"] = 0.04
+    problem_params["radius"] = 0.25
+    problem_params["init_type"] = "circle"
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30
-    controller_params['hook_class'] = output
+    controller_params["logger_level"] = 30
+    controller_params["hook_class"] = output
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = allencahn2d_imex  # pass problem class
-    description['problem_params'] = problem_params  # pass problem parameters
-    description['sweeper_class'] = imex_1st_order  # pass sweeper (see part B)
-    description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    description['level_params'] = level_params  # pass level parameters
-    description['step_params'] = step_params  # pass step parameters
-    description['space_transfer_class'] = mesh_to_mesh_fft2d
+    description["problem_class"] = allencahn2d_imex  # pass problem class
+    description["problem_params"] = problem_params  # pass problem parameters
+    description["sweeper_class"] = imex_1st_order  # pass sweeper (see part B)
+    description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    description["level_params"] = level_params  # pass level parameters
+    description["step_params"] = step_params  # pass step parameters
+    description["space_transfer_class"] = mesh_to_mesh_fft2d
 
     return description, controller_params
 
@@ -85,17 +85,17 @@ def run_variant(nlevels=None):
 
     # add stuff based on variant
     if nlevels == 1:
-        description['level_params']['nsweeps'] = 1
-        description['problem_params']['nvars'] = [(128, 128)]
+        description["level_params"]["nsweeps"] = 1
+        description["problem_params"]["nvars"] = [(128, 128)]
         # description['problem_params']['nvars'] = [(32, 32)]
     elif nlevels == 2:
-        description['level_params']['nsweeps'] = [1, 1]
-        description['problem_params']['nvars'] = [(128, 128), (32, 32)]
+        description["level_params"]["nsweeps"] = [1, 1]
+        description["problem_params"]["nvars"] = [(128, 128), (32, 32)]
         # description['problem_params']['nvars'] = [(32, 32), (16, 16)]
     else:
-        raise NotImplemented('Wrong variant specified, got %s' % nlevels)
+        raise NotImplemented("Wrong variant specified, got %s" % nlevels)
 
-    out = 'Working on %s levels...' % nlevels
+    out = "Working on %s levels..." % nlevels
     print(out)
 
     # setup parameters "in time"
@@ -103,7 +103,9 @@ def run_variant(nlevels=None):
     Tend = 0.032
 
     # instantiate controller
-    controller = controller_nonMPI(num_procs=1, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=1, controller_params=controller_params, description=description
+    )
 
     # get initial values on finest level
     P = controller.MS[0].levels[0].prob
@@ -113,35 +115,41 @@ def run_variant(nlevels=None):
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 
     # filter statistics by variant (number of iterations)
-    iter_counts = get_sorted(stats, type='niter', sortby='time')
+    iter_counts = get_sorted(stats, type="niter", sortby="time")
 
     # compute and print statistics
     niters = np.array([item[1] for item in iter_counts])
-    out = '   Mean number of iterations: %4.2f' % np.mean(niters)
+    out = "   Mean number of iterations: %4.2f" % np.mean(niters)
     print(out)
-    out = '   Range of values for number of iterations: %2i ' % np.ptp(niters)
+    out = "   Range of values for number of iterations: %2i " % np.ptp(niters)
     print(out)
-    out = '   Position of max/min number of iterations: %2i -- %2i' % (int(np.argmax(niters)), int(np.argmin(niters)))
+    out = "   Position of max/min number of iterations: %2i -- %2i" % (
+        int(np.argmax(niters)),
+        int(np.argmin(niters)),
+    )
     print(out)
-    out = '   Std and var for number of iterations: %4.2f -- %4.2f' % (float(np.std(niters)), float(np.var(niters)))
+    out = "   Std and var for number of iterations: %4.2f -- %4.2f" % (
+        float(np.std(niters)),
+        float(np.var(niters)),
+    )
     print(out)
 
-    timing = get_sorted(stats, type='timing_run', sortby='time')
+    timing = get_sorted(stats, type="timing_run", sortby="time")
 
-    print('Time to solution: %6.4f sec.' % timing[0][1])
+    print("Time to solution: %6.4f sec." % timing[0][1])
 
-    fname = 'data/AC_reference_FFT_Tend{:.1e}'.format(Tend) + '.npz'
+    fname = "data/AC_reference_FFT_Tend{:.1e}".format(Tend) + ".npz"
     loaded = np.load(fname)
-    uref = loaded['uend']
+    uref = loaded["uend"]
 
     err = np.linalg.norm(uref - uend, np.inf)
-    print('Error vs. reference solution: %6.4e' % err)
+    print("Error vs. reference solution: %6.4e" % err)
     print()
 
     return stats
 
 
-def main(cwd=''):
+def main(cwd=""):
     """
     Main driver
 

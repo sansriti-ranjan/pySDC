@@ -14,7 +14,7 @@ def evaluate(solution):
     # exit()
     Q = coll.Qmat[1:, 1:]
 
-    var = [x['x' + str(j)] for j in range(1, m + 1)]
+    var = [x["x" + str(j)] for j in range(1, m + 1)]
     # var = [x['x' + str(j) + 'r'] + 1j * x['x' + str(j) + 'i'] for j in range(1, m + 1)]
 
     Qd = np.diag(var)
@@ -40,12 +40,12 @@ def evaluate(solution):
         for l in range(-8, 8):
             k += 1
             lamdt = -(10**i) + 1j * 10**l
-            Rf = np.linalg.inv(np.eye(nsteps * m) - lamdt * np.kron(np.eye(nsteps), Qd)).dot(
-                lamdt * np.kron(np.eye(nsteps), Q - Qd) + np.kron(E, N)
-            )
-            Rc = np.linalg.inv(np.eye(nsteps * m) - lamdt * np.kron(np.eye(nsteps), Qd) - np.kron(E, N)).dot(
-                lamdt * np.kron(np.eye(nsteps), Q - Qd)
-            )
+            Rf = np.linalg.inv(
+                np.eye(nsteps * m) - lamdt * np.kron(np.eye(nsteps), Qd)
+            ).dot(lamdt * np.kron(np.eye(nsteps), Q - Qd) + np.kron(E, N))
+            Rc = np.linalg.inv(
+                np.eye(nsteps * m) - lamdt * np.kron(np.eye(nsteps), Qd) - np.kron(E, N)
+            ).dot(lamdt * np.kron(np.eye(nsteps), Q - Qd))
             rhoR = max(abs(np.linalg.eigvals(Rc.dot(Rf))))
             obj_val += rhoR
 
@@ -73,9 +73,27 @@ params = dict()
 # params['x4i'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[3]}
 # params['x5i'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[4]}
 
-params['x1'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[0]}
-params['x2'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[1]}
-params['x3'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[2]}
+params["x1"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[0],
+}
+params["x2"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[1],
+}
+params["x3"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[2],
+}
 # params['x4'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[3]}
 # params['x5'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[4]}
 # params['x6'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[3]}
@@ -84,9 +102,9 @@ params['x3'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 
 # params['x9'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[4]}
 
 problem = {
-    'problem_name': 'Qdelta_sum_diag_complex',
-    'parameters': params,
-    'metrics': {'rho': {'type': 'objective', 'goal': 'minimize'}},
+    "problem_name": "Qdelta_sum_diag_complex",
+    "parameters": params,
+    "metrics": {"rho": {"type": "objective", "goal": "minimize"}},
 }
 
 worker = indiesolver.indiesolver()

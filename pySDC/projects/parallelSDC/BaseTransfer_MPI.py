@@ -28,7 +28,14 @@ class base_transfer_MPI(object):
         coarse (pySDC.Level.level): reference to the coarse level
     """
 
-    def __init__(self, fine_level, coarse_level, base_transfer_params, space_transfer_class, space_transfer_params):
+    def __init__(
+        self,
+        fine_level,
+        coarse_level,
+        base_transfer_params,
+        space_transfer_class,
+        space_transfer_params,
+    ):
         """
         Initialization routine
 
@@ -43,7 +50,7 @@ class base_transfer_MPI(object):
         self.params = _Pars(base_transfer_params)
 
         # set up logger
-        self.logger = logging.getLogger('transfer')
+        self.logger = logging.getLogger("transfer")
 
         # just copy by object
         self.fine = fine_level
@@ -56,11 +63,13 @@ class base_transfer_MPI(object):
             self.Pcoll = sp.eye(len(fine_grid)).toarray()
             self.Rcoll = sp.eye(len(fine_grid)).toarray()
         else:
-            raise NotImplementedError('require no reduction of collocation nodes')
+            raise NotImplementedError("require no reduction of collocation nodes")
 
         # set up spatial transfer
         self.space_transfer = space_transfer_class(
-            fine_prob=self.fine.prob, coarse_prob=self.coarse.prob, params=space_transfer_params
+            fine_prob=self.fine.prob,
+            coarse_prob=self.coarse.prob,
+            params=space_transfer_params,
         )
 
     @staticmethod
@@ -115,7 +124,7 @@ class base_transfer_MPI(object):
 
         # only if the level is unlocked at least by prediction
         if not F.status.unlocked:
-            raise UnlockError('fine level is still locked, cannot use data from there')
+            raise UnlockError("fine level is still locked, cannot use data from there")
 
         # restrict fine values in space
         G.u[0] = self.space_transfer.restrict(F.u[0])
@@ -123,7 +132,9 @@ class base_transfer_MPI(object):
 
         # re-evaluate f on coarse level
         G.f[0] = PG.eval_f(G.u[0], G.time)
-        G.f[SG.rank + 1] = PG.eval_f(G.u[SG.rank + 1], G.time + G.dt * SG.coll.nodes[SG.rank])
+        G.f[SG.rank + 1] = PG.eval_f(
+            G.u[SG.rank + 1], G.time + G.dt * SG.coll.nodes[SG.rank]
+        )
 
         # build coarse level tau correction part
         tauG = G.sweep.integrate()
@@ -173,7 +184,9 @@ class base_transfer_MPI(object):
 
         # only of the level is unlocked at least by prediction or restriction
         if not G.status.unlocked:
-            raise UnlockError('coarse level is still locked, cannot use data from there')
+            raise UnlockError(
+                "coarse level is still locked, cannot use data from there"
+            )
 
         # build coarse correction
 
@@ -183,11 +196,15 @@ class base_transfer_MPI(object):
         G.uold[0] = self.space_transfer.restrict(F.u[0])
 
         # interpolate values in space first
-        F.u[SF.rank + 1] += self.space_transfer.prolong(G.u[SG.rank + 1] - G.uold[SG.rank + 1])
+        F.u[SF.rank + 1] += self.space_transfer.prolong(
+            G.u[SG.rank + 1] - G.uold[SG.rank + 1]
+        )
 
         # re-evaluate f on fine level
         F.f[0] = PF.eval_f(F.u[0], F.time)
-        F.f[SF.rank + 1] = PF.eval_f(F.u[SF.rank + 1], F.time + F.dt * SF.coll.nodes[SF.rank])
+        F.f[SF.rank + 1] = PF.eval_f(
+            F.u[SF.rank + 1], F.time + F.dt * SF.coll.nodes[SF.rank]
+        )
 
         return None
 
@@ -210,7 +227,9 @@ class base_transfer_MPI(object):
 
         # only of the level is unlocked at least by prediction or restriction
         if not G.status.unlocked:
-            raise UnlockError('coarse level is still locked, cannot use data from there')
+            raise UnlockError(
+                "coarse level is still locked, cannot use data from there"
+            )
 
         # build coarse correction
         # need to restrict F.u[0] again here, since it might have changed in PFASST

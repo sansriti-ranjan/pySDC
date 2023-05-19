@@ -17,7 +17,7 @@ class full_solar_system(outer_solar_system):
         """Initialization routine"""
 
         super().__init__(sun_only)
-        self.init = ((3, 10), None, np.dtype('float64'))
+        self.init = ((3, 10), None, np.dtype("float64"))
 
     def u_exact(self, t):
         """
@@ -28,7 +28,7 @@ class full_solar_system(outer_solar_system):
         Returns:
             dtype_u: exact/initial position and velocity
         """
-        assert t == 0.0, 'error, u_exact only works for the initial time t0=0'
+        assert t == 0.0, "error, u_exact only works for the initial time t0=0"
         me = self.dtype_u(self.init)
 
         # initial positions and velocities taken from

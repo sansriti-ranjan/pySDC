@@ -40,7 +40,7 @@ class Fisher_full(object):
         self.col = PETSc.Mat.Stencil()
 
         self.mat = self.da.createMatrix()
-        self.mat.setType('aij')  # sparse
+        self.mat.setType("aij")  # sparse
         self.mat.setFromOptions()
         self.mat.setPreallocationNNZ((3, 3))
         self.mat.setUp()
@@ -61,7 +61,9 @@ class Fisher_full(object):
                 u_e = x[i + 1]  # east
                 u_w = x[i - 1]  # west
                 u_xx = (u_e - 2 * u + u_w) / self.dx**2
-                fa[i] = xdot[i] - (u_xx + self.lambda0**2 * x[i] * (1 - x[i] ** self.nu))
+                fa[i] = xdot[i] - (
+                    u_xx + self.lambda0**2 * x[i] * (1 - x[i] ** self.nu)
+                )
 
     def formJacobian(self, ts, t, xin, xdot, a, A, B):
         self.da.globalToLocal(xin, self.localX)
@@ -74,7 +76,10 @@ class Fisher_full(object):
             if i == 0 or i == self.mx - 1:
                 B.setValueStencil(self.row, self.row, 1.0)
             else:
-                diag = a - (-2.0 / self.dx**2 + self.lambda0**2 * (1.0 - (self.nu + 1) * x[i] ** self.nu))
+                diag = a - (
+                    -2.0 / self.dx**2
+                    + self.lambda0**2 * (1.0 - (self.nu + 1) * x[i] ** self.nu)
+                )
                 for index, value in [
                     (i - 1, -1.0 / self.dx**2),
                     (i, diag),
@@ -89,13 +94,20 @@ class Fisher_full(object):
         return PETSc.Mat.Structure.SAME_NONZERO_PATTERN
 
     def evalSolution(self, t, x):
-        lam1 = self.lambda0 / 2.0 * ((self.nu / 2.0 + 1) ** 0.5 + (self.nu / 2.0 + 1) ** (-0.5))
+        lam1 = (
+            self.lambda0
+            / 2.0
+            * ((self.nu / 2.0 + 1) ** 0.5 + (self.nu / 2.0 + 1) ** (-0.5))
+        )
         sig1 = lam1 - np.sqrt(lam1**2 - self.lambda0**2)
         xa = self.da.getVecArray(x)
         for i in range(self.xs, self.xe):
             xa[i] = (
                 1
-                + (2 ** (self.nu / 2.0) - 1) * np.exp(-self.nu / 2.0 * sig1 * (-50 + (i + 1) * self.dx + 2 * lam1 * t))
+                + (2 ** (self.nu / 2.0) - 1)
+                * np.exp(
+                    -self.nu / 2.0 * sig1 * (-50 + (i + 1) * self.dx + 2 * lam1 * t)
+                )
             ) ** (-2.0 / self.nu)
 
 
@@ -129,7 +141,7 @@ class Fisher_split(object):
         self.col = PETSc.Mat.Stencil()
 
         self.mat = self.da.createMatrix()
-        self.mat.setType('aij')  # sparse
+        self.mat.setType("aij")  # sparse
         self.mat.setFromOptions()
         self.mat.setPreallocationNNZ((3, 3))
         self.mat.setUp()
@@ -199,13 +211,20 @@ class Fisher_split(object):
                 fa[i] = self.lambda0**2 * x[i] * (1 - x[i] ** self.nu)
 
     def evalSolution(self, t, x):
-        lam1 = self.lambda0 / 2.0 * ((self.nu / 2.0 + 1) ** 0.5 + (self.nu / 2.0 + 1) ** (-0.5))
+        lam1 = (
+            self.lambda0
+            / 2.0
+            * ((self.nu / 2.0 + 1) ** 0.5 + (self.nu / 2.0 + 1) ** (-0.5))
+        )
         sig1 = lam1 - np.sqrt(lam1**2 - self.lambda0**2)
         xa = self.da.getVecArray(x)
         for i in range(self.xs, self.xe):
             xa[i] = (
                 1
-                + (2 ** (self.nu / 2.0) - 1) * np.exp(-self.nu / 2.0 * sig1 * (-50 + (i + 1) * self.dx + 2 * lam1 * t))
+                + (2 ** (self.nu / 2.0) - 1)
+                * np.exp(
+                    -self.nu / 2.0 * sig1 * (-50 + (i + 1) * self.dx + 2 * lam1 * t)
+                )
             ) ** (-2.0 / self.nu)
 
 
@@ -218,7 +237,9 @@ x = ode.gvec.duplicate()
 f = ode.gvec.duplicate()
 
 ts = PETSc.TS().create(comm=MPI.COMM_WORLD)
-ts.setType(ts.Type.ARKIMEXARS443)  # Rosenbrock-W. ARKIMEX is a nonlinearly implicit alternative.
+ts.setType(
+    ts.Type.ARKIMEXARS443
+)  # Rosenbrock-W. ARKIMEX is a nonlinearly implicit alternative.
 # ts.setRKType('3bs')
 
 ts.setIFunction(ode.formFunction, ode.gvec)
@@ -232,16 +253,22 @@ ts.setTimeStep(0.25)
 ts.setMaxTime(1.0)
 ts.setMaxSteps(100)
 ts.setExactFinalTime(PETSc.TS.ExactFinalTime.INTERPOLATE)
-ts.setMaxSNESFailures(-1)  # allow an unlimited number of failures (step will be rejected and retried)
+ts.setMaxSNESFailures(
+    -1
+)  # allow an unlimited number of failures (step will be rejected and retried)
 ts.setMaxStepRejections(-1)
 ts.setTolerances(atol=1e-08)
 snes = ts.getSNES()  # Nonlinear solver
-snes.setTolerances(max_it=100)  # Stop nonlinear solve after 10 iterations (TS will retry with shorter step)
+snes.setTolerances(
+    max_it=100
+)  # Stop nonlinear solve after 10 iterations (TS will retry with shorter step)
 ksp = snes.getKSP()  # Linear solver
 ksp.setType(ksp.Type.CG)  # Conjugate gradients
 pc = ksp.getPC()  # Preconditioner
 if True:  # Configure algebraic multigrid, could use run-time options instead
-    pc.setType(pc.Type.ILU)  # PETSc's native AMG implementation, mostly based on smoothed aggregation
+    pc.setType(
+        pc.Type.ILU
+    )  # PETSc's native AMG implementation, mostly based on smoothed aggregation
     # OptDB['mg_coarse_pc_type'] = 'svd' # more specific multigrid options
     # OptDB['mg_levels_pc_type'] = 'sor'
 
@@ -258,7 +285,7 @@ ts.solve(x)
 # ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
 # ps.print_stats()
 # print(s.getvalue())
-print('Time:', time.perf_counter() - t0)
+print("Time:", time.perf_counter() - t0)
 
 uex = ode.gvec.duplicate()
 ode.evalSolution(1.0, uex)
@@ -267,8 +294,14 @@ ode.evalSolution(1.0, uex)
 print((uex - x).norm(PETSc.NormType.NORM_INFINITY))
 
 print(
-    'steps %d (%d rejected, %d SNES fails), nonlinear its %d, linear its %d'
-    % (ts.getStepNumber(), ts.getStepRejections(), ts.getSNESFailures(), ts.getSNESIterations(), ts.getKSPIterations())
+    "steps %d (%d rejected, %d SNES fails), nonlinear its %d, linear its %d"
+    % (
+        ts.getStepNumber(),
+        ts.getStepRejections(),
+        ts.getSNESFailures(),
+        ts.getSNESIterations(),
+        ts.getKSPIterations(),
+    )
 )
 
 # if OptDB.getBool('plot_history', True) and ode.comm.rank == 0:

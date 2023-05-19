@@ -31,20 +31,27 @@ def hard_fault_injection(S):
         rd.seed(S.status.slot)
 
     # draw random number and check if we are below our threshold (hard_random gives percentage)
-    if strategy == 'NOFAULT':
+    if strategy == "NOFAULT":
         doit = rd.random() < hard_random
         if doit:
             hard_stats.append((S.status.slot, S.status.iter, S.time))
     else:
         if refdata is not None:
             # noinspection PyTypeChecker
-            doit = np.any(np.all([S.status.slot, S.status.iter, S.time] == refdata, axis=1))
+            doit = np.any(
+                np.all([S.status.slot, S.status.iter, S.time] == refdata, axis=1)
+            )
         else:
             doit = False
 
     # if we set step and iter, inject and recover (if faults are supposed to occur)
-    if ((hard_step == S.status.slot and hard_iter == S.status.iter) or doit) and strategy != 'NOFAULT':
-        print('things went wrong here: step %i -- iteration %i -- time %e' % (S.status.slot, S.status.iter, S.time))
+    if (
+        (hard_step == S.status.slot and hard_iter == S.status.iter) or doit
+    ) and strategy != "NOFAULT":
+        print(
+            "things went wrong here: step %i -- iteration %i -- time %e"
+            % (S.status.slot, S.status.iter, S.time)
+        )
 
         # add incident to statistics data type
         hard_stats.append((S.status.slot, S.status.iter, S.time))
@@ -62,16 +69,16 @@ def hard_fault_injection(S):
             lvl.status.time = time
 
         # recovery
-        if strategy == 'SPREAD':
+        if strategy == "SPREAD":
             S = hard_fault_correction_spread(S)
-        elif strategy == 'INTERP':
+        elif strategy == "INTERP":
             S = hard_fault_correction_interp(S)
-        elif strategy == 'INTERP_PREDICT':
+        elif strategy == "INTERP_PREDICT":
             S = hard_fault_correction_interp_predict(S, res, niter)
-        elif strategy == 'SPREAD_PREDICT':
+        elif strategy == "SPREAD_PREDICT":
             S = hard_fault_correction_spread_predict(S, res, niter)
         else:
-            raise NotImplementedError('recovery strategy not implemented')
+            raise NotImplementedError("recovery strategy not implemented")
 
     return S
 
@@ -106,7 +113,7 @@ def hard_fault_correction_spread(S):
     L.sweep.compute_end_point()
 
     # proceed with fine sweep
-    S.status.stage = 'IT_FINE_SWEEP'
+    S.status.stage = "IT_FINE_SWEEP"
 
     return S
 
@@ -142,7 +149,9 @@ def hard_fault_correction_interp(S):
     L.u[0] = L.prob.dtype_u(ufirst)
     L.f[0] = L.prob.eval_f(L.u[0], L.time)
     for m in range(1, L.sweep.coll.num_nodes + 1):
-        L.u[m] = (1 - L.sweep.coll.nodes[m - 1]) * ufirst + L.sweep.coll.nodes[m - 1] * ulast
+        L.u[m] = (1 - L.sweep.coll.nodes[m - 1]) * ufirst + L.sweep.coll.nodes[
+            m - 1
+        ] * ulast
         L.f[m] = L.prob.eval_f(L.u[m], L.time + L.dt * L.sweep.coll.nodes[m - 1])
 
     # set fine level to active
@@ -151,7 +160,7 @@ def hard_fault_correction_interp(S):
     L.sweep.compute_end_point()
 
     # proceed with fine sweep
-    S.status.stage = 'IT_FINE_SWEEP'
+    S.status.stage = "IT_FINE_SWEEP"
 
     return S
 
@@ -206,7 +215,7 @@ def hard_fault_correction_spread_predict(S, res, niter):
     L.sweep.compute_end_point()
 
     # proceed with fine sweep
-    S.status.stage = 'IT_FINE_SWEEP'
+    S.status.stage = "IT_FINE_SWEEP"
 
     return S
 
@@ -244,7 +253,9 @@ def hard_fault_correction_interp_predict(S, res, niter):
     L.u[0] = L.prob.dtype_u(ufirst)
     L.f[0] = L.prob.eval_f(L.u[0], L.time)
     for m in range(1, L.sweep.coll.num_nodes + 1):
-        L.u[m] = (1 - L.sweep.coll.nodes[m - 1]) * ufirst + L.sweep.coll.nodes[m - 1] * ulast
+        L.u[m] = (1 - L.sweep.coll.nodes[m - 1]) * ufirst + L.sweep.coll.nodes[
+            m - 1
+        ] * ulast
         L.f[m] = L.prob.eval_f(L.u[m], L.time + L.dt * L.sweep.coll.nodes[m - 1])
 
     # set fine level to active
@@ -275,6 +286,6 @@ def hard_fault_correction_interp_predict(S, res, niter):
     L.sweep.compute_end_point()
 
     # proceed with fine sweep
-    S.status.stage = 'IT_FINE_SWEEP'
+    S.status.stage = "IT_FINE_SWEEP"
 
     return S

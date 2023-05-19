@@ -10,18 +10,17 @@ from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.playgrounds.deprecated.acoustic_2d_imex import plot_solution
 
 if __name__ == "__main__":
-
     # set global logger (remove this if you do not want the output at all)
-    logger = Log.setup_custom_logger('root')
+    logger = Log.setup_custom_logger("root")
 
     num_procs = 1
 
     # This comes as read-in for the level class
     lparams = {}
-    lparams['restol'] = 3e-11
+    lparams["restol"] = 3e-11
 
     sparams = {}
-    sparams['maxiter'] = 8
+    sparams["maxiter"] = 8
 
     # setup parameters "in time"
     t0 = 0
@@ -31,11 +30,11 @@ if __name__ == "__main__":
 
     # This comes as read-in for the problem class
     pparams = {}
-    pparams['nvars'] = [(3, 50, 25)]
-    pparams['u_adv'] = 1.0
-    pparams['c_s'] = 0.0
-    pparams['x_bounds'] = [(-1.0, 1.0)]
-    pparams['z_bounds'] = [(0.0, 1.0)]
+    pparams["nvars"] = [(3, 50, 25)]
+    pparams["u_adv"] = 1.0
+    pparams["c_s"] = 0.0
+    pparams["x_bounds"] = [(-1.0, 1.0)]
+    pparams["z_bounds"] = [(0.0, 1.0)]
 
     # This comes as read-in for the transfer operations
     # tparams = {}
@@ -43,15 +42,15 @@ if __name__ == "__main__":
 
     # Fill description dictionary for easy hierarchy creation
     description = {}
-    description['problem_class'] = acoustic_2d_imex
-    description['problem_params'] = pparams
-    description['dtype_u'] = mesh
-    description['dtype_f'] = rhs_imex_mesh
-    description['collocation_class'] = collclass.CollGaussLobatto
-    description['num_nodes'] = 4
-    description['sweeper_class'] = imex_1st_order
-    description['level_params'] = lparams
-    description['hook_class'] = plot_solution
+    description["problem_class"] = acoustic_2d_imex
+    description["problem_params"] = pparams
+    description["dtype_u"] = mesh
+    description["dtype_f"] = rhs_imex_mesh
+    description["collocation_class"] = collclass.CollGaussLobatto
+    description["num_nodes"] = 4
+    description["sweeper_class"] = imex_1st_order
+    description["level_params"] = lparams
+    description["hook_class"] = plot_solution
     # description['transfer_class'] = mesh_to_mesh
     # description['transfer_params'] = tparams
 
@@ -69,10 +68,12 @@ if __name__ == "__main__":
     uex = P.u_exact(Tend)
 
     print(
-        'error at time %s: %9.5e'
+        "error at time %s: %9.5e"
         % (
             Tend,
-            np.linalg.norm(uex.values[2, :, :].flatten() - uend.values[2, :, :].flatten(), np.inf)
+            np.linalg.norm(
+                uex.values[2, :, :].flatten() - uend.values[2, :, :].flatten(), np.inf
+            )
             / np.linalg.norm(uex.values.flatten(), np.inf),
         )
     )

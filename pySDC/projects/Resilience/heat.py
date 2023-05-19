@@ -37,47 +37,49 @@ def run_heat(
 
     # initialize level parameters
     level_params = dict()
-    level_params['dt'] = 0.05
+    level_params["dt"] = 0.05
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
-    sweeper_params['QI'] = 'IE'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
+    sweeper_params["QI"] = "IE"
 
     problem_params = {
-        'freq': 2,
-        'nvars': 2**9,
-        'nu': 1.0,
-        'stencil_type': 'center',
-        'order': 6,
-        'bc': 'periodic',
-        'solver_type': 'direct',
-        'lintol': None,
-        'liniter': None,
+        "freq": 2,
+        "nvars": 2**9,
+        "nu": 1.0,
+        "stencil_type": "center",
+        "order": 6,
+        "bc": "periodic",
+        "solver_type": "direct",
+        "lintol": None,
+        "liniter": None,
     }
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 5
+    step_params["maxiter"] = 5
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30
-    controller_params['hook_class'] = hook_collection + (hook_class if type(hook_class) == list else [hook_class])
-    controller_params['mssdc_jac'] = False
+    controller_params["logger_level"] = 30
+    controller_params["hook_class"] = hook_collection + (
+        hook_class if type(hook_class) == list else [hook_class]
+    )
+    controller_params["mssdc_jac"] = False
 
     if custom_controller_params is not None:
         controller_params = {**controller_params, **custom_controller_params}
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = heatNd_unforced  # pass problem class
-    description['problem_params'] = problem_params  # pass problem parameters
-    description['sweeper_class'] = generic_implicit  # pass sweeper
-    description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    description['level_params'] = level_params  # pass level parameters
-    description['step_params'] = step_params
+    description["problem_class"] = heatNd_unforced  # pass problem class
+    description["problem_params"] = problem_params  # pass problem parameters
+    description["sweeper_class"] = generic_implicit  # pass sweeper
+    description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    description["level_params"] = level_params  # pass level parameters
+    description["step_params"] = step_params
 
     if custom_description is not None:
         description = merge_descriptions(description, custom_description)
@@ -86,11 +88,17 @@ def run_heat(
     t0 = 0.0
 
     # instantiate controller
-    controller = controller_nonMPI(num_procs=num_procs, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=num_procs,
+        controller_params=controller_params,
+        description=description,
+    )
 
     # insert faults
     if fault_stuff is not None:
-        raise NotImplementedError("The parameters have not been adapted to this equation yet!")
+        raise NotImplementedError(
+            "The parameters have not been adapted to this equation yet!"
+        )
 
     # get initial values on finest level
     P = controller.MS[0].levels[0].prob
@@ -101,5 +109,5 @@ def run_heat(
     return stats, controller, Tend
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_heat()

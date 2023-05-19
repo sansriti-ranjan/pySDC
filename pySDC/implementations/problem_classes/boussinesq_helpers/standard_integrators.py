@@ -5,8 +5,13 @@ import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import gmres
 
-from pySDC.implementations.problem_classes.Boussinesq_2D_FD_imex import boussinesq_2d_imex
-from pySDC.implementations.problem_classes.boussinesq_helpers.helper_classes import logging, Callback
+from pySDC.implementations.problem_classes.Boussinesq_2D_FD_imex import (
+    boussinesq_2d_imex,
+)
+from pySDC.implementations.problem_classes.boussinesq_helpers.helper_classes import (
+    logging,
+    Callback,
+)
 
 
 #
@@ -36,7 +41,14 @@ class rk_imex:
             alpha = 0.24169426078821
             beta = 0.06042356519705
             eta = 0.12915286960590
-            self.A_hat = np.array([[0, 0, 0, 0], [0, 0, 0, 0], [0, 1.0, 0, 0], [0, 1.0 / 4.0, 1.0 / 4.0, 0]])
+            self.A_hat = np.array(
+                [
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 1.0, 0, 0],
+                    [0, 1.0 / 4.0, 1.0 / 4.0, 0],
+                ]
+            )
             self.A = np.array(
                 [
                     [alpha, 0, 0, 0],
@@ -86,7 +98,14 @@ class rk_imex:
                     [0, 0, 0, 0, 0, 0],
                     [1.0 / 4, 1.0 / 4, 0, 0, 0, 0],
                     [8611.0 / 62500.0, -1743.0 / 31250.0, 1.0 / 4, 0, 0, 0],
-                    [5012029.0 / 34652500.0, -654441.0 / 2922500.0, 174375.0 / 388108.0, 1.0 / 4, 0, 0],
+                    [
+                        5012029.0 / 34652500.0,
+                        -654441.0 / 2922500.0,
+                        174375.0 / 388108.0,
+                        1.0 / 4,
+                        0,
+                        0,
+                    ],
                     [
                         15267082809.0 / 155376265600.0,
                         -71443401.0 / 120774400.0,
@@ -95,10 +114,26 @@ class rk_imex:
                         1.0 / 4,
                         0,
                     ],
-                    [82889.0 / 524892.0, 0, 15625.0 / 83664.0, 69875.0 / 102672.0, -2260.0 / 8211, 1.0 / 4],
+                    [
+                        82889.0 / 524892.0,
+                        0,
+                        15625.0 / 83664.0,
+                        69875.0 / 102672.0,
+                        -2260.0 / 8211,
+                        1.0 / 4,
+                    ],
                 ]
             )
-            self.b = np.array([82889.0 / 524892.0, 0, 15625.0 / 83664.0, 69875.0 / 102672.0, -2260.0 / 8211, 1.0 / 4])
+            self.b = np.array(
+                [
+                    82889.0 / 524892.0,
+                    0,
+                    15625.0 / 83664.0,
+                    69875.0 / 102672.0,
+                    -2260.0 / 8211,
+                    1.0 / 4,
+                ]
+            )
             self.b_hat = np.array(
                 [
                     4586570599.0 / 29645900160.0,
@@ -216,9 +251,9 @@ class rk_imex:
             # Construct RHS
             rhs = np.copy(u0)
             for j in range(0, i):
-                rhs += dt * self.A_hat[i, j] * (self.f_slow(self.stages[j, :])) + dt * self.A[i, j] * (
-                    self.f_fast(self.stages[j, :])
-                )
+                rhs += dt * self.A_hat[i, j] * (
+                    self.f_slow(self.stages[j, :])
+                ) + dt * self.A[i, j] * (self.f_fast(self.stages[j, :]))
 
             # Solve for stage i
             if self.A[i, i] == 0:
@@ -229,9 +264,9 @@ class rk_imex:
 
         # Update
         for i in range(0, self.nstages):
-            u0 += dt * self.b_hat[i] * (self.f_slow(self.stages[i, :])) + dt * self.b[i] * (
-                self.f_fast(self.stages[i, :])
-            )
+            u0 += dt * self.b_hat[i] * (self.f_slow(self.stages[i, :])) + dt * self.b[
+                i
+            ] * (self.f_fast(self.stages[i, :]))
 
         return u0
 
@@ -263,7 +298,9 @@ class rk_imex:
 #
 class trapezoidal:
     def __init__(self, problem, alpha=0.5):
-        assert isinstance(problem, boussinesq_2d_imex), "problem is wrong type of object"
+        assert isinstance(
+            problem, boussinesq_2d_imex
+        ), "problem is wrong type of object"
         self.Ndof = np.shape(problem.M)[0]
         self.order = 2
         self.logger = logging()
@@ -271,7 +308,9 @@ class trapezoidal:
         self.alpha = alpha
 
     def timestep(self, u0, dt):
-        B_trap = sp.eye(self.Ndof) + self.alpha * dt * (self.problem.D_upwind + self.problem.M)
+        B_trap = sp.eye(self.Ndof) + self.alpha * dt * (
+            self.problem.D_upwind + self.problem.M
+        )
         b = B_trap.dot(u0)
         return self.f_solve(b, alpha=(1.0 - self.alpha) * dt, u0=u0)
 
@@ -306,7 +345,9 @@ class trapezoidal:
 #
 class bdf2:
     def __init__(self, problem):
-        assert isinstance(problem, boussinesq_2d_imex), "problem is wrong type of object"
+        assert isinstance(
+            problem, boussinesq_2d_imex
+        ), "problem is wrong type of object"
         self.Ndof = np.shape(problem.M)[0]
         self.order = 2
         self.logger = logging()
@@ -352,7 +393,9 @@ class bdf2:
 
 class SplitExplicit:
     def __init__(self, problem, method, pparams):
-        assert isinstance(problem, boussinesq_2d_imex), "problem is wrong type of object"
+        assert isinstance(
+            problem, boussinesq_2d_imex
+        ), "problem is wrong type of object"
         self.Ndof = np.shape(problem.M)[0]
         self.method = method
         self.logger = logging()
@@ -366,9 +409,9 @@ class SplitExplicit:
         # print("dx  ",problem.h[0])
         # print("dz  ",problem.h[1])
 
-        assert self.method in ["MIS4_4", "RK3"], 'Method must be MIS4_4'
+        assert self.method in ["MIS4_4", "RK3"], "Method must be MIS4_4"
 
-        if self.method == 'RK3':
+        if self.method == "RK3":
             self.nstages = 3
             self.aRunge = np.zeros((4, 4))
             self.aRunge[0, 0] = 1.0 / 3.0
@@ -376,7 +419,7 @@ class SplitExplicit:
             self.aRunge[2, 2] = 1.0
             self.dRunge = np.zeros((4, 4))
             self.gRunge = np.zeros((4, 4))
-        if self.method == 'MIS4_4':
+        if self.method == "MIS4_4":
             self.nstages = 4
             self.aRunge = np.zeros((4, 4))
             self.aRunge[0, 0] = 0.38758444641450318
@@ -422,7 +465,7 @@ class SplitExplicit:
         self.logger.nsmall = 0
 
     def NumSmallTimeSteps(self, dx, dz, dt):
-        cs = self.pparams['c_s']
+        cs = self.pparams["c_s"]
         ns = dt / (0.9 / np.sqrt(1 / (dx * dx) + 1 / (dz * dz)) / cs)
         ns = max(np.int(np.ceil(ns)), self.nsMin)
         return ns
@@ -436,7 +479,9 @@ class SplitExplicit:
             self.F[:, i] = self.f_slow(self.U[:, i])
             self.FSlow[:] = 0.0
             for j in range(0, i + 1):
-                self.FSlow += self.aRunge[i, j] * self.F[:, j] + self.gRunge[i, j] / dt * (self.U[:, j] - u0)
+                self.FSlow += self.aRunge[i, j] * self.F[:, j] + self.gRunge[
+                    i, j
+                ] / dt * (self.U[:, j] - u0)
             self.U[:, i + 1] = 0
             for j in range(0, i + 1):
                 self.U[:, i + 1] += self.dRunge[i, j] * self.U[:, j]
@@ -450,8 +495,12 @@ class SplitExplicit:
 
     def VerletLin(self, u0, FSlow, ns, dTau):
         for _ in range(0, ns):
-            u0[0 : self.NdofMom] += dTau * (self.f_fastMom(u0) + FSlow[0 : self.NdofMom])
-            u0[self.NdofMom : self.Ndof] += dTau * (self.f_fastTher(u0) + FSlow[self.NdofMom : self.Ndof])
+            u0[0 : self.NdofMom] += dTau * (
+                self.f_fastMom(u0) + FSlow[0 : self.NdofMom]
+            )
+            u0[self.NdofMom : self.Ndof] += dTau * (
+                self.f_fastTher(u0) + FSlow[self.NdofMom : self.Ndof]
+            )
 
         return u0
 
@@ -472,21 +521,27 @@ class SplitExplicit:
         return self.problem.M.dot(u)
 
     def f_fastMom(self, u):
-        return self.problem.M[0 : self.NdofMom, self.NdofMom : self.Ndof].dot(u[self.NdofMom : self.Ndof])
+        return self.problem.M[0 : self.NdofMom, self.NdofMom : self.Ndof].dot(
+            u[self.NdofMom : self.Ndof]
+        )
 
     def f_fastTher(self, u):
-        return self.problem.M[self.NdofMom : self.Ndof, 0 : self.NdofMom].dot(u[0 : self.NdofMom])
+        return self.problem.M[self.NdofMom : self.Ndof, 0 : self.NdofMom].dot(
+            u[0 : self.NdofMom]
+        )
 
 
 class dirk:
     def __init__(self, problem, order):
-        assert isinstance(problem, boussinesq_2d_imex), "problem is wrong type of object"
+        assert isinstance(
+            problem, boussinesq_2d_imex
+        ), "problem is wrong type of object"
         self.Ndof = np.shape(problem.M)[0]
         self.order = order
         self.logger = logging()
         self.problem = problem
 
-        assert self.order in [2, 22, 3, 4, 5], 'Order must be 2,22,3,4'
+        assert self.order in [2, 22, 3, 4, 5], "Order must be 2,22,3,4"
 
         if self.order == 2:
             self.nstages = 1

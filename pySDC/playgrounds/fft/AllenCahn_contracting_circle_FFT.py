@@ -8,7 +8,10 @@ import pySDC.helpers.plot_helper as plt_helper
 from pySDC.helpers.stats_helper import get_sorted
 
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
-from pySDC.implementations.problem_classes.AllenCahn_2D_FFT import allencahn2d_imex, allencahn2d_imex_stab
+from pySDC.implementations.problem_classes.AllenCahn_2D_FFT import (
+    allencahn2d_imex,
+    allencahn2d_imex_stab,
+)
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.transfer_classes.TransferMesh_FFT2D import mesh_to_mesh_fft2d
 from pySDC.projects.TOMS.AllenCahn_monitor import monitor
@@ -30,44 +33,44 @@ def setup_parameters():
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-08
-    level_params['dt'] = 1e-03
-    level_params['nsweeps'] = [3, 1]
+    level_params["restol"] = 1e-08
+    level_params["dt"] = 1e-03
+    level_params["nsweeps"] = [3, 1]
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = [3]
-    sweeper_params['QI'] = ['LU']
-    sweeper_params['QE'] = ['EE']
-    sweeper_params['initial_guess'] = 'zero'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = [3]
+    sweeper_params["QI"] = ["LU"]
+    sweeper_params["QE"] = ["EE"]
+    sweeper_params["initial_guess"] = "zero"
 
     # This comes as read-in for the problem class
     problem_params = dict()
-    problem_params['nu'] = 2
-    problem_params['L'] = 1.0
-    problem_params['nvars'] = [(256, 256), (64, 64)]
-    problem_params['eps'] = [0.04, 0.16]
-    problem_params['radius'] = 0.25
+    problem_params["nu"] = 2
+    problem_params["L"] = 1.0
+    problem_params["nvars"] = [(256, 256), (64, 64)]
+    problem_params["eps"] = [0.04, 0.16]
+    problem_params["radius"] = 0.25
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 20
-    controller_params['hook_class'] = monitor
+    controller_params["logger_level"] = 20
+    controller_params["hook_class"] = monitor
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = None  # pass problem class
-    description['problem_params'] = problem_params  # pass problem parameters
-    description['sweeper_class'] = None  # pass sweeper (see part B)
-    description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    description['level_params'] = level_params  # pass level parameters
-    description['step_params'] = step_params  # pass step parameters
-    description['space_transfer_class'] = mesh_to_mesh_fft2d
+    description["problem_class"] = None  # pass problem class
+    description["problem_params"] = problem_params  # pass problem parameters
+    description["sweeper_class"] = None  # pass sweeper (see part B)
+    description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    description["level_params"] = level_params  # pass level parameters
+    description["step_params"] = step_params  # pass step parameters
+    description["space_transfer_class"] = mesh_to_mesh_fft2d
 
     return description, controller_params
 
@@ -88,21 +91,23 @@ def run_SDC_variant(variant=None):
     description, controller_params = setup_parameters()
 
     # add stuff based on variant
-    if variant == 'semi-implicit':
-        description['problem_class'] = allencahn2d_imex
-        description['sweeper_class'] = imex_1st_order
-    elif variant == 'semi-implicit-stab':
-        description['problem_class'] = allencahn2d_imex_stab
-        description['sweeper_class'] = imex_1st_order
+    if variant == "semi-implicit":
+        description["problem_class"] = allencahn2d_imex
+        description["sweeper_class"] = imex_1st_order
+    elif variant == "semi-implicit-stab":
+        description["problem_class"] = allencahn2d_imex_stab
+        description["sweeper_class"] = imex_1st_order
     else:
-        raise NotImplemented('Wrong variant specified, got %s' % variant)
+        raise NotImplemented("Wrong variant specified, got %s" % variant)
 
     # setup parameters "in time"
     t0 = 0
     Tend = 0.032
 
     # instantiate controller
-    controller = controller_nonMPI(num_procs=8, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=8, controller_params=controller_params, description=description
+    )
 
     # get initial values on finest level
     P = controller.MS[0].levels[0].prob
@@ -118,28 +123,34 @@ def run_SDC_variant(variant=None):
     # plt_helper.plt.show()
 
     # filter statistics by variant (number of iterations)
-    iter_counts = get_sorted(stats, type='niter', sortby='time')
+    iter_counts = get_sorted(stats, type="niter", sortby="time")
 
     # compute and print statistics
     niters = np.array([item[1] for item in iter_counts])
-    out = '   Mean number of iterations: %4.2f' % np.mean(niters)
+    out = "   Mean number of iterations: %4.2f" % np.mean(niters)
     print(out)
-    out = '   Range of values for number of iterations: %2i ' % np.ptp(niters)
+    out = "   Range of values for number of iterations: %2i " % np.ptp(niters)
     print(out)
-    out = '   Position of max/min number of iterations: %2i -- %2i' % (int(np.argmax(niters)), int(np.argmin(niters)))
+    out = "   Position of max/min number of iterations: %2i -- %2i" % (
+        int(np.argmax(niters)),
+        int(np.argmin(niters)),
+    )
     print(out)
-    out = '   Std and var for number of iterations: %4.2f -- %4.2f' % (float(np.std(niters)), float(np.var(niters)))
+    out = "   Std and var for number of iterations: %4.2f -- %4.2f" % (
+        float(np.std(niters)),
+        float(np.var(niters)),
+    )
     print(out)
 
-    timing = get_sorted(stats, type='timing_run', sortby='time')
+    timing = get_sorted(stats, type="timing_run", sortby="time")
 
-    print('Time to solution: %6.4f sec.' % timing[0][1])
+    print("Time to solution: %6.4f sec." % timing[0][1])
     print()
 
     return stats
 
 
-def show_results(fname, cwd=''):
+def show_results(fname, cwd=""):
     """
     Plotting routine
 
@@ -148,7 +159,7 @@ def show_results(fname, cwd=''):
         cwd (str): current working directory
     """
 
-    file = open(cwd + fname + '.pkl', 'rb')
+    file = open(cwd + fname + ".pkl", "rb")
     results = dill.load(file)
     file.close()
 
@@ -161,26 +172,40 @@ def show_results(fname, cwd=''):
     timings = {}
     niters = {}
     for key, item in results.items():
-        timings[key] = get_sorted(item, type='timing_run', sortby='time')[0][1]
-        iter_counts = get_sorted(item, type='niter', sortby='time')
+        timings[key] = get_sorted(item, type="timing_run", sortby="time")[0][1]
+        iter_counts = get_sorted(item, type="niter", sortby="time")
         niters[key] = np.mean(np.array([item[1] for item in iter_counts]))
 
     xcoords = [i for i in range(len(timings))]
-    sorted_timings = sorted([(key, timings[key]) for key in timings], reverse=True, key=lambda tup: tup[1])
+    sorted_timings = sorted(
+        [(key, timings[key]) for key in timings], reverse=True, key=lambda tup: tup[1]
+    )
     sorted_niters = [(k, niters[k]) for k in [key[0] for key in sorted_timings]]
     heights_timings = [item[1] for item in sorted_timings]
     heights_niters = [item[1] for item in sorted_niters]
-    keys = [(item[0][1] + ' ' + item[0][0]).replace('-', '\n').replace('_v2', ' mod.') for item in sorted_timings]
+    keys = [
+        (item[0][1] + " " + item[0][0]).replace("-", "\n").replace("_v2", " mod.")
+        for item in sorted_timings
+    ]
 
-    ax1.bar(xcoords, heights_timings, align='edge', width=-0.3, label='timings (left axis)')
-    ax1.set_ylabel('time (sec)')
+    ax1.bar(
+        xcoords, heights_timings, align="edge", width=-0.3, label="timings (left axis)"
+    )
+    ax1.set_ylabel("time (sec)")
 
     ax2 = ax1.twinx()
-    ax2.bar(xcoords, heights_niters, color='r', align='edge', width=0.3, label='iterations (right axis)')
-    ax2.set_ylabel('mean number of iterations')
+    ax2.bar(
+        xcoords,
+        heights_niters,
+        color="r",
+        align="edge",
+        width=0.3,
+        label="iterations (right axis)",
+    )
+    ax2.set_ylabel("mean number of iterations")
 
     ax1.set_xticks(xcoords)
-    ax1.set_xticklabels(keys, rotation=90, ha='center')
+    ax1.set_xticklabels(keys, rotation=90, ha="center")
 
     # ask matplotlib for the plotted objects and their labels
     lines, labels = ax1.get_legend_handles_labels()
@@ -188,26 +213,28 @@ def show_results(fname, cwd=''):
     ax2.legend(lines + lines2, labels + labels2, loc=0)
 
     # save plot, beautify
-    f = fname + '_timings'
+    f = fname + "_timings"
     plt_helper.savefig(f)
 
-    assert os.path.isfile(f + '.pdf'), 'ERROR: plotting did not create PDF file'
+    assert os.path.isfile(f + ".pdf"), "ERROR: plotting did not create PDF file"
     # assert os.path.isfile(f + '.pgf'), 'ERROR: plotting did not create PGF file'
-    assert os.path.isfile(f + '.png'), 'ERROR: plotting did not create PNG file'
+    assert os.path.isfile(f + ".png"), "ERROR: plotting did not create PNG file"
 
     # set up plot for radii
     fig, ax = plt_helper.newfig(textwidth=238.96, scale=1.0)
 
     exact_radii = []
     for key, item in results.items():
-        computed_radii = get_sorted(item, type='computed_radius', sortby='time')
+        computed_radii = get_sorted(item, type="computed_radius", sortby="time")
 
         xcoords = [item0[0] for item0 in computed_radii]
         radii = [item0[1] for item0 in computed_radii]
-        if key[0] + ' ' + key[1] == 'semi-implicit-stab exact':
-            ax.plot(xcoords, radii, label=(key[0] + ' ' + key[1]).replace('_v2', ' mod.'))
+        if key[0] + " " + key[1] == "semi-implicit-stab exact":
+            ax.plot(
+                xcoords, radii, label=(key[0] + " " + key[1]).replace("_v2", " mod.")
+            )
 
-        exact_radii = get_sorted(item, type='exact_radius', sortby='time')
+        exact_radii = get_sorted(item, type="exact_radius", sortby="time")
 
         # diff = np.array([abs(item0[1] - item1[1]) for item0, item1 in zip(exact_radii, computed_radii)])
         # max_pos = int(np.argmax(diff))
@@ -217,55 +244,55 @@ def show_results(fname, cwd=''):
 
     xcoords = [item[0] for item in exact_radii]
     radii = [item[1] for item in exact_radii]
-    ax.plot(xcoords, radii, color='k', linestyle='--', linewidth=1, label='exact')
+    ax.plot(xcoords, radii, color="k", linestyle="--", linewidth=1, label="exact")
 
-    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%1.2f'))
-    ax.set_ylabel('radius')
-    ax.set_xlabel('time')
+    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter("%1.2f"))
+    ax.set_ylabel("radius")
+    ax.set_xlabel("time")
     ax.grid()
     ax.legend(loc=3)
 
     # save plot, beautify
-    f = fname + '_radii'
+    f = fname + "_radii"
     plt_helper.savefig(f)
 
-    assert os.path.isfile(f + '.pdf'), 'ERROR: plotting did not create PDF file'
+    assert os.path.isfile(f + ".pdf"), "ERROR: plotting did not create PDF file"
     # assert os.path.isfile(f + '.pgf'), 'ERROR: plotting did not create PGF file'
-    assert os.path.isfile(f + '.png'), 'ERROR: plotting did not create PNG file'
+    assert os.path.isfile(f + ".png"), "ERROR: plotting did not create PNG file"
 
     # set up plot for interface width
     fig, ax = plt_helper.newfig(textwidth=238.96, scale=1.0)
 
     interface_width = []
     for key, item in results.items():
-        interface_width = get_sorted(item, type='interface_width', sortby='time')
+        interface_width = get_sorted(item, type="interface_width", sortby="time")
         xcoords = [item[0] for item in interface_width]
         width = [item[1] for item in interface_width]
-        if key[0] + ' ' + key[1] == 'fully-implicit exact':
-            ax.plot(xcoords, width, label=key[0] + ' ' + key[1])
+        if key[0] + " " + key[1] == "fully-implicit exact":
+            ax.plot(xcoords, width, label=key[0] + " " + key[1])
 
     xcoords = [item[0] for item in interface_width]
     init_width = [interface_width[0][1]] * len(xcoords)
-    ax.plot(xcoords, init_width, color='k', linestyle='--', linewidth=1, label='exact')
+    ax.plot(xcoords, init_width, color="k", linestyle="--", linewidth=1, label="exact")
 
-    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%1.2f'))
-    ax.set_ylabel(r'interface width ($\epsilon$)')
-    ax.set_xlabel('time')
+    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter("%1.2f"))
+    ax.set_ylabel(r"interface width ($\epsilon$)")
+    ax.set_xlabel("time")
     ax.grid()
     ax.legend(loc=3)
 
     # save plot, beautify
-    f = fname + '_interface'
+    f = fname + "_interface"
     plt_helper.savefig(f)
 
-    assert os.path.isfile(f + '.pdf'), 'ERROR: plotting did not create PDF file'
+    assert os.path.isfile(f + ".pdf"), "ERROR: plotting did not create PDF file"
     # assert os.path.isfile(f + '.pgf'), 'ERROR: plotting did not create PGF file'
-    assert os.path.isfile(f + '.png'), 'ERROR: plotting did not create PNG file'
+    assert os.path.isfile(f + ".png"), "ERROR: plotting did not create PNG file"
 
     return None
 
 
-def main(cwd=''):
+def main(cwd=""):
     """
     Main driver
 
@@ -275,16 +302,15 @@ def main(cwd=''):
 
     # Loop over variants, exact and inexact solves
     results = {}
-    for variant in ['semi-implicit-stab']:
-
-        results[(variant, 'exact')] = run_SDC_variant(variant=variant)
+    for variant in ["semi-implicit-stab"]:
+        results[(variant, "exact")] = run_SDC_variant(variant=variant)
 
     # dump result
-    fname = 'data/results_SDC_variants_AllenCahn_1E-03'
-    file = open(cwd + fname + '.pkl', 'wb')
+    fname = "data/results_SDC_variants_AllenCahn_1E-03"
+    file = open(cwd + fname + ".pkl", "wb")
     dill.dump(results, file)
     file.close()
-    assert os.path.isfile(cwd + fname + '.pkl'), 'ERROR: dill did not create file'
+    assert os.path.isfile(cwd + fname + ".pkl"), "ERROR: dill did not create file"
 
     # visualize
     show_results(fname, cwd=cwd)

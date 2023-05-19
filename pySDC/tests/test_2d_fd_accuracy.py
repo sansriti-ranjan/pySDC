@@ -4,7 +4,7 @@ import numpy as np
 
 
 # setup id for gathering the results (will sort by nvars)
-ID = namedtuple('ID', 'nvars')
+ID = namedtuple("ID", "nvars")
 
 
 @pytest.mark.base
@@ -15,16 +15,20 @@ def test_spatial_accuracy():
 
     # initialize problem parameters
     problem_params = {}
-    problem_params['freq'] = (2, 2)
-    problem_params['nu'] = 1.0
-    problem_params['bc'] = 'periodic'
+    problem_params["freq"] = (2, 2)
+    problem_params["nu"] = 1.0
+    problem_params["bc"] = "periodic"
 
     # create list of nvars to do the accuracy test with
     nvars_list = [(2**p, 2**p) for p in range(4, 12)]
 
     # run accuracy test for all nvars
     for order_stencil in [2, 4, 8]:
-        results = run_accuracy_check(nvars_list=nvars_list, problem_params=problem_params, order_stencil=order_stencil)
+        results = run_accuracy_check(
+            nvars_list=nvars_list,
+            problem_params=problem_params,
+            order_stencil=order_stencil,
+        )
 
         # compute order of accuracy
         order = get_accuracy_order(results)
@@ -53,8 +57,8 @@ def run_accuracy_check(nvars_list, problem_params, order_stencil):
     # loop over all nvars
     for nvars in nvars_list:
         # setup problem
-        problem_params['nvars'] = nvars
-        problem_params['order'] = order_stencil
+        problem_params["nvars"] = nvars
+        problem_params["order"] = order_stencil
         prob = heatNd_unforced(**problem_params)
 
         # create x values, use only inner points
@@ -69,7 +73,10 @@ def run_accuracy_check(nvars_list, problem_params, order_stencil):
             -2
             * (np.pi**2 * prob.freq[0] * prob.freq[1])
             * prob.nu
-            * np.kron(np.sin(np.pi * prob.freq[0] * xvalues), np.sin(np.pi * prob.freq[1] * xvalues)).reshape(nvars)
+            * np.kron(
+                np.sin(np.pi * prob.freq[0] * xvalues),
+                np.sin(np.pi * prob.freq[1] * xvalues),
+            ).reshape(nvars)
         )
         # compare analytic and computed solution using the eval_f routine of the problem class
         err = abs(prob.eval_f(u, 0) - u_lap)
@@ -79,7 +86,7 @@ def run_accuracy_check(nvars_list, problem_params, order_stencil):
         results[id] = err
 
     # add nvars_list to dictionary for easier access later on
-    results['nvars_list'] = nvars_list
+    results["nvars_list"] = nvars_list
 
     return results
 
@@ -96,8 +103,10 @@ def get_accuracy_order(results):
     """
 
     # retrieve the list of nvars from results
-    assert 'nvars_list' in results, 'ERROR: expecting the list of nvars in the results dictionary'
-    nvars_list = sorted(results['nvars_list'])
+    assert (
+        "nvars_list" in results
+    ), "ERROR: expecting the list of nvars in the results dictionary"
+    nvars_list = sorted(results["nvars_list"])
 
     order = []
     # loop over two consecutive errors/nvars pairs
@@ -108,6 +117,9 @@ def get_accuracy_order(results):
 
         # compute order as log(prev_error/this_error)/log(this_nvars/old_nvars) <-- depends on the sorting of the list!
         if results[id] > 1e-8 and results[id_prev] > 1e-8:
-            order.append(np.log(results[id_prev] / results[id]) / np.log(nvars_list[i][0] / nvars_list[i - 1][0]))
+            order.append(
+                np.log(results[id_prev] / results[id])
+                / np.log(nvars_list[i][0] / nvars_list[i - 1][0])
+            )
 
     return order

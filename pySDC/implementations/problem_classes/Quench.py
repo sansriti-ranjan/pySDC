@@ -33,18 +33,18 @@ class Quench(ptype):
         u_max=2e-2,
         Q_max=1.0,
         leak_range=(0.45, 0.55),
-        leak_type='linear',
-        leak_transition='step',
+        leak_type="linear",
+        leak_transition="step",
         order=2,
-        stencil_type='center',
-        bc='neumann-zero',
+        stencil_type="center",
+        bc="neumann-zero",
         nvars=2**7,
         newton_tol=1e-8,
         newton_iter=99,
         lintol=1e-8,
         liniter=99,
         direct_solver=True,
-        reference_sol_type='scipy',
+        reference_sol_type="scipy",
     ):
         """
         Initialization routine
@@ -55,42 +55,42 @@ class Quench(ptype):
             dtype_f: mesh data type (will be passed parent class)
         """
         # invoke super init, passing number of dofs, dtype_u and dtype_f
-        super().__init__(init=(nvars, None, np.dtype('float64')))
+        super().__init__(init=(nvars, None, np.dtype("float64")))
         self._makeAttributeAndRegister(
-            'Cv',
-            'K',
-            'u_thresh',
-            'u_max',
-            'Q_max',
-            'leak_range',
-            'leak_type',
-            'leak_transition',
-            'order',
-            'stencil_type',
-            'bc',
-            'nvars',
-            'newton_tol',
-            'newton_iter',
-            'lintol',
-            'liniter',
-            'direct_solver',
-            'reference_sol_type',
+            "Cv",
+            "K",
+            "u_thresh",
+            "u_max",
+            "Q_max",
+            "leak_range",
+            "leak_type",
+            "leak_transition",
+            "order",
+            "stencil_type",
+            "bc",
+            "nvars",
+            "newton_tol",
+            "newton_iter",
+            "lintol",
+            "liniter",
+            "direct_solver",
+            "reference_sol_type",
             localVars=locals(),
             readOnly=True,
         )
 
         # compute dx (equal in both dimensions) and get discretization matrix A
-        if self.bc == 'periodic':
+        if self.bc == "periodic":
             self.dx = 1.0 / self.nvars
             xvalues = np.array([i * self.dx for i in range(self.nvars)])
-        elif self.bc == 'dirichlet-zero':
+        elif self.bc == "dirichlet-zero":
             self.dx = 1.0 / (self.nvars + 1)
             xvalues = np.array([(i + 1) * self.dx for i in range(self.nvars)])
-        elif self.bc == 'neumann-zero':
+        elif self.bc == "neumann-zero":
             self.dx = 1.0 / (self.nvars - 1)
             xvalues = np.array([i * self.dx for i in range(self.nvars)])
         else:
-            raise ProblemError(f'Boundary conditions {self.bc} not implemented.')
+            raise ProblemError(f"Boundary conditions {self.bc} not implemented.")
 
         self.A = problem_helper.get_finite_difference_matrix(
             derivative=2,
@@ -104,14 +104,16 @@ class Quench(ptype):
         self.A *= self.K / self.Cv
 
         self.xv = xvalues
-        self.Id = sp.eye(np.prod(self.nvars), format='csc')
+        self.Id = sp.eye(np.prod(self.nvars), format="csc")
 
-        self.leak = np.logical_and(self.xv > self.leak_range[0], self.xv < self.leak_range[1])
+        self.leak = np.logical_and(
+            self.xv > self.leak_range[0], self.xv < self.leak_range[1]
+        )
 
-        self.work_counters['newton'] = WorkCounter()
-        self.work_counters['rhs'] = WorkCounter()
+        self.work_counters["newton"] = WorkCounter()
+        self.work_counters["rhs"] = WorkCounter()
         if not self.direct_solver:
-            self.work_counters['linear'] = WorkCounter()
+            self.work_counters["linear"] = WorkCounter()
 
     def eval_f_non_linear(self, u, t):
         """
@@ -129,20 +131,26 @@ class Quench(ptype):
         Q_max = self.Q_max
         me = self.dtype_u(self.init)
 
-        if self.leak_type == 'linear':
+        if self.leak_type == "linear":
             me[:] = (u - u_thresh) / (u_max - u_thresh) * Q_max
-        elif self.leak_type == 'exponential':
-            me[:] = Q_max * (np.exp(u) - np.exp(u_thresh)) / (np.exp(u_max) - np.exp(u_thresh))
+        elif self.leak_type == "exponential":
+            me[:] = (
+                Q_max
+                * (np.exp(u) - np.exp(u_thresh))
+                / (np.exp(u_max) - np.exp(u_thresh))
+            )
         else:
-            raise NotImplementedError(f'Leak type \"{self.leak_type}\" not implemented!')
+            raise NotImplementedError(f'Leak type "{self.leak_type}" not implemented!')
 
         me[u < u_thresh] = 0
-        if self.leak_transition == 'step':
+        if self.leak_transition == "step":
             me[self.leak] = Q_max
-        elif self.leak_transition == 'Gaussian':
+        elif self.leak_transition == "Gaussian":
             me[:] = np.max([me, Q_max * np.exp(-((self.xv - 0.5) ** 2) / 3e-2)], axis=0)
         else:
-            raise NotImplementedError(f'Leak transition \"{self.leak_transition}\" not implemented!')
+            raise NotImplementedError(
+                f'Leak transition "{self.leak_transition}" not implemented!'
+            )
 
         me[u >= u_max] = Q_max
 
@@ -162,8 +170,10 @@ class Quench(ptype):
             dtype_f: The right hand side
         """
         f = self.dtype_f(self.init)
-        f[:] = self.A.dot(u.flatten()).reshape(self.nvars) + self.eval_f_non_linear(u, t)
-        self.work_counters['rhs']()
+        f[:] = self.A.dot(u.flatten()).reshape(self.nvars) + self.eval_f_non_linear(
+            u, t
+        )
+        self.work_counters["rhs"]()
         return f
 
     def get_non_linear_Jacobian(self, u):
@@ -181,26 +191,30 @@ class Quench(ptype):
         Q_max = self.Q_max
         me = self.dtype_u(self.init)
 
-        if self.leak_type == 'linear':
+        if self.leak_type == "linear":
             me[:] = Q_max / (u_max - u_thresh)
-        elif self.leak_type == 'exponential':
+        elif self.leak_type == "exponential":
             me[:] = Q_max * np.exp(u) / (np.exp(u_max) - np.exp(u_thresh))
         else:
-            raise NotImplementedError(f'Leak type {self.leak_type} not implemented!')
+            raise NotImplementedError(f"Leak type {self.leak_type} not implemented!")
 
         me[u < u_thresh] = 0
-        if self.leak_transition == 'step':
+        if self.leak_transition == "step":
             me[self.leak] = 0
-        elif self.leak_transition == 'Gaussian':
+        elif self.leak_transition == "Gaussian":
             me[self.leak] = 0
-            me[self.leak][u[self.leak] > Q_max * np.exp(-((self.xv[self.leak] - 0.5) ** 2) / 3e-2)] = 1
+            me[self.leak][
+                u[self.leak] > Q_max * np.exp(-((self.xv[self.leak] - 0.5) ** 2) / 3e-2)
+            ] = 1
         else:
-            raise NotImplementedError(f'Leak transition \"{self.leak_transition}\" not implemented!')
+            raise NotImplementedError(
+                f'Leak transition "{self.leak_transition}" not implemented!'
+            )
         me[u > u_max] = 0
 
         me[:] /= self.Cv
 
-        return sp.diags(me, format='csc')
+        return sp.diags(me, format="csc")
 
     def solve_system(self, rhs, factor, u0, t):
         """
@@ -227,13 +241,13 @@ class Quench(ptype):
             # assemble G such that G(u) = 0 at the solution of the step
             G = u - factor * self.eval_f(u, t) - rhs
             self.work_counters[
-                'rhs'
-            ].niter -= (
-                1  # Work regarding construction of the Jacobian etc. should count into the Newton iterations only
-            )
+                "rhs"
+            ].niter -= 1  # Work regarding construction of the Jacobian etc. should count into the Newton iterations only
 
             res = np.linalg.norm(G, np.inf)
-            if res <= self.newton_tol and n > 0:  # we want to make at least one Newton iteration
+            if (
+                res <= self.newton_tol and n > 0
+            ):  # we want to make at least one Newton iteration
                 break
 
             # assemble Jacobian J of G
@@ -251,7 +265,7 @@ class Quench(ptype):
                     tol=self.lintol,
                     maxiter=self.liniter,
                     atol=0,
-                    callback=self.work_counters['linear'],
+                    callback=self.work_counters["linear"],
                 )
 
             if not np.isfinite(delta).all():
@@ -260,7 +274,7 @@ class Quench(ptype):
             # update solution
             u = u - delta
 
-            self.work_counters['newton']()
+            self.work_counters["newton"]()
 
         return u
 
@@ -278,7 +292,7 @@ class Quench(ptype):
         me = self.dtype_u(self.init, val=0.0)
 
         if t > 0:
-            if self.reference_sol_type == 'scipy':
+            if self.reference_sol_type == "scipy":
 
                 def jac(t, u):
                     """
@@ -306,43 +320,63 @@ class Quench(ptype):
                     """
                     return self.eval_f(u.reshape(self.init[0]), t).flatten()
 
-                me[:] = self.generate_scipy_reference_solution(eval_rhs, t, u_init, t_init, method='BDF', jac=jac)
+                me[:] = self.generate_scipy_reference_solution(
+                    eval_rhs, t, u_init, t_init, method="BDF", jac=jac
+                )
 
-            elif self.reference_sol_type in ['DIRK', 'SDC']:
-                from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
+            elif self.reference_sol_type in ["DIRK", "SDC"]:
+                from pySDC.implementations.controller_classes.controller_nonMPI import (
+                    controller_nonMPI,
+                )
                 from pySDC.implementations.hooks.log_solution import LogSolution
                 from pySDC.helpers.stats_helper import get_sorted
 
                 description = {}
-                description['problem_class'] = Quench
-                description['problem_params'] = {
-                    'newton_tol': 1e-10,
-                    'newton_iter': 99,
-                    'nvars': 2**10,
+                description["problem_class"] = Quench
+                description["problem_params"] = {
+                    "newton_tol": 1e-10,
+                    "newton_iter": 99,
+                    "nvars": 2**10,
                     **self.params,
                 }
 
-                if self.reference_sol_type == 'DIRK':
+                if self.reference_sol_type == "DIRK":
                     from pySDC.implementations.sweeper_classes.Runge_Kutta import DIRK34
-                    from pySDC.implementations.convergence_controller_classes.adaptivity import AdaptivityRK
+                    from pySDC.implementations.convergence_controller_classes.adaptivity import (
+                        AdaptivityRK,
+                    )
 
-                    description['sweeper_class'] = DIRK34
-                    description['sweeper_params'] = {}
-                    description['step_params'] = {'maxiter': 1}
-                    description['level_params'] = {'dt': 1e-4}
-                    description['convergence_controllers'] = {AdaptivityRK: {'e_tol': 1e-9, 'update_order': 4}}
-                elif self.reference_sol_type == 'SDC':
-                    from pySDC.implementations.sweeper_classes.generic_implicit import generic_implicit
+                    description["sweeper_class"] = DIRK34
+                    description["sweeper_params"] = {}
+                    description["step_params"] = {"maxiter": 1}
+                    description["level_params"] = {"dt": 1e-4}
+                    description["convergence_controllers"] = {
+                        AdaptivityRK: {"e_tol": 1e-9, "update_order": 4}
+                    }
+                elif self.reference_sol_type == "SDC":
+                    from pySDC.implementations.sweeper_classes.generic_implicit import (
+                        generic_implicit,
+                    )
 
-                    description['sweeper_class'] = generic_implicit
-                    description['sweeper_params'] = {'num_nodes': 3, 'QI': 'IE', 'quad_type': 'RADAU-RIGHT'}
-                    description['step_params'] = {'maxiter': 99}
-                    description['level_params'] = {'dt': 0.5, 'restol': 1e-10}
+                    description["sweeper_class"] = generic_implicit
+                    description["sweeper_params"] = {
+                        "num_nodes": 3,
+                        "QI": "IE",
+                        "quad_type": "RADAU-RIGHT",
+                    }
+                    description["step_params"] = {"maxiter": 99}
+                    description["level_params"] = {"dt": 0.5, "restol": 1e-10}
 
-                controller_params = {'hook_class': LogSolution, 'mssdc_jac': False, 'logger_level': 99}
+                controller_params = {
+                    "hook_class": LogSolution,
+                    "mssdc_jac": False,
+                    "logger_level": 99,
+                }
 
                 controller = controller_nonMPI(
-                    description=description, controller_params=controller_params, num_procs=1
+                    description=description,
+                    controller_params=controller_params,
+                    num_procs=1,
                 )
 
                 uend, stats = controller.run(
@@ -351,11 +385,11 @@ class Quench(ptype):
                     Tend=t,
                 )
 
-                u_last = get_sorted(stats, type='u', recomputed=False)[-1]
+                u_last = get_sorted(stats, type="u", recomputed=False)[-1]
 
                 if abs(u_last[0] - t) > 1e-2:
                     self.logger.warning(
-                        f'Time difference between reference solution and requested time is {abs(u_last[0]-t):.2e}!'
+                        f"Time difference between reference solution and requested time is {abs(u_last[0]-t):.2e}!"
                     )
 
                 me[:] = u_last[1]
@@ -382,7 +416,7 @@ class QuenchIMEX(Quench):
         f.impl[:] = self.A.dot(u.flatten()).reshape(self.nvars)
         f.expl[:] = self.eval_f_non_linear(u, t)
 
-        self.work_counters['rhs']()
+        self.work_counters["rhs"]()
         return f
 
     def solve_system(self, rhs, factor, u0, t):
@@ -446,5 +480,7 @@ class QuenchIMEX(Quench):
                 f = self.eval_f(u.reshape(self.init[0]), t)
                 return (f.impl + f.expl).flatten()
 
-            me[:] = self.generate_scipy_reference_solution(eval_rhs, t, u_init, t_init, method='BDF', jac=jac)
+            me[:] = self.generate_scipy_reference_solution(
+                eval_rhs, t, u_init, t_init, method="BDF", jac=jac
+            )
         return me

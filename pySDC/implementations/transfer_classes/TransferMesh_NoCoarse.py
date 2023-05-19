@@ -39,7 +39,7 @@ class mesh_to_mesh(space_transfer):
         elif isinstance(F, imex_mesh):
             G = imex_mesh(F)
         else:
-            raise TransferError('Unknown data type, got %s' % type(F))
+            raise TransferError("Unknown data type, got %s" % type(F))
         return G
 
     def prolong(self, G):
@@ -54,5 +54,5 @@ class mesh_to_mesh(space_transfer):
         elif isinstance(G, imex_mesh):
             F = imex_mesh(G)
         else:
-            raise TransferError('Unknown data type, got %s' % type(G))
+            raise TransferError("Unknown data type, got %s" % type(G))
         return F

@@ -1,7 +1,7 @@
 from pathlib import Path
 import matplotlib
 
-matplotlib.use('Agg')
+matplotlib.use("Agg")
 
 from collections import namedtuple
 import matplotlib.pylab as plt
@@ -12,7 +12,7 @@ from pySDC.implementations.datatype_classes.mesh import mesh
 from pySDC.implementations.problem_classes.HeatEquation_ND_FD import heatNd_unforced
 
 # setup id for gathering the results (will sort by nvars)
-ID = namedtuple('ID', 'nvars')
+ID = namedtuple("ID", "nvars")
 
 
 def main():
@@ -22,9 +22,9 @@ def main():
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['nu'] = 0.1  # diffusion coefficient
-    problem_params['freq'] = 4  # frequency for the test value
-    problem_params['bc'] = 'dirichlet-zero'  # boundary conditions
+    problem_params["nu"] = 0.1  # diffusion coefficient
+    problem_params["freq"] = 4  # frequency for the test value
+    problem_params["bc"] = "dirichlet-zero"  # boundary conditions
 
     # create list of nvars to do the accuracy test with
     nvars_list = [2**p - 1 for p in range(4, 15)]
@@ -36,19 +36,23 @@ def main():
     order = get_accuracy_order(results)
 
     Path("data").mkdir(parents=True, exist_ok=True)
-    f = open('data/step_1_B_out.txt', 'w')
+    f = open("data/step_1_B_out.txt", "w")
     for l in range(len(order)):
-        out = 'Expected order: %2i -- Computed order %4.3f' % (2, order[l])
-        f.write(out + '\n')
+        out = "Expected order: %2i -- Computed order %4.3f" % (2, order[l])
+        f.write(out + "\n")
         print(out)
     f.close()
 
     # visualize results
     plot_accuracy(results)
 
-    assert os.path.isfile('data/step_1_accuracy_test_space.png'), 'ERROR: plotting did not create file'
+    assert os.path.isfile(
+        "data/step_1_accuracy_test_space.png"
+    ), "ERROR: plotting did not create file"
 
-    assert all(np.isclose(order, 2, rtol=0.06)), "ERROR: spatial order of accuracy is not as expected, got %s" % order
+    assert all(np.isclose(order, 2, rtol=0.06)), (
+        "ERROR: spatial order of accuracy is not as expected, got %s" % order
+    )
 
 
 def run_accuracy_check(nvars_list, problem_params):
@@ -67,7 +71,7 @@ def run_accuracy_check(nvars_list, problem_params):
     # loop over all nvars
     for nvars in nvars_list:
         # setup problem
-        problem_params['nvars'] = nvars
+        problem_params["nvars"] = nvars
         prob = heatNd_unforced(**problem_params)
 
         # create x values, use only inner points
@@ -78,7 +82,11 @@ def run_accuracy_check(nvars_list, problem_params):
 
         # create a mesh instance and fill it with the Laplacian of the sine wave
         u_lap = prob.dtype_u(init=prob.init)
-        u_lap[:] = -((np.pi * prob.freq[0]) ** 2) * prob.nu * np.sin(np.pi * prob.freq[0] * xvalues)
+        u_lap[:] = (
+            -((np.pi * prob.freq[0]) ** 2)
+            * prob.nu
+            * np.sin(np.pi * prob.freq[0] * xvalues)
+        )
 
         # compare analytic and computed solution using the eval_f routine of the problem class
         err = abs(prob.eval_f(u, 0) - u_lap)
@@ -88,7 +96,7 @@ def run_accuracy_check(nvars_list, problem_params):
         results[id] = err
 
     # add nvars_list to dictionary for easier access later on
-    results['nvars_list'] = nvars_list
+    results["nvars_list"] = nvars_list
 
     return results
 
@@ -105,8 +113,10 @@ def get_accuracy_order(results):
     """
 
     # retrieve the list of nvars from results
-    assert 'nvars_list' in results, 'ERROR: expecting the list of nvars in the results dictionary'
-    nvars_list = sorted(results['nvars_list'])
+    assert (
+        "nvars_list" in results
+    ), "ERROR: expecting the list of nvars in the results dictionary"
+    nvars_list = sorted(results["nvars_list"])
 
     order = []
     # loop over two consecutive errors/nvars pairs
@@ -116,7 +126,9 @@ def get_accuracy_order(results):
         id_prev = ID(nvars=nvars_list[i - 1])
 
         # compute order as log(prev_error/this_error)/log(this_nvars/old_nvars) <-- depends on the sorting of the list!
-        tmp = np.log(results[id_prev] / results[id]) / np.log(nvars_list[i] / nvars_list[i - 1])
+        tmp = np.log(results[id_prev] / results[id]) / np.log(
+            nvars_list[i] / nvars_list[i - 1]
+        )
         order.append(tmp)
 
     return order
@@ -131,18 +143,20 @@ def plot_accuracy(results):
     """
 
     # retrieve the list of nvars from results
-    assert 'nvars_list' in results, 'ERROR: expecting the list of nvars in the results dictionary'
-    nvars_list = sorted(results['nvars_list'])
+    assert (
+        "nvars_list" in results
+    ), "ERROR: expecting the list of nvars in the results dictionary"
+    nvars_list = sorted(results["nvars_list"])
 
     # Set up plotting parameters
     params = {
-        'legend.fontsize': 20,
-        'figure.figsize': (12, 8),
-        'axes.labelsize': 20,
-        'axes.titlesize': 20,
-        'xtick.labelsize': 16,
-        'ytick.labelsize': 16,
-        'lines.linewidth': 3,
+        "legend.fontsize": 20,
+        "figure.figsize": (12, 8),
+        "axes.labelsize": 20,
+        "axes.titlesize": 20,
+        "xtick.labelsize": 16,
+        "ytick.labelsize": 16,
+        "lines.linewidth": 3,
     }
     plt.rcParams.update(params)
 
@@ -150,8 +164,8 @@ def plot_accuracy(results):
     plt.figure()
     # take x-axis limits from nvars_list + some spacing left and right
     plt.xlim([min(nvars_list) / 2, max(nvars_list) * 2])
-    plt.xlabel('nvars')
-    plt.ylabel('abs. error')
+    plt.xlabel("nvars")
+    plt.ylabel("abs. error")
     plt.grid()
 
     # get guide for the order of accuracy, i.e. the errors to expect
@@ -160,7 +174,7 @@ def plot_accuracy(results):
     base_error = results[id]
     # assemble optimal errors for 2nd order method and plot
     order_guide_space = [base_error / (2 ** (2 * i)) for i in range(0, len(nvars_list))]
-    plt.loglog(nvars_list, order_guide_space, color='k', ls='--', label='2nd order')
+    plt.loglog(nvars_list, order_guide_space, color="k", ls="--", label="2nd order")
 
     min_err = 1e99
     max_err = 0e00
@@ -172,15 +186,17 @@ def plot_accuracy(results):
         min_err = min(err, min_err)
         max_err = max(err, max_err)
         err_list.append(err)
-    plt.loglog(nvars_list, err_list, ls=' ', marker='o', markersize=10, label='experiment')
+    plt.loglog(
+        nvars_list, err_list, ls=" ", marker="o", markersize=10, label="experiment"
+    )
 
     # adjust y-axis limits, add legend
     plt.ylim([min_err / 10, max_err * 10])
     plt.legend(loc=1, ncol=1, numpoints=1)
 
     # save plot as PDF, beautify
-    fname = 'data/step_1_accuracy_test_space.png'
-    plt.savefig(fname, bbox_inches='tight')
+    fname = "data/step_1_accuracy_test_space.png"
+    plt.savefig(fname, bbox_inches="tight")
 
     return None
 

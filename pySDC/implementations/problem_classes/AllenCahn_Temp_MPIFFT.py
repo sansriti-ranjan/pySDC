@@ -25,7 +25,19 @@ class allencahn_temp_imex(ptype):
     dtype_u = mesh
     dtype_f = imex_mesh
 
-    def __init__(self, nvars, eps, radius, spectral, TM, D, dw=0.0, L=1.0, init_type='circle', comm=None):
+    def __init__(
+        self,
+        nvars,
+        eps,
+        radius,
+        spectral,
+        TM,
+        D,
+        dw=0.0,
+        L=1.0,
+        init_type="circle",
+        comm=None,
+    ):
         """
         Initialization routine
 
@@ -35,7 +47,7 @@ class allencahn_temp_imex(ptype):
             dtype_f: fft data type wuth implicit and explicit parts (will be passed to parent class)
         """
         if not (isinstance(nvars, tuple) and len(nvars) > 1):
-            raise ProblemError('Need at least two dimensions')
+            raise ProblemError("Need at least two dimensions")
 
         # creating FFT structure
         ndim = len(nvars)
@@ -52,16 +64,16 @@ class allencahn_temp_imex(ptype):
         # invoke super init, passing the communicator and the local dimensions as init
         super().__init__(init=(sizes, comm, tmp_u.dtype))
         self._makeAttributeAndRegister(
-            'nvars',
-            'eps',
-            'radius',
-            'spectral',
-            'TM',
-            'D',
-            'dw',
-            'L',
-            'init_type',
-            'comm',
+            "nvars",
+            "eps",
+            "radius",
+            "spectral",
+            "TM",
+            "D",
+            "dw",
+            "L",
+            "init_type",
+            "comm",
             localVars=locals(),
             readOnly=True,
         )
@@ -81,7 +93,7 @@ class allencahn_temp_imex(ptype):
         k = [np.fft.fftfreq(n, 1.0 / n).astype(int) for n in N[:-1]]
         k.append(np.fft.rfftfreq(N[-1], 1.0 / N[-1]).astype(int))
         K = [ki[si] for ki, si in zip(k, s)]
-        Ks = np.meshgrid(*K, indexing='ij', sparse=True)
+        Ks = np.meshgrid(*K, indexing="ij", sparse=True)
         Lp = 2 * np.pi / L
         for i in range(ndim):
             Ks[i] = (Ks[i] * Lp[i]).astype(float)
@@ -115,9 +127,9 @@ class allencahn_temp_imex(ptype):
                 tmp_T = newDistArray(self.fft, False)
                 tmp_u = self.fft.backward(u[..., 0], tmp_u)
                 tmp_T = self.fft.backward(u[..., 1], tmp_T)
-                tmpf = -2.0 / self.eps**2 * tmp_u * (1.0 - tmp_u) * (1.0 - 2.0 * tmp_u) - 6.0 * self.dw * (
-                    tmp_T - self.TM
-                ) / self.TM * tmp_u * (1.0 - tmp_u)
+                tmpf = -2.0 / self.eps**2 * tmp_u * (1.0 - tmp_u) * (
+                    1.0 - 2.0 * tmp_u
+                ) - 6.0 * self.dw * (tmp_T - self.TM) / self.TM * tmp_u * (1.0 - tmp_u)
                 f.expl[..., 0] = self.fft.forward(tmpf)
 
             f.impl[..., 1] = -self.D * self.K2 * u[..., 1]
@@ -129,8 +141,21 @@ class allencahn_temp_imex(ptype):
             f.impl[..., 0] = self.fft.backward(lap_u_hat, f.impl[..., 0])
 
             if self.eps > 0:
-                f.expl[..., 0] = -2.0 / self.eps**2 * u[..., 0] * (1.0 - u[..., 0]) * (1.0 - 2.0 * u[..., 0])
-                f.expl[..., 0] -= 6.0 * self.dw * (u[..., 1] - self.TM) / self.TM * u[..., 0] * (1.0 - u[..., 0])
+                f.expl[..., 0] = (
+                    -2.0
+                    / self.eps**2
+                    * u[..., 0]
+                    * (1.0 - u[..., 0])
+                    * (1.0 - 2.0 * u[..., 0])
+                )
+                f.expl[..., 0] -= (
+                    6.0
+                    * self.dw
+                    * (u[..., 1] - self.TM)
+                    / self.TM
+                    * u[..., 0]
+                    * (1.0 - u[..., 0])
+                )
 
             u_hat = self.fft.forward(u[..., 1])
             lap_u_hat = -self.D * self.K2 * u_hat
@@ -184,10 +209,14 @@ class allencahn_temp_imex(ptype):
             tmp_me = newDistArray(self.fft, self.spectral)
             r2 = (self.X[0] - 0.5) ** 2 + (self.X[1] - 0.5) ** 2
             if self.spectral:
-                tmp = 0.5 * (1.0 + np.tanh((self.radius - np.sqrt(r2)) / (np.sqrt(2) * self.eps)))
+                tmp = 0.5 * (
+                    1.0 + np.tanh((self.radius - np.sqrt(r2)) / (np.sqrt(2) * self.eps))
+                )
                 tmp_me[:] = self.fft.forward(tmp)
             else:
-                tmp_me[:] = 0.5 * (1.0 + np.tanh((self.radius - np.sqrt(r2)) / (np.sqrt(2) * self.eps)))
+                tmp_me[:] = 0.5 * (
+                    1.0 + np.tanh((self.radius - np.sqrt(r2)) / (np.sqrt(2) * self.eps))
+                )
             return tmp_me
 
         def circle_rand():
@@ -198,16 +227,26 @@ class allencahn_temp_imex(ptype):
             np.random.seed(1)
             lbound = 3.0 * self.eps
             ubound = 0.5 - self.eps
-            rand_radii = (ubound - lbound) * np.random.random_sample(size=tuple([L] * ndim)) + lbound
+            rand_radii = (ubound - lbound) * np.random.random_sample(
+                size=tuple([L] * ndim)
+            ) + lbound
             # distribute circles/spheres
             tmp = newDistArray(self.fft, False)
             if ndim == 2:
                 for i in range(0, L):
                     for j in range(0, L):
                         # build radius
-                        r2 = (self.X[0] + i - L + 0.5) ** 2 + (self.X[1] + j - L + 0.5) ** 2
+                        r2 = (self.X[0] + i - L + 0.5) ** 2 + (
+                            self.X[1] + j - L + 0.5
+                        ) ** 2
                         # add this blob, shifted by 1 to avoid issues with adding up negative contributions
-                        tmp += np.tanh((rand_radii[i, j] - np.sqrt(r2)) / (np.sqrt(2) * self.eps)) + 1
+                        tmp += (
+                            np.tanh(
+                                (rand_radii[i, j] - np.sqrt(r2))
+                                / (np.sqrt(2) * self.eps)
+                            )
+                            + 1
+                        )
             # normalize to [0,1]
             tmp *= 0.5
             assert np.all(tmp <= 1.0)
@@ -220,22 +259,34 @@ class allencahn_temp_imex(ptype):
         def sine():
             tmp_me = newDistArray(self.fft, self.spectral)
             if self.spectral:
-                tmp = 0.5 * (2.0 + 0.0 * np.sin(2 * np.pi * self.X[0]) * np.sin(2 * np.pi * self.X[1]))
+                tmp = 0.5 * (
+                    2.0
+                    + 0.0
+                    * np.sin(2 * np.pi * self.X[0])
+                    * np.sin(2 * np.pi * self.X[1])
+                )
                 tmp_me[:] = self.fft.forward(tmp)
             else:
-                tmp_me[:] = 0.5 * (2.0 + 0.0 * np.sin(2 * np.pi * self.X[0]) * np.sin(2 * np.pi * self.X[1]))
+                tmp_me[:] = 0.5 * (
+                    2.0
+                    + 0.0
+                    * np.sin(2 * np.pi * self.X[0])
+                    * np.sin(2 * np.pi * self.X[1])
+                )
             return tmp_me
 
-        assert t == 0, 'ERROR: u_exact only valid for t=0'
+        assert t == 0, "ERROR: u_exact only valid for t=0"
         me = self.dtype_u(self.init, val=0.0)
-        if self.init_type == 'circle':
+        if self.init_type == "circle":
             me[..., 0] = circle()
             me[..., 1] = sine()
-        elif self.init_type == 'circle_rand':
+        elif self.init_type == "circle_rand":
             me[..., 0] = circle_rand()
             me[..., 1] = sine()
         else:
-            raise NotImplementedError('type of initial value not implemented, got %s' % self.init_type)
+            raise NotImplementedError(
+                "type of initial value not implemented, got %s" % self.init_type
+            )
 
         return me
 

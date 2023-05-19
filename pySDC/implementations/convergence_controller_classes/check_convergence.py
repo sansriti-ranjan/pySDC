@@ -24,7 +24,10 @@ class CheckConvergence(ConvergenceController):
         Returns:
             (dict): The updated params dictionary
         """
-        defaults = {'control_order': +200, 'use_e_tol': 'e_tol' in description['level_params'].keys()}
+        defaults = {
+            "control_order": +200,
+            "use_e_tol": "e_tol" in description["level_params"].keys(),
+        }
 
         return {**defaults, **super().setup(controller, params, description, **kwargs)}
 
@@ -73,7 +76,7 @@ class CheckConvergence(ConvergenceController):
         res_converged = L.status.residual <= L.params.restol
         e_tol_converged = (
             L.status.error_embedded_estimate < L.params.e_tol
-            if (L.params.get('e_tol') and L.status.get('error_embedded_estimate'))
+            if (L.params.get("e_tol") and L.status.get("error_embedded_estimate"))
             else False
         )
         converged = (

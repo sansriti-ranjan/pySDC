@@ -19,8 +19,8 @@ class outer_solar_system(ptype):
         """Initialization routine"""
 
         # invoke super init, passing nparts
-        super().__init__(((3, 6), None, np.dtype('float64')))
-        self._makeAttributeAndRegister('sun_only', localVars=locals())
+        super().__init__(((3, 6), None, np.dtype("float64")))
+        self._makeAttributeAndRegister("sun_only", localVars=locals())
 
     def eval_f(self, u, t):
         """
@@ -64,7 +64,7 @@ class outer_solar_system(ptype):
         Returns:
             dtype_u: exact/initial position and velocity
         """
-        assert t == 0.0, 'error, u_exact only works for the initial time t0=0'
+        assert t == 0.0, "error, u_exact only works for the initial time t0=0"
         me = self.dtype_u(self.init)
 
         me.pos[:, 0] = [0.0, 0.0, 0.0]

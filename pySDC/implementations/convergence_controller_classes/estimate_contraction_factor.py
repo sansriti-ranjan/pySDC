@@ -1,7 +1,9 @@
 import numpy as np
 
 from pySDC.core.ConvergenceController import ConvergenceController
-from pySDC.implementations.convergence_controller_classes.estimate_embedded_error import EstimateEmbeddedError
+from pySDC.implementations.convergence_controller_classes.estimate_embedded_error import (
+    EstimateEmbeddedError,
+)
 
 
 class EstimateContractionFactor(ConvergenceController):
@@ -21,7 +23,11 @@ class EstimateContractionFactor(ConvergenceController):
         Returns:
             dict: Updated parameters
         """
-        return {"control_order": -75, "e_tol": None, **super().setup(controller, params, description, **kwargs)}
+        return {
+            "control_order": -75,
+            "e_tol": None,
+            **super().setup(controller, params, description, **kwargs),
+        }
 
     def dependencies(self, controller, description, **kwargs):
         """
@@ -49,19 +55,21 @@ class EstimateContractionFactor(ConvergenceController):
         Returns:
             None
         """
-        if 'comm' in kwargs.keys():
+        if "comm" in kwargs.keys():
             steps = [controller.S]
         else:
-            if 'active_slots' in kwargs.keys():
-                steps = [controller.MS[i] for i in kwargs['active_slots']]
+            if "active_slots" in kwargs.keys():
+                steps = [controller.MS[i] for i in kwargs["active_slots"]]
             else:
                 steps = controller.MS
         where = ["levels", "status"]
         for S in steps:
-            self.add_variable(S, name='error_embedded_estimate_last_iter', where=where, init=None)
-            self.add_variable(S, name='contraction_factor', where=where, init=None)
+            self.add_variable(
+                S, name="error_embedded_estimate_last_iter", where=where, init=None
+            )
+            self.add_variable(S, name="contraction_factor", where=where, init=None)
             if self.params.e_tol is not None:
-                self.add_variable(S, name='iter_to_convergence', where=where, init=None)
+                self.add_variable(S, name="iter_to_convergence", where=where, init=None)
 
     def reset_status_variables(self, controller, **kwargs):
         """
@@ -90,14 +98,17 @@ class EstimateContractionFactor(ConvergenceController):
         for L in S.levels:
             if L.status.error_embedded_estimate_last_iter is not None:
                 L.status.contraction_factor = (
-                    L.status.error_embedded_estimate / L.status.error_embedded_estimate_last_iter
+                    L.status.error_embedded_estimate
+                    / L.status.error_embedded_estimate_last_iter
                 )
                 if self.params.e_tol is not None:
                     L.status.iter_to_convergence = max(
                         [
                             0,
                             np.ceil(
-                                np.log(self.params.e_tol / L.status.error_embedded_estimate)
+                                np.log(
+                                    self.params.e_tol / L.status.error_embedded_estimate
+                                )
                                 / np.log(L.status.contraction_factor)
                             ),
                         ]
@@ -116,4 +127,6 @@ class EstimateContractionFactor(ConvergenceController):
         """
         for L in S.levels:
             if L.status.error_embedded_estimate is not None:
-                L.status.error_embedded_estimate_last_iter = L.status.error_embedded_estimate * 1.0
+                L.status.error_embedded_estimate_last_iter = (
+                    L.status.error_embedded_estimate * 1.0
+                )

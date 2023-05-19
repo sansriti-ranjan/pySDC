@@ -20,9 +20,11 @@ class swfw_scalar(ptype):
         """
         Initialization routine
         """
-        init = ([lambda_s.size, lambda_f.size], None, np.dtype('complex128'))
+        init = ([lambda_s.size, lambda_f.size], None, np.dtype("complex128"))
         super().__init__(init)
-        self._makeAttributeAndRegister('lambda_s', 'lambda_f', 'u0', localVars=locals(), readOnly=True)
+        self._makeAttributeAndRegister(
+            "lambda_s", "lambda_f", "u0", localVars=locals(), readOnly=True
+        )
 
     def solve_system(self, rhs, factor, u0, t):
         """

@@ -38,7 +38,9 @@ def computeFejerRule(n):
     m = n - lN
     K = np.arange(m)
     # -- Build v0
-    v0 = np.concatenate([2 * np.exp(1j * np.pi * K / n) / (1 - 4 * K**2), np.zeros(lN + 1)])
+    v0 = np.concatenate(
+        [2 * np.exp(1j * np.pi * K / n) / (1 - 4 * K**2), np.zeros(lN + 1)]
+    )
     # -- Build v1 from v0
     v1 = np.empty(len(v0) - 1, dtype=complex)
     np.conjugate(v0[:0:-1], out=v1)
@@ -46,7 +48,7 @@ def computeFejerRule(n):
     # -- Compute inverse Fourier transform
     w = np.fft.ifft(v1)
     if max(w.imag) > 1.0e-15:
-        raise ValueError(f'Max imaginary value to important for ifft: {max(w.imag)}')
+        raise ValueError(f"Max imaginary value to important for ifft: {max(w.imag)}")
     # -- Store weights
     weights[:] = w.real
 
@@ -100,11 +102,11 @@ class LagrangeApproximation(object):
             invProd **= -1
             return invProd
 
-        with np.errstate(divide='raise', over='ignore'):
+        with np.errstate(divide="raise", over="ignore"):
             try:
                 weights = analytic(diffs)
             except FloatingPointError:
-                raise ValueError('Lagrange formula unstable for that much nodes')
+                raise ValueError("Lagrange formula unstable for that much nodes")
 
         # Store attributes
         self.points = points
@@ -145,7 +147,7 @@ class LagrangeApproximation(object):
         """
         # Compute difference between times and Lagrange points
         times = np.asarray(times)
-        with np.errstate(divide='ignore'):
+        with np.errstate(divide="ignore"):
             iDiff = 1 / (times[:, None] - self.points[None, :])
 
         # Find evaluated positions that coincide with one Lagrange point
@@ -161,7 +163,7 @@ class LagrangeApproximation(object):
 
         return PInter
 
-    def getIntegrationMatrix(self, intervals, numQuad='LEGENDRE_NUMPY'):
+    def getIntegrationMatrix(self, intervals, numQuad="LEGENDRE_NUMPY"):
         r"""
         Compute the integration matrix for a given set of intervals.
 
@@ -204,17 +206,17 @@ class LagrangeApproximation(object):
             The integration matrix, with :math:`M` rows (number of intervals)
             and :math:`n` columns.
         """
-        if numQuad == 'LEGENDRE_NUMPY':
+        if numQuad == "LEGENDRE_NUMPY":
             # Legendre gauss rule, integrate exactly polynomials of deg. (2n-1)
             iNodes, iWeights = np.polynomial.legendre.leggauss((self.n + 1) // 2)
-        elif numQuad == 'LEGENDRE_SCIPY':
+        elif numQuad == "LEGENDRE_SCIPY":
             # Using Legendre scipy implementation
             iNodes, iWeights = roots_legendre((self.n + 1) // 2)
-        elif numQuad == 'FEJER':
+        elif numQuad == "FEJER":
             # Fejer-I rule, integrate exactly polynomial of deg. n-1
             iNodes, iWeights = computeFejerRule(self.n - ((self.n + 1) % 2))
         else:
-            raise NotImplementedError(f'numQuad={numQuad}')
+            raise NotImplementedError(f"numQuad={numQuad}")
 
         # Compute quadrature nodes for each interval
         intervals = np.array(intervals)
@@ -223,7 +225,9 @@ class LagrangeApproximation(object):
         tEval = (bj - aj) / 2 * tau + (bj + aj) / 2
 
         # Compute the integrand function on nodes
-        integrand = self.getInterpolationMatrix(tEval.ravel()).T.reshape((-1,) + tEval.shape)
+        integrand = self.getInterpolationMatrix(tEval.ravel()).T.reshape(
+            (-1,) + tEval.shape
+        )
 
         # Apply quadrature rule to integrate
         integrand *= omega

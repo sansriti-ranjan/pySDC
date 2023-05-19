@@ -7,7 +7,9 @@ from mpi4py import MPI
 from pySDC.helpers.stats_helper import get_sorted
 
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
-from pySDC.implementations.problem_classes.AllenCahn_2D_FD import allencahn_fullyimplicit
+from pySDC.implementations.problem_classes.AllenCahn_2D_FD import (
+    allencahn_fullyimplicit,
+)
 from pySDC.implementations.sweeper_classes.generic_implicit import generic_implicit
 from pySDC.implementations.transfer_classes.TransferMesh_FFT2D import mesh_to_mesh_fft2d
 from pySDC.playgrounds.Allen_Cahn.AllenCahn_monitor import monitor
@@ -29,87 +31,87 @@ def run_variant(variant=None):
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-07
-    level_params['dt'] = 1e-03 / 2
-    level_params['nsweeps'] = 1
+    level_params["restol"] = 1e-07
+    level_params["dt"] = 1e-03 / 2
+    level_params["nsweeps"] = 1
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
-    sweeper_params['initial_guess'] = 'zero'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
+    sweeper_params["initial_guess"] = "zero"
 
     # This comes as read-in for the problem class
     problem_params = dict()
-    problem_params['nu'] = 2
+    problem_params["nu"] = 2
 
-    problem_params['eps'] = 0.04
-    problem_params['newton_maxiter'] = 100
-    problem_params['newton_tol'] = 1e-08
-    problem_params['lin_tol'] = 1e-09
-    problem_params['lin_maxiter'] = 100
-    problem_params['radius'] = 0.25
+    problem_params["eps"] = 0.04
+    problem_params["newton_maxiter"] = 100
+    problem_params["newton_tol"] = 1e-08
+    problem_params["lin_tol"] = 1e-09
+    problem_params["lin_maxiter"] = 100
+    problem_params["radius"] = 0.25
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30
-    controller_params['hook_class'] = monitor
+    controller_params["logger_level"] = 30
+    controller_params["hook_class"] = monitor
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = allencahn_fullyimplicit
-    description['level_params'] = level_params  # pass level parameters
-    description['step_params'] = step_params  # pass step parameters
+    description["problem_class"] = allencahn_fullyimplicit
+    description["level_params"] = level_params  # pass level parameters
+    description["step_params"] = step_params  # pass step parameters
 
     do_print = True
 
     # add stuff based on variant
-    if variant == 'sl_serial':
+    if variant == "sl_serial":
         maxmeaniters = 5.0
-        sweeper_params['QI'] = ['LU']
-        problem_params['nvars'] = [(128, 128)]
-        description['problem_params'] = problem_params  # pass problem parameters
-        description['sweeper_class'] = generic_implicit  # pass sweeper
-        description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    elif variant == 'sl_parallel':
+        sweeper_params["QI"] = ["LU"]
+        problem_params["nvars"] = [(128, 128)]
+        description["problem_params"] = problem_params  # pass problem parameters
+        description["sweeper_class"] = generic_implicit  # pass sweeper
+        description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    elif variant == "sl_parallel":
         maxmeaniters = 5.12
-        assert MPI.COMM_WORLD.Get_size() == sweeper_params['num_nodes']
-        sweeper_params['QI'] = ['MIN3']
-        sweeper_params['comm'] = MPI.COMM_WORLD
-        problem_params['nvars'] = [(128, 128)]
-        description['problem_params'] = problem_params  # pass problem parameters
-        description['sweeper_class'] = generic_implicit_MPI  # pass sweeper
-        description['sweeper_params'] = sweeper_params  # pass sweeper parameters
+        assert MPI.COMM_WORLD.Get_size() == sweeper_params["num_nodes"]
+        sweeper_params["QI"] = ["MIN3"]
+        sweeper_params["comm"] = MPI.COMM_WORLD
+        problem_params["nvars"] = [(128, 128)]
+        description["problem_params"] = problem_params  # pass problem parameters
+        description["sweeper_class"] = generic_implicit_MPI  # pass sweeper
+        description["sweeper_params"] = sweeper_params  # pass sweeper parameters
         do_print = MPI.COMM_WORLD.Get_rank() == 0
-    elif variant == 'ml_serial':
+    elif variant == "ml_serial":
         maxmeaniters = 3.125
-        sweeper_params['QI'] = ['LU']
-        problem_params['nvars'] = [(128, 128), (64, 64)]
-        description['space_transfer_class'] = mesh_to_mesh_fft2d
-        description['problem_params'] = problem_params  # pass problem parameters
-        description['sweeper_class'] = generic_implicit  # pass sweeper
-        description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    elif variant == 'ml_parallel':
-        assert MPI.COMM_WORLD.Get_size() == sweeper_params['num_nodes']
+        sweeper_params["QI"] = ["LU"]
+        problem_params["nvars"] = [(128, 128), (64, 64)]
+        description["space_transfer_class"] = mesh_to_mesh_fft2d
+        description["problem_params"] = problem_params  # pass problem parameters
+        description["sweeper_class"] = generic_implicit  # pass sweeper
+        description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    elif variant == "ml_parallel":
+        assert MPI.COMM_WORLD.Get_size() == sweeper_params["num_nodes"]
         maxmeaniters = 4.25
-        sweeper_params['QI'] = ['MIN3']
-        sweeper_params['comm'] = MPI.COMM_WORLD
-        problem_params['nvars'] = [(128, 128), (64, 64)]
-        description['problem_params'] = problem_params  # pass problem parameters
-        description['sweeper_class'] = generic_implicit_MPI  # pass sweeper
-        description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-        description['space_transfer_class'] = mesh_to_mesh_fft2d
-        description['base_transfer_class'] = base_transfer_MPI
+        sweeper_params["QI"] = ["MIN3"]
+        sweeper_params["comm"] = MPI.COMM_WORLD
+        problem_params["nvars"] = [(128, 128), (64, 64)]
+        description["problem_params"] = problem_params  # pass problem parameters
+        description["sweeper_class"] = generic_implicit_MPI  # pass sweeper
+        description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+        description["space_transfer_class"] = mesh_to_mesh_fft2d
+        description["base_transfer_class"] = base_transfer_MPI
         do_print = MPI.COMM_WORLD.Get_rank() == 0
     else:
-        raise NotImplementedError('Wrong variant specified, got %s' % variant)
+        raise NotImplementedError("Wrong variant specified, got %s" % variant)
 
     if do_print:
-        out = 'Working on %s variant...' % variant
+        out = "Working on %s variant..." % variant
         print(out)
 
     # setup parameters "in time"
@@ -117,7 +119,9 @@ def run_variant(variant=None):
     Tend = 0.004
 
     # instantiate controller
-    controller = controller_nonMPI(num_procs=1, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=1, controller_params=controller_params, description=description
+    )
 
     # get initial values on finest level
     P = controller.MS[0].levels[0].prob
@@ -127,37 +131,48 @@ def run_variant(variant=None):
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 
     # filter statistics by variant (number of iterations)
-    iter_counts = get_sorted(stats, type='niter', sortby='time')
+    iter_counts = get_sorted(stats, type="niter", sortby="time")
 
     # compute and print statistics
     niters = np.array([item[1] for item in iter_counts])
 
     if do_print:
-        out = '   Mean number of iterations: %4.2f' % np.mean(niters)
-        assert np.mean(niters) <= maxmeaniters, 'ERROR: number of iterations is too high, got %s instead of %s' % (
+        out = "   Mean number of iterations: %4.2f" % np.mean(niters)
+        assert (
+            np.mean(niters) <= maxmeaniters
+        ), "ERROR: number of iterations is too high, got %s instead of %s" % (
             np.mean(niters),
             maxmeaniters,
         )
         print(out)
-        out = '   Range of values for number of iterations: %2i ' % np.ptp(niters)
+        out = "   Range of values for number of iterations: %2i " % np.ptp(niters)
         print(out)
-        out = '   Position of max/min number of iterations: %2i -- %2i' % (
+        out = "   Position of max/min number of iterations: %2i -- %2i" % (
             int(np.argmax(niters)),
             int(np.argmin(niters)),
         )
         print(out)
-        out = '   Std and var for number of iterations: %4.2f -- %4.2f' % (float(np.std(niters)), float(np.var(niters)))
+        out = "   Std and var for number of iterations: %4.2f -- %4.2f" % (
+            float(np.std(niters)),
+            float(np.var(niters)),
+        )
         print(out)
 
-        print('   Iteration count (nonlinear/linear): %i / %i' % (P.newton_itercount, P.lin_itercount))
         print(
-            '   Mean Iteration count per call: %4.2f / %4.2f'
-            % (P.newton_itercount / max(P.newton_ncalls, 1), P.lin_itercount / max(P.lin_ncalls, 1))
+            "   Iteration count (nonlinear/linear): %i / %i"
+            % (P.newton_itercount, P.lin_itercount)
+        )
+        print(
+            "   Mean Iteration count per call: %4.2f / %4.2f"
+            % (
+                P.newton_itercount / max(P.newton_ncalls, 1),
+                P.lin_itercount / max(P.lin_ncalls, 1),
+            )
         )
 
-        timing = get_sorted(stats, type='timing_run', sortby='time')
+        timing = get_sorted(stats, type="timing_run", sortby="time")
 
-        print('Time to solution: %6.4f sec.' % timing[0][1])
+        print("Time to solution: %6.4f sec." % timing[0][1])
 
     return None
 
@@ -168,29 +183,41 @@ def main():
 
     """
 
-    run_variant(variant='sl_serial')
+    run_variant(variant="sl_serial")
     print()
-    run_variant(variant='ml_serial')
+    run_variant(variant="ml_serial")
     print()
 
     my_env = os.environ.copy()
-    my_env['PYTHONPATH'] = '../../..:.'
-    my_env['COVERAGE_PROCESS_START'] = 'pyproject.toml'
+    my_env["PYTHONPATH"] = "../../..:."
+    my_env["COVERAGE_PROCESS_START"] = "pyproject.toml"
 
     cmd = (
-        "mpirun -np 3 python -c \"from pySDC.projects.parallelSDC.AllenCahn_parallel import *; "
-        "run_variant(\'sl_parallel\');\""
+        'mpirun -np 3 python -c "from pySDC.projects.parallelSDC.AllenCahn_parallel import *; '
+        "run_variant('sl_parallel');\""
     )
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, shell=True)
+    p = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        shell=True,
+    )
     p.wait()
     (output, err) = p.communicate()
     print(output)
 
     cmd = (
-        "mpirun -np 3 python -c \"from pySDC.projects.parallelSDC.AllenCahn_parallel import *; "
-        "run_variant(\'ml_parallel\');\""
+        'mpirun -np 3 python -c "from pySDC.projects.parallelSDC.AllenCahn_parallel import *; '
+        "run_variant('ml_parallel');\""
     )
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, shell=True)
+    p = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        shell=True,
+    )
     p.wait()
     (output, err) = p.communicate()
     print(output)

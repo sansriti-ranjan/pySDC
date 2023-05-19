@@ -41,6 +41,6 @@ class fault_hook(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='fault_stats',
+            type="fault_stats",
             value=L.sweep.fault_stats,
         )

@@ -8,7 +8,7 @@ from pySDC.implementations.datatype_classes.mesh import mesh
 
 class CRAM_Manager:
     # constructor
-    def __init__(self, errBoundMode="ABS", compType='sz3', errBound=1e-5):
+    def __init__(self, errBoundMode="ABS", compType="sz3", errBound=1e-5):
         # print("constructor called!")
         # if self.init = 0
         self.errBoundMode = errBoundMode
@@ -29,7 +29,7 @@ class CRAM_Manager:
         self,
         varName,
         shape,
-        dtype=np.dtype('float64'),
+        dtype=np.dtype("float64"),
         numVectors=1,
         errBoundMode=None,
         compType=None,
@@ -38,7 +38,7 @@ class CRAM_Manager:
         if varName not in self.mem_map:
             # print("Register: ", varName, "-", shape, len(self.mem_map.keys()))
             compressor = libpressio.PressioCompressor.from_config(
-                self.generate_compressor_config(compType,errBoundMode,errBound)
+                self.generate_compressor_config(compType, errBoundMode, errBound)
             )
 
             self.mem_map[varName] = [
@@ -59,7 +59,7 @@ class CRAM_Manager:
         # print("Error bound: ",errBound)
         if errBound is not None:
             compressor = libpressio.PressioCompressor.from_config(
-                self.generate_compressor_config(compType,errBoundMode,errBound)
+                self.generate_compressor_config(compType, errBoundMode, errBound)
             )
             # cfg = compressor.get_config()
             # print(errBound)
@@ -104,37 +104,40 @@ class CRAM_Manager:
         else:
             # print ("Found in Cache")
             return self.cache[combineName]
-    
-    def set_global_compressor_config(self,compType=None,errBoundMode=None,errBound=None):
+
+    def set_global_compressor_config(
+        self, compType=None, errBoundMode=None, errBound=None
+    ):
         self.compType = self.compType if compType is None else compType
         self.errBoundMode = self.errBoundMode if errBoundMode is None else errBoundMode
         self.errBound = self.errBound if errBound is None else errBound
         for k in self.mem_map:
             self.mem_map[k][0] = libpressio.PressioCompressor.from_config(
-                self.generate_compressor_config(self.compType,self.errBoundMode,self.errBound)
+                self.generate_compressor_config(
+                    self.compType, self.errBoundMode, self.errBound
+                )
             )
 
-    def generate_compressor_config(self,compType=None,errBoundMode=None,errBound=None):
-        
+    def generate_compressor_config(
+        self, compType=None, errBoundMode=None, errBound=None
+    ):
         compType = self.compType if compType is None else compType
         errBoundMode = self.errBoundMode if errBoundMode is None else errBoundMode
         errBound = self.errBound if errBound is None else errBound
         # print('Error bound: ',errBound)
         return {
-                    # configure which compressor to use
-                    "compressor_id": compType,
-                    # configure the set of metrics to be gathered
-                    "early_config": {
-                        "pressio:metric": "composite",
-                        "composite:plugins": ["time", "size", "error_stat"],
-                    },
-                    # configure SZ
-                    "compressor_config": {
-                        "pressio:abs": errBound,
-                    },
-                }
-        
-
+            # configure which compressor to use
+            "compressor_id": compType,
+            # configure the set of metrics to be gathered
+            "early_config": {
+                "pressio:metric": "composite",
+                "composite:plugins": ["time", "size", "error_stat"],
+            },
+            # configure SZ
+            "compressor_config": {
+                "pressio:abs": errBound,
+            },
+        }
 
     def __str__(self):
         # print values in the dictionary
@@ -165,7 +168,7 @@ if __name__ == "__main__":
     memory.registerVar(
         "cat",
         arr.shape,
-        dtype=np.dtype('float64'),
+        dtype=np.dtype("float64"),
         numVectors=1,
         errBoundMode="ABS",
         compType="sz3",

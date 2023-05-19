@@ -16,8 +16,8 @@ class linearized_implicit_parallel(generic_implicit):
             params: parameters for the sweeper
         """
 
-        if 'fixed_time_in_jacobian' not in params:
-            params['fixed_time_in_jacobian'] = 0
+        if "fixed_time_in_jacobian" not in params:
+            params["fixed_time_in_jacobian"] = 0
 
         # call parent's initialization routine
         super(linearized_implicit_parallel, self).__init__(params)
@@ -56,7 +56,11 @@ class linearized_implicit_parallel(generic_implicit):
         # transform collocation problem forward
         Guv = []
         for m in range(M):
-            Guv.append(P.dtype_u((P.init[0], P.init[1], np.dtype('complex128')), val=0.0 + 0.0j))
+            Guv.append(
+                P.dtype_u(
+                    (P.init[0], P.init[1], np.dtype("complex128")), val=0.0 + 0.0j
+                )
+            )
             for j in range(M):
                 Guv[m] += self.Vi[m, j] * Gu[j]
 
@@ -65,13 +69,19 @@ class linearized_implicit_parallel(generic_implicit):
         for m in range(M):  # hell yeah, this is parallel!!
             uv.append(
                 P.solve_system_jacobian(
-                    dfdu[m], Guv[m], L.dt * self.D[m], L.u[m + 1], L.time + L.dt * self.coll.nodes[m]
+                    dfdu[m],
+                    Guv[m],
+                    L.dt * self.D[m],
+                    L.u[m + 1],
+                    L.time + L.dt * self.coll.nodes[m],
                 )
             )
 
         # transform solution backward
         for m in range(M):
-            tmp = P.dtype_u((P.init[0], P.init[1], np.dtype('complex128')), val=0.0 + 0.0j)
+            tmp = P.dtype_u(
+                (P.init[0], P.init[1], np.dtype("complex128")), val=0.0 + 0.0j
+            )
             for j in range(M):
                 tmp += self.V[m, j] * uv[j]
             L.u[m + 1][:] += np.real(tmp)

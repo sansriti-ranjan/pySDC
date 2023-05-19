@@ -21,5 +21,7 @@ class ptype_dae(ptype):
             dtype_u: mesh data type (will be passed parent class)
             dtype_f: mesh data type (will be passed parent class)
         """
-        super().__init__((nvars, None, np.dtype('float64')))
-        self._makeAttributeAndRegister('nvars', 'newton_tol', localVars=locals(), readOnly=True)
+        super().__init__((nvars, None, np.dtype("float64")))
+        self._makeAttributeAndRegister(
+            "nvars", "newton_tol", localVars=locals(), readOnly=True
+        )

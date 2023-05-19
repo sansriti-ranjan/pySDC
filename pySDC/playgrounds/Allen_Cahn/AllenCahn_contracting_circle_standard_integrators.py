@@ -5,23 +5,25 @@ import matplotlib.ticker as ticker
 import numpy as np
 
 from pySDC.implementations.datatype_classes.mesh import mesh, imex_mesh
-from pySDC.implementations.problem_classes.AllenCahn_2D_FD import allencahn_fullyimplicit, allencahn_semiimplicit
+from pySDC.implementations.problem_classes.AllenCahn_2D_FD import (
+    allencahn_fullyimplicit,
+    allencahn_semiimplicit,
+)
 
 
 # http://www.personal.psu.edu/qud2/Res/Pre/dz09sisc.pdf
 
 
 def setup_problem():
-
     problem_params = dict()
-    problem_params['nu'] = 2
-    problem_params['nvars'] = (128, 128)
-    problem_params['eps'] = 0.04
-    problem_params['newton_maxiter'] = 100
-    problem_params['newton_tol'] = 1e-07
-    problem_params['lin_tol'] = 1e-08
-    problem_params['lin_maxiter'] = 100
-    problem_params['radius'] = 0.25
+    problem_params["nu"] = 2
+    problem_params["nvars"] = (128, 128)
+    problem_params["eps"] = 0.04
+    problem_params["newton_maxiter"] = 100
+    problem_params["newton_tol"] = 1e-07
+    problem_params["lin_tol"] = 1e-08
+    problem_params["lin_maxiter"] = 100
+    problem_params["radius"] = 0.25
 
     return problem_params
 
@@ -34,7 +36,9 @@ def run_implicit_Euler(t0, dt, Tend):
         Tend (float): end time for dumping
     """
 
-    problem = allencahn_fullyimplicit(problem_params=setup_problem(), dtype_u=mesh, dtype_f=mesh)
+    problem = allencahn_fullyimplicit(
+        problem_params=setup_problem(), dtype_u=mesh, dtype_f=mesh
+    )
 
     u = problem.u_exact(t0)
 
@@ -44,7 +48,6 @@ def run_implicit_Euler(t0, dt, Tend):
     startt = time.perf_counter()
     t = t0
     for n in range(nsteps):
-
         u_new = problem.solve_system(rhs=u, factor=dt, u0=u, t=t)
 
         u = u_new
@@ -54,16 +57,16 @@ def run_implicit_Euler(t0, dt, Tend):
         radius.append(r)
         exact_radius.append(re)
 
-        print(' ... done with time = %6.4f, step = %i / %i' % (t, n + 1, nsteps))
+        print(" ... done with time = %6.4f, step = %i / %i" % (t, n + 1, nsteps))
 
-    print('Time to solution: %6.4f sec.' % (time.perf_counter() - startt))
+    print("Time to solution: %6.4f sec." % (time.perf_counter() - startt))
 
-    fname = 'data/AC_reference_Tend{:.1e}'.format(Tend) + '.npz'
+    fname = "data/AC_reference_Tend{:.1e}".format(Tend) + ".npz"
     loaded = np.load(fname)
-    uref = loaded['uend']
+    uref = loaded["uend"]
 
     err = np.linalg.norm(uref - u, np.inf)
-    print('Error vs. reference solution: %6.4e' % err)
+    print("Error vs. reference solution: %6.4e" % err)
 
     return err, radius, exact_radius
 
@@ -76,7 +79,9 @@ def run_imex_Euler(t0, dt, Tend):
         Tend (float): end time for dumping
     """
 
-    problem = allencahn_semiimplicit(problem_params=setup_problem(), dtype_u=mesh, dtype_f=imex_mesh)
+    problem = allencahn_semiimplicit(
+        problem_params=setup_problem(), dtype_u=mesh, dtype_f=imex_mesh
+    )
 
     u = problem.u_exact(t0)
 
@@ -86,7 +91,6 @@ def run_imex_Euler(t0, dt, Tend):
     startt = time.perf_counter()
     t = t0
     for n in range(nsteps):
-
         f = problem.eval_f(u, t)
         rhs = u + dt * f.expl
         u_new = problem.solve_system(rhs=rhs, factor=dt, u0=u, t=t)
@@ -98,16 +102,16 @@ def run_imex_Euler(t0, dt, Tend):
         radius.append(r)
         exact_radius.append(re)
 
-        print(' ... done with time = %6.4f, step = %i / %i' % (t, n + 1, nsteps))
+        print(" ... done with time = %6.4f, step = %i / %i" % (t, n + 1, nsteps))
 
-    print('Time to solution: %6.4f sec.' % (time.perf_counter() - startt))
+    print("Time to solution: %6.4f sec." % (time.perf_counter() - startt))
 
-    fname = 'data/AC_reference_Tend{:.1e}'.format(Tend) + '.npz'
+    fname = "data/AC_reference_Tend{:.1e}".format(Tend) + ".npz"
     loaded = np.load(fname)
-    uref = loaded['uend']
+    uref = loaded["uend"]
 
     err = np.linalg.norm(uref - u, np.inf)
-    print('Error vs. reference solution: %6.4e' % err)
+    print("Error vs. reference solution: %6.4e" % err)
 
     return err, radius, exact_radius
 
@@ -120,7 +124,9 @@ def run_CrankNicholson(t0, dt, Tend):
         Tend (float): end time for dumping
     """
 
-    problem = allencahn_fullyimplicit(problem_params=setup_problem(), dtype_u=mesh, dtype_f=mesh)
+    problem = allencahn_fullyimplicit(
+        problem_params=setup_problem(), dtype_u=mesh, dtype_f=mesh
+    )
 
     u = problem.u_exact(t0)
 
@@ -130,7 +136,6 @@ def run_CrankNicholson(t0, dt, Tend):
     startt = time.perf_counter()
     t = t0
     for n in range(nsteps):
-
         rhs = u + dt / 2 * problem.eval_f(u, t)
         u_new = problem.solve_system(rhs=rhs, factor=dt / 2, u0=u, t=t)
 
@@ -141,22 +146,21 @@ def run_CrankNicholson(t0, dt, Tend):
         radius.append(r)
         exact_radius.append(re)
 
-        print(' ... done with time = %6.4f, step = %i / %i' % (t, n + 1, nsteps))
+        print(" ... done with time = %6.4f, step = %i / %i" % (t, n + 1, nsteps))
 
-    print('Time to solution: %6.4f sec.' % (time.perf_counter() - startt))
+    print("Time to solution: %6.4f sec." % (time.perf_counter() - startt))
 
-    fname = 'data/AC_reference_Tend{:.1e}'.format(Tend) + '.npz'
+    fname = "data/AC_reference_Tend{:.1e}".format(Tend) + ".npz"
     loaded = np.load(fname)
-    uref = loaded['uend']
+    uref = loaded["uend"]
 
     err = np.linalg.norm(uref - u, np.inf)
-    print('Error vs. reference solution: %6.4e' % err)
+    print("Error vs. reference solution: %6.4e" % err)
 
     return err, radius, exact_radius
 
 
 def compute_radius(u, dx, t, init_radius):
-
     c = np.count_nonzero(u >= 0.0)
     radius = np.sqrt(c / np.pi) * dx
 
@@ -166,25 +170,26 @@ def compute_radius(u, dx, t, init_radius):
 
 
 def plot_radius(xcoords, exact_radius, radii):
-
     fig, ax = plt.subplots()
-    plt.plot(xcoords, exact_radius, color='k', linestyle='--', linewidth=1, label='exact')
+    plt.plot(
+        xcoords, exact_radius, color="k", linestyle="--", linewidth=1, label="exact"
+    )
 
     for type, radius in radii.items():
-        plt.plot(xcoords, radius, linestyle='-', linewidth=2, label=type)
+        plt.plot(xcoords, radius, linestyle="-", linewidth=2, label=type)
 
-    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%1.2f'))
-    ax.set_ylabel('radius')
-    ax.set_xlabel('time')
+    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter("%1.2f"))
+    ax.set_ylabel("radius")
+    ax.set_xlabel("time")
     ax.grid()
     ax.legend(loc=3)
-    fname = 'data/AC_contracting_circle_standard_integrators'
-    plt.savefig('{}.pdf'.format(fname), bbox_inches='tight')
+    fname = "data/AC_contracting_circle_standard_integrators"
+    plt.savefig("{}.pdf".format(fname), bbox_inches="tight")
 
     # plt.show()
 
 
-def main_radius(cwd=''):
+def main_radius(cwd=""):
     """
     Main driver
 
@@ -199,18 +204,17 @@ def main_radius(cwd=''):
 
     radii = {}
     _, radius, exact_radius = run_implicit_Euler(t0=t0, dt=dt, Tend=Tend)
-    radii['implicit-Euler'] = radius
+    radii["implicit-Euler"] = radius
     _, radius, exact_radius = run_imex_Euler(t0=t0, dt=dt, Tend=Tend)
-    radii['imex-Euler'] = radius
+    radii["imex-Euler"] = radius
     _, radius, exact_radius = run_CrankNicholson(t0=t0, dt=dt, Tend=Tend)
-    radii['CrankNicholson'] = radius
+    radii["CrankNicholson"] = radius
 
     xcoords = [t0 + i * dt for i in range(int((Tend - t0) / dt))]
     plot_radius(xcoords, exact_radius, radii)
 
 
-def main_error(cwd=''):
-
+def main_error(cwd=""):
     t0 = 0
     Tend = 0.032
 
@@ -220,7 +224,7 @@ def main_error(cwd=''):
     # err, _, _ = run_imex_Euler(t0=t0, dt=0.001/512, Tend=Tend)
     # errors['imex-Euler'] = err
     err, _, _ = run_CrankNicholson(t0=t0, dt=0.001 / 64, Tend=Tend)
-    errors['CrankNicholson'] = err
+    errors["CrankNicholson"] = err
 
 
 if __name__ == "__main__":

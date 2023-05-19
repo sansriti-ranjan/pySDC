@@ -20,48 +20,52 @@ def set_parameters_ml():
     """
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 5e-10
-    level_params['dt'] = 0.125
+    level_params["restol"] = 5e-10
+    level_params["dt"] = 0.125
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['QI'] = 'LU'
-    sweeper_params['num_nodes'] = [3]
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["QI"] = "LU"
+    sweeper_params["num_nodes"] = [3]
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['nu'] = 0.1  # diffusion coefficient
-    problem_params['freq'] = 2  # frequency for the test value
-    problem_params['nvars'] = [63, 31]  # number of degrees of freedom for each level
-    problem_params['bc'] = 'dirichlet-zero'  # boundary conditions
+    problem_params["nu"] = 0.1  # diffusion coefficient
+    problem_params["freq"] = 2  # frequency for the test value
+    problem_params["nvars"] = [63, 31]  # number of degrees of freedom for each level
+    problem_params["bc"] = "dirichlet-zero"  # boundary conditions
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
-    step_params['errtol'] = 1e-05
+    step_params["maxiter"] = 50
+    step_params["errtol"] = 1e-05
 
     # initialize space transfer parameters
     space_transfer_params = dict()
-    space_transfer_params['rorder'] = 2
-    space_transfer_params['iorder'] = 6
+    space_transfer_params["rorder"] = 2
+    space_transfer_params["iorder"] = 6
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30
-    controller_params['all_to_done'] = True  # can ask the controller to keep iterating all steps until the end
-    controller_params['use_iteration_estimator'] = False  # activate iteration estimator
+    controller_params["logger_level"] = 30
+    controller_params[
+        "all_to_done"
+    ] = True  # can ask the controller to keep iterating all steps until the end
+    controller_params["use_iteration_estimator"] = False  # activate iteration estimator
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = heatNd_unforced  # pass problem class
-    description['problem_params'] = problem_params  # pass problem parameters
-    description['sweeper_class'] = generic_implicit  # pass sweeper
-    description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    description['level_params'] = level_params  # pass level parameters
-    description['step_params'] = step_params  # pass step parameters
-    description['space_transfer_class'] = mesh_to_mesh  # pass spatial transfer class
-    description['space_transfer_params'] = space_transfer_params  # pass paramters for spatial transfer
+    description["problem_class"] = heatNd_unforced  # pass problem class
+    description["problem_params"] = problem_params  # pass problem parameters
+    description["sweeper_class"] = generic_implicit  # pass sweeper
+    description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    description["level_params"] = level_params  # pass level parameters
+    description["step_params"] = step_params  # pass step parameters
+    description["space_transfer_class"] = mesh_to_mesh  # pass spatial transfer class
+    description[
+        "space_transfer_params"
+    ] = space_transfer_params  # pass paramters for spatial transfer
 
     # set time parameters
     t0 = 0.0
@@ -82,7 +86,9 @@ if __name__ == "__main__":
     description, controller_params, t0, Tend = set_parameters_ml()
 
     # instantiate controllers
-    controller = controller_MPI(controller_params=controller_params, description=description, comm=comm)
+    controller = controller_MPI(
+        controller_params=controller_params, description=description, comm=comm
+    )
     # get initial values on finest level
     P = controller.S.levels[0].prob
     uinit = P.u_exact(t0)
@@ -91,7 +97,7 @@ if __name__ == "__main__":
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 
     # filter statistics by type (number of iterations)
-    iter_counts = get_sorted(stats, type='niter', sortby='time')
+    iter_counts = get_sorted(stats, type="niter", sortby="time")
 
     # combine statistics into list of statistics
     iter_counts_list = comm.gather(iter_counts, root=0)
@@ -100,15 +106,14 @@ if __name__ == "__main__":
     size = comm.Get_size()
 
     if rank == 0:
-
-        out = 'Working with %2i processes...' % size
+        out = "Working with %2i processes..." % size
         print(out)
 
         # compute exact solutions and compare with both results
         uex = P.u_exact(Tend)
         err = abs(uex - uend)
 
-        out = 'Error vs. exact solution: %12.8e' % err
+        out = "Error vs. exact solution: %12.8e" % err
         print(out)
 
         # build one list of statistics instead of list of lists, the sort by time
@@ -117,5 +122,5 @@ if __name__ == "__main__":
 
         # compute and print statistics
         for item in iter_counts:
-            out = 'Number of iterations for time %4.2f: %1i ' % (item[0], item[1])
+            out = "Number of iterations for time %4.2f: %1i " % (item[0], item[1])
             print(out)

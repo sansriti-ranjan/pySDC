@@ -78,7 +78,14 @@ class synchronous_machine_infinite_bus(ptype_dae):
 
         # differential components
         # these result directly from the voltage equations, introduced e.g. pg. 145 Krause
-        dpsi_d, dpsi_q, dpsi_F, dpsi_D, dpsi_Q1, dpsi_Q2 = du[0], du[1], du[2], du[3], du[4], du[5]
+        dpsi_d, dpsi_q, dpsi_F, dpsi_D, dpsi_Q1, dpsi_Q2 = (
+            du[0],
+            du[1],
+            du[2],
+            du[3],
+            du[4],
+            du[5],
+        )
         ddelta_r = du[12]
         domega_m = du[13]
         # Network current
@@ -102,7 +109,13 @@ class synchronous_machine_infinite_bus(ptype_dae):
             -dpsi_Q2 - self.omega_b * self.R_Q2 * i_Q2,
             -ddelta_r + self.omega_b * (omega_m - 1),
             -domega_m
-            + 1 / (2 * self.H_) * (self.T_m - (psi_q * i_d - psi_d * i_q) - self.K_D * self.omega_b * (omega_m - 1)),
+            + 1
+            / (2 * self.H_)
+            * (
+                self.T_m
+                - (psi_q * i_d - psi_d * i_q)
+                - self.K_D * self.omega_b * (omega_m - 1)
+            ),
             # algebraic generator
             -psi_d + self.L_d * i_d + self.L_md * i_F + self.L_md * i_D,
             -psi_q + self.L_q * i_q + self.L_mq * i_Q1 + self.L_mq * i_Q2,
@@ -142,11 +155,28 @@ class synchronous_machine_infinite_bus(ptype_dae):
             omega_b = 2 * np.pi * 60
             omega_m = omega_0 / omega_b  # = omega_r since pf = 2 i.e. two pole machine
 
-            me[:] = (psi_d, psi_q, psi_F, psi_D, psi_Q1, psi_Q2, i_d, i_q, i_F, i_D, i_Q1, i_Q2, delta_r, omega_m)
+            me[:] = (
+                psi_d,
+                psi_q,
+                psi_F,
+                psi_D,
+                psi_Q1,
+                psi_Q2,
+                i_d,
+                i_q,
+                i_F,
+                i_D,
+                i_Q1,
+                i_Q2,
+                delta_r,
+                omega_m,
+            )
         elif t < self.t_end:
             me[:] = self.u_ref(t)
         else:
-            warnings.warn("Requested time exceeds domain of the reference solution. Returning zero.")
+            warnings.warn(
+                "Requested time exceeds domain of the reference solution. Returning zero."
+            )
             me[:] = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
         return me

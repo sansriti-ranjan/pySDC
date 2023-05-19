@@ -21,9 +21,19 @@ class battery_n_capacitors(ptype):
         nvars = n + 1
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
-        super().__init__(init=(nvars, None, np.dtype('float64')))
+        super().__init__(init=(nvars, None, np.dtype("float64")))
         self._makeAttributeAndRegister(
-            'nvars', 'ncapacitors', 'Vs', 'Rs', 'C', 'R', 'L', 'alpha', 'V_ref', localVars=locals(), readOnly=True
+            "nvars",
+            "ncapacitors",
+            "Vs",
+            "Rs",
+            "C",
+            "R",
+            "L",
+            "alpha",
+            "V_ref",
+            localVars=locals(),
+            readOnly=True,
         )
 
         self.A = np.zeros((n + 1, n + 1))
@@ -60,8 +70,12 @@ class battery_n_capacitors(ptype):
 
         else:
             # proof all switching conditions and find largest index where it drops below V_ref
-            switch = [True if u[k] <= self.V_ref[k - 1] else False for k in range(1, len(u))]
-            max_index = max([k if switch[k] == True else -1 for k in range(len(switch))])
+            switch = [
+                True if u[k] <= self.V_ref[k - 1] else False for k in range(1, len(u))
+            ]
+            max_index = max(
+                [k if switch[k] == True else -1 for k in range(len(switch))]
+            )
 
             if max_index == -1:
                 f.expl[:] = self.switch_f[0]
@@ -90,8 +104,13 @@ class battery_n_capacitors(ptype):
 
         else:
             # proof all switching conditions and find largest index where it drops below V_ref
-            switch = [True if rhs[k] <= self.V_ref[k - 1] else False for k in range(1, len(rhs))]
-            max_index = max([k if switch[k] == True else -1 for k in range(len(switch))])
+            switch = [
+                True if rhs[k] <= self.V_ref[k - 1] else False
+                for k in range(1, len(rhs))
+            ]
+            max_index = max(
+                [k if switch[k] == True else -1 for k in range(len(switch))]
+            )
             if max_index == -1:
                 self.A = self.switch_A[0]
 
@@ -112,7 +131,7 @@ class battery_n_capacitors(ptype):
         Returns:
             dtype_u: exact solution
         """
-        assert t == 0, 'ERROR: u_exact only valid for t=0'
+        assert t == 0, "ERROR: u_exact only valid for t=0"
 
         me = self.dtype_u(self.init)
 
@@ -150,7 +169,11 @@ class battery_n_capacitors(ptype):
             if break_flag:
                 break
 
-        vC_switch = [u[m][k_detected] - self.V_ref[k_detected - 1] for m in range(1, len(u))] if switch_detected else []
+        vC_switch = (
+            [u[m][k_detected] - self.V_ref[k_detected - 1] for m in range(1, len(u))]
+            if switch_detected
+            else []
+        )
 
         return switch_detected, m_guess, vC_switch
 
@@ -172,7 +195,9 @@ class battery_n_capacitors(ptype):
         v[0] = 1
 
         A, f = dict(), dict()
-        A = {k: np.diag(-1 / (self.C[k] * self.R) * np.roll(v, k + 1)) for k in range(n)}
+        A = {
+            k: np.diag(-1 / (self.C[k] * self.R) * np.roll(v, k + 1)) for k in range(n)
+        }
         A.update({n: np.diag(-(self.Rs + self.R) / self.L * v)})
         f = {k: np.zeros(n + 1) for k in range(n)}
         f.update({n: self.Vs / self.L * v})
@@ -248,7 +273,7 @@ class battery(battery_n_capacitors):
         Returns:
             dtype_u: exact solution
         """
-        assert t == 0, 'ERROR: u_exact only valid for t=0'
+        assert t == 0, "ERROR: u_exact only valid for t=0"
 
         me = self.dtype_u(self.init)
 
@@ -261,9 +286,13 @@ class battery(battery_n_capacitors):
 class battery_implicit(battery):
     dtype_f = mesh
 
-    def __init__(self, ncapacitors, Vs, Rs, C, R, L, alpha, V_ref, newton_maxiter, newton_tol):
+    def __init__(
+        self, ncapacitors, Vs, Rs, C, R, L, alpha, V_ref, newton_maxiter, newton_tol
+    ):
         super().__init__(ncapacitors, Vs, Rs, C, R, L, alpha, V_ref)
-        self._makeAttributeAndRegister('newton_maxiter', 'newton_tol', localVars=locals(), readOnly=True)
+        self._makeAttributeAndRegister(
+            "newton_maxiter", "newton_tol", localVars=locals(), readOnly=True
+        )
 
         self.newton_itercount = 0
         self.lin_itercount = 0
@@ -349,12 +378,14 @@ class battery_implicit(battery):
             n += 1
 
         if np.isnan(res) and self.stop_at_nan:
-            raise ProblemError('Newton got nan after %i iterations, aborting...' % n)
+            raise ProblemError("Newton got nan after %i iterations, aborting..." % n)
         elif np.isnan(res):
-            self.logger.warning('Newton got nan after %i iterations...' % n)
+            self.logger.warning("Newton got nan after %i iterations..." % n)
 
         if n == self.newton_maxiter:
-            self.logger.warning('Newton did not converge after %i iterations, error is %s' % (n, res))
+            self.logger.warning(
+                "Newton did not converge after %i iterations, error is %s" % (n, res)
+            )
 
         self.newton_ncalls += 1
         self.newton_itercount += n

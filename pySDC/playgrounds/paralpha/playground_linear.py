@@ -6,7 +6,6 @@ from pySDC.implementations.problem_classes.AdvectionEquation_ND_FD import advect
 
 
 def run():
-
     nsteps = 8
     L = 4
     M = 3
@@ -20,15 +19,17 @@ def run():
     # initialize problem (ADVECTION)
     ndim = 1
     problem_params = dict()
-    problem_params['ndim'] = ndim  # will be iterated over
-    problem_params['order'] = 6  # order of accuracy for FD discretization in space
-    problem_params['type'] = 'center'  # order of accuracy for FD discretization in space
-    problem_params['c'] = 0.1  # diffusion coefficient
-    problem_params['freq'] = tuple(2 for _ in range(ndim))  # frequencies
-    problem_params['nvars'] = tuple(N for _ in range(ndim))  # number of dofs
-    problem_params['solver_type'] = 'GMRES'  # do GMRES instead of LU
-    problem_params['liniter'] = 10  # number of GMRES iterations
-    problem_params['bc'] = 'periodic'  # boundary conditions
+    problem_params["ndim"] = ndim  # will be iterated over
+    problem_params["order"] = 6  # order of accuracy for FD discretization in space
+    problem_params[
+        "type"
+    ] = "center"  # order of accuracy for FD discretization in space
+    problem_params["c"] = 0.1  # diffusion coefficient
+    problem_params["freq"] = tuple(2 for _ in range(ndim))  # frequencies
+    problem_params["nvars"] = tuple(N for _ in range(ndim))  # number of dofs
+    problem_params["solver_type"] = "GMRES"  # do GMRES instead of LU
+    problem_params["liniter"] = 10  # number of GMRES iterations
+    problem_params["bc"] = "periodic"  # boundary conditions
 
     prob = advectionNd(problem_params)
 
@@ -36,7 +37,7 @@ def run():
     LM = np.eye(M)
     IN = np.eye(N)
 
-    coll = CollBase(M, 0, 1, quad_type='RADAU-RIGHT')
+    coll = CollBase(M, 0, 1, quad_type="RADAU-RIGHT")
 
     Q = coll.Qmat[1:, 1:]
     A = prob.A.todense()
@@ -51,8 +52,16 @@ def run():
     H = np.zeros((M, M))
     H[:, -1] = 1
 
-    C = np.kron(np.kron(IL, LM), IN) - dt * np.kron(np.kron(IL, Q), A) - np.kron(np.kron(E, H), IN)
-    Calpha = np.kron(np.kron(IL, LM), IN) - dt * np.kron(np.kron(IL, Q), A) - np.kron(np.kron(Ealpha, H), IN)
+    C = (
+        np.kron(np.kron(IL, LM), IN)
+        - dt * np.kron(np.kron(IL, Q), A)
+        - np.kron(np.kron(E, H), IN)
+    )
+    Calpha = (
+        np.kron(np.kron(IL, LM), IN)
+        - dt * np.kron(np.kron(IL, Q), A)
+        - np.kron(np.kron(Ealpha, H), IN)
+    )
     Calpha_inv = np.linalg.inv(Calpha)
 
     uinit = prob.u_exact(t=t0)
@@ -65,7 +74,6 @@ def run():
     maxiter = 10
 
     for nb in range(nblocks):
-
         k = 0
         restol = 1e-10
         res = u0 - C @ u
@@ -88,5 +96,5 @@ def run():
     # plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run()

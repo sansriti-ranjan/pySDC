@@ -72,10 +72,12 @@ class particles(object):
                 self.q[:] = val[2]
                 self.m[:] = val[3]
             else:
-                raise DataError('type of val is wrong, got %s', val)
+                raise DataError("type of val is wrong, got %s", val)
         # something is wrong, if none of the ones above hit
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )
 
     def __add__(self, other):
         """
@@ -98,7 +100,9 @@ class particles(object):
             p.q = self.q
             return p
         else:
-            raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot add %s to %s" % (type(other), type(self))
+            )
 
     def __sub__(self, other):
         """
@@ -121,7 +125,9 @@ class particles(object):
             p.q = self.q
             return p
         else:
-            raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot subtract %s from %s" % (type(other), type(self))
+            )
 
     def __rmul__(self, other):
         """
@@ -144,7 +150,9 @@ class particles(object):
             p.q = self.q
             return p
         else:
-            raise DataError("Type error: cannot multiply %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot multiply %s to %s" % (type(other), type(self))
+            )
 
     def __abs__(self):
         """
@@ -256,10 +264,12 @@ class fields(object):
                 self.elec = fields.electric(init, val=val[0])
                 self.magn = fields.magnetic(init, val=val[1])
             else:
-                raise DataError('wrong type of val, got %s' % val)
+                raise DataError("wrong type of val, got %s" % val)
         # something is wrong, if none of the ones above hit
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )
 
     def __add__(self, other):
         """
@@ -280,7 +290,9 @@ class fields(object):
             p.magn[:] = self.magn + other.magn
             return p
         else:
-            raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot add %s to %s" % (type(other), type(self))
+            )
 
     def __sub__(self, other):
         """
@@ -301,7 +313,9 @@ class fields(object):
             p.magn[:] = self.magn - other.magn
             return p
         else:
-            raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot subtract %s from %s" % (type(other), type(self))
+            )
 
     def __rmul__(self, other):
         """
@@ -322,4 +336,6 @@ class fields(object):
             p.magn[:] = other * self.magn
             return p
         else:
-            raise DataError("Type error: cannot multiply %s with %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot multiply %s with %s" % (type(other), type(self))
+            )

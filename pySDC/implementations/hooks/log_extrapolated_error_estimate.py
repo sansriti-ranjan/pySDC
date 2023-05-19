@@ -28,6 +28,6 @@ class LogExtrapolationErrorEstimate(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='error_extrapolation_estimate',
-            value=L.status.get('error_extrapolation_estimate'),
+            type="error_extrapolation_estimate",
+            value=L.status.get("error_extrapolation_estimate"),
         )

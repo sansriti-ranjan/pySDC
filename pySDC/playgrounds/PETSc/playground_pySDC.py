@@ -6,13 +6,16 @@ from mpi4py import MPI
 from pySDC.helpers.stats_helper import get_sorted
 
 from pySDC.implementations.controller_classes.controller_MPI import controller_MPI
-from pySDC.implementations.problem_classes.HeatEquation_2D_PETSc_forced import heat2d_petsc_forced
+from pySDC.implementations.problem_classes.HeatEquation_2D_PETSc_forced import (
+    heat2d_petsc_forced,
+)
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
-from pySDC.implementations.transfer_classes.TransferPETScDMDA import mesh_to_mesh_petsc_dmda
+from pySDC.implementations.transfer_classes.TransferPETScDMDA import (
+    mesh_to_mesh_petsc_dmda,
+)
 
 
 def main():
-
     # set MPI communicator
     comm = MPI.COMM_WORLD
 
@@ -44,29 +47,33 @@ def main():
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-08
-    level_params['dt'] = 0.125
-    level_params['nsweeps'] = [1]
+    level_params["restol"] = 1e-08
+    level_params["dt"] = 0.125
+    level_params["nsweeps"] = [1]
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = [3]
-    sweeper_params['QI'] = ['LU']  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
-    sweeper_params['initial_guess'] = 'zero'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = [3]
+    sweeper_params["QI"] = [
+        "LU"
+    ]  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
+    sweeper_params["initial_guess"] = "zero"
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['nu'] = 1.0  # diffusion coefficient
-    problem_params['freq'] = 2  # frequency for the test value
-    problem_params['cnvars'] = [(127, 127)]  # number of degrees of freedom for each level
-    problem_params['refine'] = 1  # number of degrees of freedom for each level
-    problem_params['comm'] = space_comm
-    problem_params['sol_tol'] = 1e-12
+    problem_params["nu"] = 1.0  # diffusion coefficient
+    problem_params["freq"] = 2  # frequency for the test value
+    problem_params["cnvars"] = [
+        (127, 127)
+    ]  # number of degrees of freedom for each level
+    problem_params["refine"] = 1  # number of degrees of freedom for each level
+    problem_params["comm"] = space_comm
+    problem_params["sol_tol"] = 1e-12
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize space transfer parameters
     # space_transfer_params = dict()
@@ -76,18 +83,20 @@ def main():
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 20
+    controller_params["logger_level"] = 20
     # controller_params['hook_class'] = error_output
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = heat2d_petsc_forced  # pass problem class
-    description['problem_params'] = problem_params  # pass problem parameters
-    description['sweeper_class'] = imex_1st_order  # pass sweeper (see part B)
-    description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    description['level_params'] = level_params  # pass level parameters
-    description['step_params'] = step_params  # pass step parameters
-    description['space_transfer_class'] = mesh_to_mesh_petsc_dmda  # pass spatial transfer class
+    description["problem_class"] = heat2d_petsc_forced  # pass problem class
+    description["problem_params"] = problem_params  # pass problem parameters
+    description["sweeper_class"] = imex_1st_order  # pass sweeper (see part B)
+    description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    description["level_params"] = level_params  # pass level parameters
+    description["step_params"] = step_params  # pass step parameters
+    description[
+        "space_transfer_class"
+    ] = mesh_to_mesh_petsc_dmda  # pass spatial transfer class
     # description['space_transfer_params'] = space_transfer_params  # pass paramters for spatial transfer
 
     # set time parameters
@@ -95,7 +104,9 @@ def main():
     Tend = 1.0
 
     # instantiate controller
-    controller = controller_MPI(controller_params=controller_params, description=description, comm=time_comm)
+    controller = controller_MPI(
+        controller_params=controller_params, description=description, comm=time_comm
+    )
     # controller = controller_nonMPI(num_procs=2, controller_params=controller_params, description=description)
 
     # get initial values on finest level
@@ -112,24 +123,30 @@ def main():
     print(err)
 
     # filter statistics by type (number of iterations)
-    iter_counts = get_sorted(stats, type='niter', sortby='time')
+    iter_counts = get_sorted(stats, type="niter", sortby="time")
 
     # compute and print statistics
     for item in iter_counts:
-        out = 'Number of iterations for time %4.2f: %2i' % item
+        out = "Number of iterations for time %4.2f: %2i" % item
         print(out)
 
     niters = np.array([item[1] for item in iter_counts])
-    out = '   Mean number of iterations: %4.2f' % np.mean(niters)
+    out = "   Mean number of iterations: %4.2f" % np.mean(niters)
     print(out)
-    out = '   Range of values for number of iterations: %2i ' % np.ptp(niters)
+    out = "   Range of values for number of iterations: %2i " % np.ptp(niters)
     print(out)
-    out = '   Position of max/min number of iterations: %2i -- %2i' % (int(np.argmax(niters)), int(np.argmin(niters)))
+    out = "   Position of max/min number of iterations: %2i -- %2i" % (
+        int(np.argmax(niters)),
+        int(np.argmin(niters)),
+    )
     print(out)
-    out = '   Std and var for number of iterations: %4.2f -- %4.2f' % (float(np.std(niters)), float(np.var(niters)))
+    out = "   Std and var for number of iterations: %4.2f -- %4.2f" % (
+        float(np.std(niters)),
+        float(np.var(niters)),
+    )
     print(out)
 
-    timing = get_sorted(stats, type='timing_run', sortby='time')
+    timing = get_sorted(stats, type="timing_run", sortby="time")
 
     print(timing)
 

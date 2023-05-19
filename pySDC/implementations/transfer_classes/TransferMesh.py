@@ -33,21 +33,29 @@ class mesh_to_mesh(space_transfer):
         super(mesh_to_mesh, self).__init__(fine_prob, coarse_prob, params)
 
         if self.params.rorder % 2 != 0:
-            raise TransferError('Need even order for restriction')
+            raise TransferError("Need even order for restriction")
 
         if self.params.iorder % 2 != 0:
-            raise TransferError('Need even order for interpolation')
+            raise TransferError("Need even order for interpolation")
 
         if type(self.fine_prob.nvars) is tuple:
             if type(self.coarse_prob.nvars) is not tuple:
-                raise TransferError('nvars parameter of coarse problem needs to be a tuple')
+                raise TransferError(
+                    "nvars parameter of coarse problem needs to be a tuple"
+                )
             if not len(self.fine_prob.nvars) == len(self.coarse_prob.nvars):
-                raise TransferError('nvars parameter of fine and coarse level needs to have the same length')
+                raise TransferError(
+                    "nvars parameter of fine and coarse level needs to have the same length"
+                )
         elif type(self.fine_prob.nvars) is int:
             if type(self.coarse_prob.nvars) is not int:
-                raise TransferError('nvars parameter of coarse problem needs to be an int')
+                raise TransferError(
+                    "nvars parameter of coarse problem needs to be an int"
+                )
         else:
-            raise TransferError("unknow type of nvars for transfer, got %s" % self.fine_prob.nvars)
+            raise TransferError(
+                "unknow type of nvars for transfer, got %s" % self.fine_prob.nvars
+            )
 
         # we have a 1d problem
         if type(self.fine_prob.nvars) is int:
@@ -58,11 +66,25 @@ class mesh_to_mesh(space_transfer):
             # assemble restriction as transpose of interpolation
             else:
                 if not self.params.periodic:
-                    fine_grid = np.array([(i + 1) * self.fine_prob.dx for i in range(self.fine_prob.nvars)])
-                    coarse_grid = np.array([(i + 1) * self.coarse_prob.dx for i in range(self.coarse_prob.nvars)])
+                    fine_grid = np.array(
+                        [
+                            (i + 1) * self.fine_prob.dx
+                            for i in range(self.fine_prob.nvars)
+                        ]
+                    )
+                    coarse_grid = np.array(
+                        [
+                            (i + 1) * self.coarse_prob.dx
+                            for i in range(self.coarse_prob.nvars)
+                        ]
+                    )
                 else:
-                    fine_grid = np.array([i * self.fine_prob.dx for i in range(self.fine_prob.nvars)])
-                    coarse_grid = np.array([i * self.coarse_prob.dx for i in range(self.coarse_prob.nvars)])
+                    fine_grid = np.array(
+                        [i * self.fine_prob.dx for i in range(self.fine_prob.nvars)]
+                    )
+                    coarse_grid = np.array(
+                        [i * self.coarse_prob.dx for i in range(self.coarse_prob.nvars)]
+                    )
 
                 self.Pspace = th.interpolation_matrix_1d(
                     fine_grid,
@@ -103,13 +125,31 @@ class mesh_to_mesh(space_transfer):
                 # assemble restriction as transpose of interpolation
                 else:
                     if not self.params.periodic:
-                        fine_grid = np.array([(j + 1) * self.fine_prob.dx for j in range(self.fine_prob.nvars[i])])
+                        fine_grid = np.array(
+                            [
+                                (j + 1) * self.fine_prob.dx
+                                for j in range(self.fine_prob.nvars[i])
+                            ]
+                        )
                         coarse_grid = np.array(
-                            [(j + 1) * self.coarse_prob.dx for j in range(self.coarse_prob.nvars[i])]
+                            [
+                                (j + 1) * self.coarse_prob.dx
+                                for j in range(self.coarse_prob.nvars[i])
+                            ]
                         )
                     else:
-                        fine_grid = np.array([j * self.fine_prob.dx for j in range(self.fine_prob.nvars[i])])
-                        coarse_grid = np.array([j * self.coarse_prob.dx for j in range(self.coarse_prob.nvars[i])])
+                        fine_grid = np.array(
+                            [
+                                j * self.fine_prob.dx
+                                for j in range(self.fine_prob.nvars[i])
+                            ]
+                        )
+                        coarse_grid = np.array(
+                            [
+                                j * self.coarse_prob.dx
+                                for j in range(self.coarse_prob.nvars[i])
+                            ]
+                        )
 
                     Pspace.append(
                         th.interpolation_matrix_1d(
@@ -141,11 +181,11 @@ class mesh_to_mesh(space_transfer):
             # kronecker 1-d operators for n-d
             self.Pspace = Pspace[0]
             for i in range(1, len(Pspace)):
-                self.Pspace = sp.kron(self.Pspace, Pspace[i], format='csc')
+                self.Pspace = sp.kron(self.Pspace, Pspace[i], format="csc")
 
             self.Rspace = Rspace[0]
             for i in range(1, len(Rspace)):
-                self.Rspace = sp.kron(self.Rspace, Rspace[i], format='csc')
+                self.Rspace = sp.kron(self.Rspace, Rspace[i], format="csc")
 
     def restrict(self, F):
         """
@@ -155,7 +195,7 @@ class mesh_to_mesh(space_transfer):
         """
         if isinstance(F, mesh):
             G = self.coarse_prob.dtype_u(self.coarse_prob.init)
-            if hasattr(self.fine_prob, 'ncomp'):
+            if hasattr(self.fine_prob, "ncomp"):
                 for i in range(self.fine_prob.ncomp):
                     tmpF = F[..., i].flatten()
                     tmpG = self.Rspace.dot(tmpF)
@@ -166,7 +206,7 @@ class mesh_to_mesh(space_transfer):
                 G[:] = tmpG.reshape(self.coarse_prob.nvars)
         elif isinstance(F, imex_mesh):
             G = self.coarse_prob.dtype_f(self.coarse_prob.init)
-            if hasattr(self.fine_prob, 'ncomp'):
+            if hasattr(self.fine_prob, "ncomp"):
                 for i in range(self.fine_prob.ncomp):
                     tmpF = F.impl[..., i].flatten()
                     tmpG = self.Rspace.dot(tmpF)
@@ -183,7 +223,7 @@ class mesh_to_mesh(space_transfer):
                 G.expl[:] = tmpG.reshape(self.coarse_prob.nvars)
         elif isinstance(F, comp2_mesh):
             G = self.coarse_prob.dtype_f(self.coarse_prob.init)
-            if hasattr(self.fine_prob, 'ncomp'):
+            if hasattr(self.fine_prob, "ncomp"):
                 for i in range(self.fine_prob.ncomp):
                     tmpF = F.comp1[..., i].flatten()
                     tmpG = self.Rspace.dot(tmpF)
@@ -199,7 +239,7 @@ class mesh_to_mesh(space_transfer):
                 tmpG = self.Rspace.dot(tmpF)
                 G.comp2[:] = tmpG.reshape(self.coarse_prob.nvars)
         else:
-            raise TransferError('Wrong data type for restriction, got %s' % type(F))
+            raise TransferError("Wrong data type for restriction, got %s" % type(F))
         return G
 
     def prolong(self, G):
@@ -210,7 +250,7 @@ class mesh_to_mesh(space_transfer):
         """
         if isinstance(G, mesh):
             F = self.fine_prob.dtype_u(self.fine_prob.init)
-            if hasattr(self.fine_prob, 'ncomp'):
+            if hasattr(self.fine_prob, "ncomp"):
                 for i in range(self.fine_prob.ncomp):
                     tmpG = G[..., i].flatten()
                     tmpF = self.Pspace.dot(tmpG)
@@ -221,7 +261,7 @@ class mesh_to_mesh(space_transfer):
                 F[:] = tmpF.reshape(self.fine_prob.nvars)
         elif isinstance(G, imex_mesh):
             F = self.fine_prob.dtype_f(self.fine_prob.init)
-            if hasattr(self.fine_prob, 'ncomp'):
+            if hasattr(self.fine_prob, "ncomp"):
                 for i in range(self.fine_prob.ncomp):
                     tmpG = G.impl[..., i].flatten()
                     tmpF = self.Pspace.dot(tmpG)
@@ -238,7 +278,7 @@ class mesh_to_mesh(space_transfer):
                 F.expl[:] = tmpF.reshape(self.fine_prob.nvars)
         elif isinstance(G, comp2_mesh):
             F = self.fine_prob.dtype_f(self.fine_prob.init)
-            if hasattr(self.fine_prob, 'ncomp'):
+            if hasattr(self.fine_prob, "ncomp"):
                 for i in range(self.fine_prob.ncomp):
                     tmpG = G.comp1[..., i].flatten()
                     tmpF = self.Pspace.dot(tmpG)
@@ -254,5 +294,5 @@ class mesh_to_mesh(space_transfer):
                 tmpF = self.Pspace.dot(tmpG)
                 F.comp2[:] = tmpF.reshape(self.fine_prob.nvars)
         else:
-            raise TransferError('Wrong data type for prolongation, got %s' % type(G))
+            raise TransferError("Wrong data type for prolongation, got %s" % type(G))
         return F

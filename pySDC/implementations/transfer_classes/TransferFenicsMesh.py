@@ -2,7 +2,10 @@ import dolfin as df
 
 from pySDC.core.Errors import TransferError
 from pySDC.core.SpaceTransfer import space_transfer
-from pySDC.implementations.datatype_classes.fenics_mesh import fenics_mesh, rhs_fenics_mesh
+from pySDC.implementations.datatype_classes.fenics_mesh import (
+    fenics_mesh,
+    rhs_fenics_mesh,
+)
 
 
 class mesh_to_mesh_fenics(space_transfer):
@@ -39,7 +42,7 @@ class mesh_to_mesh_fenics(space_transfer):
             u_coarse.impl.values = df.project(F.impl.values, self.coarse_prob.init)
             u_coarse.expl.values = df.project(F.expl.values, self.coarse_prob.init)
         else:
-            raise TransferError('Unknown type of fine data, got %s' % type(F))
+            raise TransferError("Unknown type of fine data, got %s" % type(F))
 
         return u_coarse
 
@@ -57,7 +60,7 @@ class mesh_to_mesh_fenics(space_transfer):
             u_coarse.impl.values = df.interpolate(F.impl.values, self.coarse_prob.init)
             u_coarse.expl.values = df.interpolate(F.expl.values, self.coarse_prob.init)
         else:
-            raise TransferError('Unknown type of fine data, got %s' % type(F))
+            raise TransferError("Unknown type of fine data, got %s" % type(F))
 
         return u_coarse
 
@@ -75,6 +78,6 @@ class mesh_to_mesh_fenics(space_transfer):
             u_fine.impl.values = df.interpolate(G.impl.values, self.fine_prob.init)
             u_fine.expl.values = df.interpolate(G.expl.values, self.fine_prob.init)
         else:
-            raise TransferError('Unknown type of coarse data, got %s' % type(G))
+            raise TransferError("Unknown type of coarse data, got %s" % type(G))
 
         return u_fine

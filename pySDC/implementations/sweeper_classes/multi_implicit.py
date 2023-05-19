@@ -21,10 +21,10 @@ class multi_implicit(sweeper):
         """
 
         # Default choice: implicit Euler
-        if 'Q1' not in params:
-            params['Q1'] = 'IE'
-        if 'Q2' not in params:
-            params['Q2'] = 'IE'
+        if "Q1" not in params:
+            params["Q1"] = "IE"
+        if "Q2" not in params:
+            params["Q2"] = "IE"
 
         # call parent's initialization routine
         super(multi_implicit, self).__init__(params)
@@ -104,7 +104,10 @@ class multi_implicit(sweeper):
 
             # implicit solve with prefactor stemming from Q1
             L.u[m + 1] = P.solve_system_1(
-                rhs, L.dt * self.Q1[m + 1, m + 1], L.u[m + 1], L.time + L.dt * self.coll.nodes[m]
+                rhs,
+                L.dt * self.Q1[m + 1, m + 1],
+                L.u[m + 1],
+                L.time + L.dt * self.coll.nodes[m],
             )
 
             # substract Q2F2(u^k) and add Q2F(u^k+1)
@@ -149,7 +152,9 @@ class multi_implicit(sweeper):
             # start with u0 and add integral over the full interval (using coll.weights)
             L.uend = P.dtype_u(L.u[0])
             for m in range(self.coll.num_nodes):
-                L.uend += L.dt * self.coll.weights[m] * (L.f[m + 1].comp1 + L.f[m + 1].comp2)
+                L.uend += (
+                    L.dt * self.coll.weights[m] * (L.f[m + 1].comp1 + L.f[m + 1].comp2)
+                )
             # add up tau correction of the full interval (last entry)
             if L.tau[-1] is not None:
                 L.uend += L.tau[-1]

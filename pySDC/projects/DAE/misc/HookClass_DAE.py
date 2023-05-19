@@ -34,7 +34,7 @@ class approx_solution_hook(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='approx_solution',
+            type="approx_solution",
             value=L.uend,
         )
 
@@ -79,6 +79,6 @@ class error_hook(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='error_post_step',
+            type="error_post_step",
             value=err,
         )

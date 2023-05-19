@@ -16,18 +16,31 @@ class vanderpol(ptype):
     dtype_u = mesh
     dtype_f = mesh
 
-    def __init__(self, u0, mu, newton_maxiter, newton_tol, stop_at_nan=True, crash_at_maxiter=True):
+    def __init__(
+        self,
+        u0,
+        mu,
+        newton_maxiter,
+        newton_tol,
+        stop_at_nan=True,
+        crash_at_maxiter=True,
+    ):
         """
         Initialization routine
         """
         nvars = 2
-        super().__init__((nvars, None, np.dtype('float64')))
-        self._makeAttributeAndRegister('nvars', 'u0', localVars=locals(), readOnly=True)
+        super().__init__((nvars, None, np.dtype("float64")))
+        self._makeAttributeAndRegister("nvars", "u0", localVars=locals(), readOnly=True)
         self._makeAttributeAndRegister(
-            'mu', 'newton_maxiter', 'newton_tol', 'stop_at_nan', 'crash_at_maxiter', localVars=locals()
+            "mu",
+            "newton_maxiter",
+            "newton_tol",
+            "stop_at_nan",
+            "crash_at_maxiter",
+            localVars=locals(),
         )
-        self.work_counters['newton'] = WorkCounter()
-        self.work_counters['rhs'] = WorkCounter()
+        self.work_counters["newton"] = WorkCounter()
+        self.work_counters["rhs"] = WorkCounter()
 
     def u_exact(self, t, u_init=None, t_init=None):
         """
@@ -70,7 +83,7 @@ class vanderpol(ptype):
         f = self.f_init
         f[0] = x2
         f[1] = self.mu * (1 - x1**2) * x2 - x1
-        self.work_counters['rhs']()
+        self.work_counters["rhs"]()
         return f
 
     def solve_system(self, rhs, dt, u0, t):
@@ -99,7 +112,12 @@ class vanderpol(ptype):
         res = 99
         while n < self.newton_maxiter:
             # form the function g with g(u) = 0
-            g = np.array([x1 - dt * x2 - rhs[0], x2 - dt * (mu * (1 - x1**2) * x2 - x1) - rhs[1]])
+            g = np.array(
+                [
+                    x1 - dt * x2 - rhs[0],
+                    x2 - dt * (mu * (1 - x1**2) * x2 - x1) - rhs[1],
+                ]
+            )
 
             # if g is close to 0, then we are done
             res = np.linalg.norm(g, np.inf)
@@ -107,9 +125,13 @@ class vanderpol(ptype):
                 break
 
             # prefactor for dg/du
-            c = 1.0 / (-2 * dt**2 * mu * x1 * x2 - dt**2 - 1 + dt * mu * (1 - x1**2))
+            c = 1.0 / (
+                -2 * dt**2 * mu * x1 * x2 - dt**2 - 1 + dt * mu * (1 - x1**2)
+            )
             # assemble dg/du
-            dg = c * np.array([[dt * mu * (1 - x1**2) - 1, -dt], [2 * dt * mu * x1 * x2 + dt, -1]])
+            dg = c * np.array(
+                [[dt * mu * (1 - x1**2) - 1, -dt], [2 * dt * mu * x1 * x2 + dt, -1]]
+            )
 
             # newton update: u1 = u0 - g/dg
             u -= np.dot(dg, g)
@@ -118,14 +140,16 @@ class vanderpol(ptype):
             x1 = u[0]
             x2 = u[1]
             n += 1
-            self.work_counters['newton']()
+            self.work_counters["newton"]()
 
         if np.isnan(res) and self.stop_at_nan:
-            raise ProblemError('Newton got nan after %i iterations, aborting...' % n)
+            raise ProblemError("Newton got nan after %i iterations, aborting..." % n)
         elif np.isnan(res):
-            self.logger.warning('Newton got nan after %i iterations...' % n)
+            self.logger.warning("Newton got nan after %i iterations..." % n)
 
         if n == self.newton_maxiter and self.crash_at_maxiter:
-            raise ProblemError('Newton did not converge after %i iterations, error is %s' % (n, res))
+            raise ProblemError(
+                "Newton did not converge after %i iterations, error is %s" % (n, res)
+            )
 
         return u

@@ -21,15 +21,15 @@ if __name__ == "__main__":
     for i in range(0, np.size(mvals)):
         pparams = {}
         # the following are not used in the computation
-        pparams['lambda_s'] = np.array([0.0])
-        pparams['lambda_f'] = np.array([0.0])
-        pparams['u0'] = 1.0
+        pparams["lambda_s"] = np.array([0.0])
+        pparams["lambda_f"] = np.array([0.0])
+        pparams["u0"] = 1.0
 
         swparams = {}
         #    swparams['collocation_class'] = collclass.CollGaussLobatto
         #    swparams['collocation_class'] = collclass.CollGaussLegendre
-        swparams['collocation_class'] = collclass.CollGaussRadau_Right
-        swparams['num_nodes'] = mvals[i]
+        swparams["collocation_class"] = collclass.CollGaussRadau_Right
+        swparams["num_nodes"] = mvals[i]
         do_coll_update = True
 
         #
@@ -59,32 +59,36 @@ if __name__ == "__main__":
         QE = level.sweep.QE[1:, 1:]
         QI = level.sweep.QI[1:, 1:]
         Q = level.sweep.coll.Qmat[1:, 1:]
-        LHS, RHS = level.sweep.get_scalar_problems_sweeper_mats(lambdas=[lambda_fast, lambda_slow])
+        LHS, RHS = level.sweep.get_scalar_problems_sweeper_mats(
+            lambdas=[lambda_fast, lambda_slow]
+        )
 
         for k in range(0, np.size(kvals)):
             Kmax = kvals[k]
-            Mat_sweep = level.sweep.get_scalar_problems_manysweep_mat(nsweeps=Kmax, lambdas=[lambda_fast, lambda_slow])
+            Mat_sweep = level.sweep.get_scalar_problems_manysweep_mat(
+                nsweeps=Kmax, lambdas=[lambda_fast, lambda_slow]
+            )
             if do_coll_update:
-                stab_fh = 1.0 + (lambda_fast + lambda_slow) * level.sweep.coll.weights.dot(
-                    Mat_sweep.dot(np.ones(nnodes))
-                )
+                stab_fh = 1.0 + (
+                    lambda_fast + lambda_slow
+                ) * level.sweep.coll.weights.dot(Mat_sweep.dot(np.ones(nnodes)))
             else:
                 q = np.zeros(nnodes)
                 q[nnodes - 1] = 1.0
                 stab_fh = q.dot(Mat_sweep.dot(np.ones(nnodes)))
             stabval[k, i] = np.absolute(stab_fh)
 
-    rcParams['figure.figsize'] = 2.5, 2.5
+    rcParams["figure.figsize"] = 2.5, 2.5
     fig = plt.figure()
     fs = 8
-    plt.plot(mvals, stabval[0, :], 'o-', color='b', label=(r"K=%1i" % kvals[0]))
-    plt.plot(mvals, stabval[1, :], 's-', color='r', label=(r"K=%1i" % kvals[1]))
-    plt.plot(mvals, stabval[2, :], 'd-', color='g', label=(r"K=%1i" % kvals[2]))
-    plt.plot(mvals, 1.0 + 0.0 * mvals, '--', color='k')
-    plt.xlabel('Number of nodes M', fontsize=fs)
-    plt.ylabel(r'Modulus of stability function $\left| R \right|$', fontsize=fs)
+    plt.plot(mvals, stabval[0, :], "o-", color="b", label=(r"K=%1i" % kvals[0]))
+    plt.plot(mvals, stabval[1, :], "s-", color="r", label=(r"K=%1i" % kvals[1]))
+    plt.plot(mvals, stabval[2, :], "d-", color="g", label=(r"K=%1i" % kvals[2]))
+    plt.plot(mvals, 1.0 + 0.0 * mvals, "--", color="k")
+    plt.xlabel("Number of nodes M", fontsize=fs)
+    plt.ylabel(r"Modulus of stability function $\left| R \right|$", fontsize=fs)
     plt.ylim([0.0, 1.8])
-    plt.legend(loc='lower right', fontsize=fs, prop={'size': fs})
+    plt.legend(loc="lower right", fontsize=fs, prop={"size": fs})
     plt.gca().get_xaxis().get_major_formatter().labelOnlyBase = False
     plt.gca().get_xaxis().set_major_formatter(ScalarFormatter())
     plt.show()

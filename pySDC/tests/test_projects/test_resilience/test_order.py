@@ -19,4 +19,12 @@ def test_order_adaptive_step_size(ks, serial):
     from pySDC.projects.Resilience.accuracy_check import plot_all_errors, plt
 
     fig, ax = plt.subplots()
-    plot_all_errors(ax, ks, serial, Tend_fixed=5e-1, var='e_tol', dt_list=[1e-5, 5e-6], avoid_restarts=False)
+    plot_all_errors(
+        ax,
+        ks,
+        serial,
+        Tend_fixed=5e-1,
+        var="e_tol",
+        dt_list=[1e-5, 5e-6],
+        avoid_restarts=False,
+    )

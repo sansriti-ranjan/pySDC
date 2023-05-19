@@ -22,13 +22,16 @@ class controller_matrix_nonMPI(controller_nonMPI):
             description: all the parameters to set up the rest (levels, problems, transfer, ...)
         """
 
-        assert description['sweeper_class'] is generic_implicit, (
-            'ERROR: matrix version will only work with generic_implicit sweeper, got %s' % description['sweeper_class']
+        assert description["sweeper_class"] is generic_implicit, (
+            "ERROR: matrix version will only work with generic_implicit sweeper, got %s"
+            % description["sweeper_class"]
         )
 
         # call parent's initialization routine
         super(controller_matrix_nonMPI, self).__init__(
-            num_procs=num_procs, controller_params=controller_params, description=description
+            num_procs=num_procs,
+            controller_params=controller_params,
+            description=description,
         )
 
         self.nsteps = len(self.MS)
@@ -42,23 +45,37 @@ class controller_matrix_nonMPI(controller_nonMPI):
 
         prob = self.MS[0].levels[0].prob
 
-        assert isinstance(self.nspace, int), 'ERROR: can only handle 1D data, got %s' % self.nspace
-        assert [level.sweep.coll.right_is_node for step in self.MS for level in step.levels].count(
+        assert isinstance(self.nspace, int), (
+            "ERROR: can only handle 1D data, got %s" % self.nspace
+        )
+        assert [
+            level.sweep.coll.right_is_node for step in self.MS for level in step.levels
+        ].count(
             True
-        ) == self.nlevels * self.nsteps, 'ERROR: all collocation nodes have to be of Gauss-Radau type'
-        assert self.nlevels <= 2, 'ERROR: cannot use matrix-PFASST with more than 2 levels'  # TODO: fixme
+        ) == self.nlevels * self.nsteps, (
+            "ERROR: all collocation nodes have to be of Gauss-Radau type"
+        )
+        assert (
+            self.nlevels <= 2
+        ), "ERROR: cannot use matrix-PFASST with more than 2 levels"  # TODO: fixme
         assert [level.dt for step in self.MS for level in step.levels].count(
             self.dt
-        ) == self.nlevels * self.nsteps, 'ERROR: dt must be equal for all steps and all levels'
+        ) == self.nlevels * self.nsteps, (
+            "ERROR: dt must be equal for all steps and all levels"
+        )
         # assert [level.sweep.coll.num_nodes for step in self.MS for level in step.levels].count(self.nnodes) == \
         #     self.nlevels * self.nsteps, 'ERROR: nnodes must be equal for all steps and all levels'
         assert [type(level.prob) for step in self.MS for level in step.levels].count(
             type(prob)
-        ) == self.nlevels * self.nsteps, 'ERROR: all probem classes have to be the same'
+        ) == self.nlevels * self.nsteps, "ERROR: all probem classes have to be the same"
 
-        assert self.params.predict_type is None, 'ERROR: no predictor for matrix controller yet'  # TODO: fixme
+        assert (
+            self.params.predict_type is None
+        ), "ERROR: no predictor for matrix controller yet"  # TODO: fixme
 
-        assert hasattr(prob, 'A'), 'ERROR: need system matrix A for this (and linear problems!)'
+        assert hasattr(
+            prob, "A"
+        ), "ERROR: need system matrix A for this (and linear problems!)"
 
         A = prob.A.todense()
         Q = self.MS[0].levels[0].sweep.coll.Qmat[1:, 1:]
@@ -91,11 +108,11 @@ class controller_matrix_nonMPI(controller_nonMPI):
             Nc = np.zeros((nnodesc, nnodesc))
             Nc[:, -1] = 1
 
-            if hasattr(self.MS[0].base_transfer.space_transfer, 'Pspace'):
+            if hasattr(self.MS[0].base_transfer.space_transfer, "Pspace"):
                 TcfA = self.MS[0].base_transfer.space_transfer.Pspace.todense()
             else:
                 TcfA = np.eye(self.nspace_c)
-            if hasattr(self.MS[0].base_transfer.space_transfer, 'Rspace'):
+            if hasattr(self.MS[0].base_transfer.space_transfer, "Rspace"):
                 TfcA = self.MS[0].base_transfer.space_transfer.Rspace.todense()
             else:
                 TfcA = np.eye(self.nspace)
@@ -138,9 +155,11 @@ class controller_matrix_nonMPI(controller_nonMPI):
 
         assert (
             (Tend - t0) / self.dt
-        ).is_integer(), 'ERROR: dt, t0, Tend were not chosen correctly, do not divide interval to be computed equally'
+        ).is_integer(), "ERROR: dt, t0, Tend were not chosen correctly, do not divide interval to be computed equally"
 
-        assert int((Tend - t0) / self.dt) % num_procs == 0, 'ERROR: num_procs not chosen correctly'
+        assert (
+            int((Tend - t0) / self.dt) % num_procs == 0
+        ), "ERROR: num_procs not chosen correctly"
 
         # initial ordering of the steps: 0,1,...,Np-1
         slots = list(range(num_procs))
@@ -189,29 +208,45 @@ class controller_matrix_nonMPI(controller_nonMPI):
         # build smoother iteration matrix and preconditioner using nsweeps
         Pinv = np.linalg.inv(self.P)
         precond_smoother = Pinv.copy()
-        iter_mat_smoother = np.eye(self.nsteps * self.nnodes * self.nspace) - precond_smoother.dot(self.C)
+        iter_mat_smoother = np.eye(
+            self.nsteps * self.nnodes * self.nspace
+        ) - precond_smoother.dot(self.C)
         for k in range(1, self.MS[0].levels[0].params.nsweeps):
             precond_smoother += np.linalg.matrix_power(iter_mat_smoother, k).dot(Pinv)
-        iter_mat_smoother = np.linalg.matrix_power(iter_mat_smoother, self.MS[0].levels[0].params.nsweeps)
+        iter_mat_smoother = np.linalg.matrix_power(
+            iter_mat_smoother, self.MS[0].levels[0].params.nsweeps
+        )
 
         # add coarse-grid correction (single sweep, though!)
         if self.nlevels > 1:
             precond_cgc = self.Tcf.dot(np.linalg.inv(self.Pc)).dot(self.Tfc)
-            iter_mat_cgc = np.eye(self.nsteps * self.nnodes * self.nspace) - precond_cgc.dot(self.C)
+            iter_mat_cgc = np.eye(
+                self.nsteps * self.nnodes * self.nspace
+            ) - precond_cgc.dot(self.C)
             iter_mat = iter_mat_smoother.dot(iter_mat_cgc)
-            precond = precond_smoother + precond_cgc - precond_smoother.dot(self.C).dot(precond_cgc)
+            precond = (
+                precond_smoother
+                + precond_cgc
+                - precond_smoother.dot(self.C).dot(precond_cgc)
+            )
         else:
             iter_mat = iter_mat_smoother
             precond = precond_smoother
 
         # form span and reduce matrices and add to operator
-        Tspread = np.kron(np.concatenate([[1] * (self.nsteps * self.nnodes)]), np.eye(self.nspace)).T
-        Tnospread = np.kron(
-            np.concatenate([[1], [0] * (self.nsteps - 1)]), np.kron(np.ones(self.nnodes), np.eye(self.nspace))
+        Tspread = np.kron(
+            np.concatenate([[1] * (self.nsteps * self.nnodes)]), np.eye(self.nspace)
         ).T
-        Treduce = np.kron(np.concatenate([[0] * (self.nsteps * self.nnodes - 1), [1]]), np.eye(self.nspace))
+        Tnospread = np.kron(
+            np.concatenate([[1], [0] * (self.nsteps - 1)]),
+            np.kron(np.ones(self.nnodes), np.eye(self.nspace)),
+        ).T
+        Treduce = np.kron(
+            np.concatenate([[0] * (self.nsteps * self.nnodes - 1), [1]]),
+            np.eye(self.nspace),
+        )
 
-        if self.MS[0].levels[0].sweep.params.initial_guess == 'spread':
+        if self.MS[0].levels[0].sweep.params.initial_guess == "spread":
             mat = np.linalg.matrix_power(iter_mat, niter).dot(Tspread)
             # mat = iter_mat_smoother.dot(Tspread) + precond_smoother.dot(Tnospread)
         else:
@@ -250,9 +285,12 @@ class controller_matrix_nonMPI(controller_nonMPI):
                     lvl.u[m] = P.dtype_u(init=P.init, val=0.0)
                     lvl.f[m] = P.dtype_f(init=P.init, val=0.0)
 
-        self.u0 = np.kron(np.concatenate([[1], [0] * (self.nsteps - 1)]), np.kron(np.ones(self.nnodes), u0))
+        self.u0 = np.kron(
+            np.concatenate([[1], [0] * (self.nsteps - 1)]),
+            np.kron(np.ones(self.nnodes), u0),
+        )
 
-        if self.MS[0].levels[0].sweep.params.initial_guess == 'spread':
+        if self.MS[0].levels[0].sweep.params.initial_guess == "spread":
             self.u = np.kron(np.ones(self.nsteps * self.nnodes), u0)
         else:
             self.u = self.u0.copy()
@@ -300,7 +338,9 @@ class controller_matrix_nonMPI(controller_nonMPI):
 
         self.res = self.u0 - self.C.dot(self.u)
 
-        MS = self.update_data(MS=MS, u=self.u, res=self.res, niter=niter, level=0, stage='PRE_STEP')
+        MS = self.update_data(
+            MS=MS, u=self.u, res=self.res, niter=niter, level=0, stage="PRE_STEP"
+        )
         for S in MS:
             for hook in self.hooks:
                 hook.pre_step(step=S, level_number=0)
@@ -308,30 +348,58 @@ class controller_matrix_nonMPI(controller_nonMPI):
         while np.linalg.norm(self.res, np.inf) > self.tol and niter < self.maxiter:
             niter += 1
 
-            MS = self.update_data(MS=MS, u=self.u, res=self.res, niter=niter, level=0, stage='PRE_ITERATION')
+            MS = self.update_data(
+                MS=MS,
+                u=self.u,
+                res=self.res,
+                niter=niter,
+                level=0,
+                stage="PRE_ITERATION",
+            )
             for S in MS:
                 for hook in self.hooks:
                     hook.pre_iteration(step=S, level_number=0)
 
             if self.nlevels > 1:
                 for _ in range(MS[0].levels[1].params.nsweeps):
-                    MS = self.update_data(MS=MS, u=self.u, res=self.res, niter=niter, level=1, stage='PRE_COARSE_SWEEP')
+                    MS = self.update_data(
+                        MS=MS,
+                        u=self.u,
+                        res=self.res,
+                        niter=niter,
+                        level=1,
+                        stage="PRE_COARSE_SWEEP",
+                    )
                     for S in MS:
                         for hook in self.hooks:
                             hook.pre_sweep(step=S, level_number=1)
 
-                    self.u += self.Tcf.dot(np.linalg.solve(self.Pc, self.Tfc.dot(self.res)))
+                    self.u += self.Tcf.dot(
+                        np.linalg.solve(self.Pc, self.Tfc.dot(self.res))
+                    )
                     self.res = self.u0 - self.C.dot(self.u)
 
                     MS = self.update_data(
-                        MS=MS, u=self.u, res=self.res, niter=niter, level=1, stage='POST_COARSE_SWEEP'
+                        MS=MS,
+                        u=self.u,
+                        res=self.res,
+                        niter=niter,
+                        level=1,
+                        stage="POST_COARSE_SWEEP",
                     )
                     for S in MS:
                         for hook in self.hooks:
                             hook.post_sweep(step=S, level_number=1)
 
             for _ in range(MS[0].levels[0].params.nsweeps):
-                MS = self.update_data(MS=MS, u=self.u, res=self.res, niter=niter, level=0, stage='PRE_FINE_SWEEP')
+                MS = self.update_data(
+                    MS=MS,
+                    u=self.u,
+                    res=self.res,
+                    niter=niter,
+                    level=0,
+                    stage="PRE_FINE_SWEEP",
+                )
                 for S in MS:
                     for hook in self.hooks:
                         hook.pre_sweep(step=S, level_number=0)
@@ -339,17 +407,33 @@ class controller_matrix_nonMPI(controller_nonMPI):
                 self.u += np.linalg.solve(self.P, self.res)
                 self.res = self.u0 - self.C.dot(self.u)
 
-                MS = self.update_data(MS=MS, u=self.u, res=self.res, niter=niter, level=0, stage='POST_FINE_SWEEP')
+                MS = self.update_data(
+                    MS=MS,
+                    u=self.u,
+                    res=self.res,
+                    niter=niter,
+                    level=0,
+                    stage="POST_FINE_SWEEP",
+                )
                 for S in MS:
                     for hook in self.hooks:
                         hook.post_sweep(step=S, level_number=0)
 
-            MS = self.update_data(MS=MS, u=self.u, res=self.res, niter=niter, level=0, stage='POST_ITERATION')
+            MS = self.update_data(
+                MS=MS,
+                u=self.u,
+                res=self.res,
+                niter=niter,
+                level=0,
+                stage="POST_ITERATION",
+            )
             for S in MS:
                 for hook in self.hooks:
                     hook.post_iteration(step=S, level_number=0)
 
-        MS = self.update_data(MS=MS, u=self.u, res=self.res, niter=niter, level=0, stage='POST_STEP')
+        MS = self.update_data(
+            MS=MS, u=self.u, res=self.res, niter=niter, level=0, stage="POST_STEP"
+        )
         for S in MS:
             for hook in self.hooks:
                 hook.post_step(step=S, level_number=0)

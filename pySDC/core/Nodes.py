@@ -1,9 +1,9 @@
 import numpy as np
 from scipy.linalg import eigh_tridiagonal
 
-NODE_TYPES = ['EQUID', 'LEGENDRE', 'CHEBY-1', 'CHEBY-2', 'CHEBY-3', 'CHEBY-4']
+NODE_TYPES = ["EQUID", "LEGENDRE", "CHEBY-1", "CHEBY-2", "CHEBY-3", "CHEBY-4"]
 
-QUAD_TYPES = ['GAUSS', 'RADAU-LEFT', 'RADAU-RIGHT', 'LOBATTO']
+QUAD_TYPES = ["GAUSS", "RADAU-LEFT", "RADAU-RIGHT", "LOBATTO"]
 
 
 class NodesError(Exception):
@@ -27,7 +27,7 @@ class NodesGenerator(object):
 
     """
 
-    def __init__(self, node_type='LEGENDRE', quad_type='LOBATTO'):
+    def __init__(self, node_type="LEGENDRE", quad_type="LOBATTO"):
         """
 
         Parameters
@@ -56,7 +56,7 @@ class NodesGenerator(object):
         """
 
         # Check argument validity
-        for arg, vals in zip(['node_type', 'quad_type'], [NODE_TYPES, QUAD_TYPES]):
+        for arg, vals in zip(["node_type", "quad_type"], [NODE_TYPES, QUAD_TYPES]):
             val = eval(arg)
             if val not in vals:
                 raise NodesError(f"{arg}='{val}' not implemented, must be in {vals}")
@@ -80,20 +80,23 @@ class NodesGenerator(object):
             Nodes located in [-1, 1], in increasing order.
         """
         # Check number of nodes
-        if self.quad_type in ['LOBATTO', 'RADAU-LEFT'] and num_nodes < 2:
-            raise NodesError(f"num_nodes must be larger than 2 for {self.quad_type}, " f"but for {num_nodes}")
+        if self.quad_type in ["LOBATTO", "RADAU-LEFT"] and num_nodes < 2:
+            raise NodesError(
+                f"num_nodes must be larger than 2 for {self.quad_type}, "
+                f"but for {num_nodes}"
+            )
         elif num_nodes < 1:
             raise NodesError("you surely want at least one node ;)")
 
         # Equidistant nodes
-        if self.node_type == 'EQUID':
-            if self.quad_type == 'GAUSS':
+        if self.node_type == "EQUID":
+            if self.quad_type == "GAUSS":
                 return np.linspace(-1, 1, num=num_nodes + 2)[1:-1]
-            elif self.quad_type == 'LOBATTO':
+            elif self.quad_type == "LOBATTO":
                 return np.linspace(-1, 1, num=num_nodes)
-            elif self.quad_type == 'RADAU-RIGHT':
+            elif self.quad_type == "RADAU-RIGHT":
                 return np.linspace(-1, 1, num=num_nodes + 1)[1:]
-            elif self.quad_type == 'RADAU-LEFT':
+            elif self.quad_type == "RADAU-LEFT":
                 return np.linspace(-1, 1, num=num_nodes + 1)[:-1]
 
         # Quadrature nodes linked to orthogonal polynomials
@@ -119,27 +122,27 @@ class NodesGenerator(object):
         beta : np.1darray
             The beta coefficients of the three-term recurrence.
         """
-        if self.node_type == 'LEGENDRE':
+        if self.node_type == "LEGENDRE":
             k = np.arange(num_coeff, dtype=float)
             alpha = 0 * k
             beta = k**2 / (4 * k**2 - 1)
             beta[0] = 2
-        elif self.node_type == 'CHEBY-1':
+        elif self.node_type == "CHEBY-1":
             alpha = np.zeros(num_coeff)
             beta = np.full(num_coeff, 0.25)
             beta[0] = np.pi
             if num_coeff > 1:
                 beta[1] = 0.5
-        elif self.node_type == 'CHEBY-2':
+        elif self.node_type == "CHEBY-2":
             alpha = np.zeros(num_coeff)
             beta = np.full(num_coeff, 0.25)
             beta[0] = np.pi / 2
-        elif self.node_type == 'CHEBY-3':
+        elif self.node_type == "CHEBY-3":
             alpha = np.zeros(num_coeff)
             alpha[0] = 0.5
             beta = np.full(num_coeff, 0.25)
             beta[0] = np.pi
-        elif self.node_type == 'CHEBY-4':
+        elif self.node_type == "CHEBY-4":
             alpha = np.zeros(num_coeff)
             alpha[0] = -0.5
             beta = np.full(num_coeff, 0.25)
@@ -199,13 +202,15 @@ class NodesGenerator(object):
         alpha, beta = self.getOrthogPolyCoefficients(num_nodes)
 
         # If not Gauss quadrature type, modify the alpha/beta coefficients
-        if self.quad_type.startswith('RADAU'):
-            b = -1.0 if self.quad_type.endswith('LEFT') else 1.0
+        if self.quad_type.startswith("RADAU"):
+            b = -1.0 if self.quad_type.endswith("LEFT") else 1.0
             b1, b2 = self.evalOrthogPoly(b, alpha[:-1], beta[:-1])[:2]
             alpha[-1] = b - beta[-1] * b1 / b2
-        elif self.quad_type == 'LOBATTO':
+        elif self.quad_type == "LOBATTO":
             a, b = -1.0, 1.0
             a2, a1 = self.evalOrthogPoly(a, alpha[:-1], beta[:-1])[:2]
             b2, b1 = self.evalOrthogPoly(b, alpha[:-1], beta[:-1])[:2]
-            alpha[-1], beta[-1] = np.linalg.solve([[a1, a2], [b1, b2]], [a * a1, b * b1])
+            alpha[-1], beta[-1] = np.linalg.solve(
+                [[a1, a2], [b1, b2]], [a * a1, b * b1]
+            )
         return alpha, beta

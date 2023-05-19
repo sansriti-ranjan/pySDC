@@ -9,7 +9,7 @@ def test_schroedinger_solution():
     from pySDC.helpers.stats_helper import get_sorted
 
     stats, _, _ = run_Schroedinger(space_comm=MPI.COMM_WORLD)
-    k_mean = np.mean([me[1] for me in get_sorted(stats, type='k')])
+    k_mean = np.mean([me[1] for me in get_sorted(stats, type="k")])
     assert (
         k_mean < 17
     ), f"Got too many iterations in Schroedinger test! Expected less then 17 on average, but got {k_mean:.2f}!"
@@ -28,7 +28,7 @@ def test_schroedinger_fault_insertion():
     )
 
     stats, _, _ = run_Schroedinger(space_comm=MPI.COMM_WORLD, fault_stuff=fault_stuff)
-    k_mean = np.mean([me[1] for me in get_sorted(stats, type='k')])
+    k_mean = np.mean([me[1] for me in get_sorted(stats, type="k")])
     assert (
         k_mean > 17
     ), f"Got too few iterations in Schroedinger test! Expected more then 17 on average because we need to fix the fault, but got {k_mean:.2f}!"

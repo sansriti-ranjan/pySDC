@@ -9,10 +9,12 @@ from pySDC.playgrounds.datatypes.base import DataType
 
 import numpy as np
 from petsc4py import PETSc
+
 try:
     from mpi4py import MPI
 except ImportError:
     MPI = None
+
 
 # -----------------------------------------------------------------------------
 # Specific implementations (in pySDC/implementations)
@@ -46,7 +48,9 @@ class Mesh(DataType, np.ndarray):
         local_absval = float(np.amax(np.ndarray.__abs__(self)))
         if (self._comm is not None) and (self._comm.Get_size() > 1):
             global_absval = 0.0
-            global_absval = max(self._comm.allreduce(sendobj=local_absval, op=MPI.MAX), global_absval)
+            global_absval = max(
+                self._comm.allreduce(sendobj=local_absval, op=MPI.MAX), global_absval
+            )
         else:
             global_absval = local_absval
         return float(global_absval)

@@ -31,7 +31,9 @@ class fenics_mesh(object):
             self.values = df.Function(init)
             self.values.vector()[:] = val
         else:
-            raise DataError('something went wrong during %s initialization' % type(init))
+            raise DataError(
+                "something went wrong during %s initialization" % type(init)
+            )
 
     def __add__(self, other):
         """
@@ -51,7 +53,9 @@ class fenics_mesh(object):
             me.values.vector()[:] = self.values.vector()[:] + other.values.vector()[:]
             return me
         else:
-            raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot add %s to %s" % (type(other), type(self))
+            )
 
     def __sub__(self, other):
         """
@@ -71,7 +75,9 @@ class fenics_mesh(object):
             me.values.vector()[:] = self.values.vector()[:] - other.values.vector()[:]
             return me
         else:
-            raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot subtract %s from %s" % (type(other), type(self))
+            )
 
     def __rmul__(self, other):
         """
@@ -91,7 +97,9 @@ class fenics_mesh(object):
             me.values.vector()[:] = other * self.values.vector()[:]
             return me
         else:
-            raise DataError("Type error: cannot multiply %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot multiply %s to %s" % (type(other), type(self))
+            )
 
     def __abs__(self):
         """
@@ -103,7 +111,7 @@ class fenics_mesh(object):
 
         # take absolute values of the mesh values
 
-        absval = df.norm(self.values, 'L2')
+        absval = df.norm(self.values, "L2")
 
         # return maximum
         return absval
@@ -141,7 +149,9 @@ class rhs_fenics_mesh(object):
             self.expl = fenics_mesh(init, val=val)
         # something is wrong, if none of the ones above hit
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )
 
     def __sub__(self, other):
         """
@@ -162,7 +172,9 @@ class rhs_fenics_mesh(object):
             me.expl = self.expl - other.expl
             return me
         else:
-            raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot subtract %s from %s" % (type(other), type(self))
+            )
 
     def __add__(self, other):
         """
@@ -183,7 +195,9 @@ class rhs_fenics_mesh(object):
             me.expl = self.expl + other.expl
             return me
         else:
-            raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot add %s to %s" % (type(other), type(self))
+            )
 
     def __rmul__(self, other):
         """
@@ -204,4 +218,6 @@ class rhs_fenics_mesh(object):
             me.expl = other * self.expl
             return me
         else:
-            raise DataError("Type error: cannot multiply %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot multiply %s to %s" % (type(other), type(self))
+            )

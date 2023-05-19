@@ -17,9 +17,14 @@ class nonlinear_ODE_1(ptype):
 
     def __init__(self, u0, newton_maxiter, newton_tol, stop_at_nan=True):
         nvars = 1
-        super().__init__((nvars, None, np.dtype('float64')))
+        super().__init__((nvars, None, np.dtype("float64")))
         self._makeAttributeAndRegister(
-            'u0', 'newton_maxiter', 'newton_tol', 'stop_at_nan', localVars=locals(), readOnly=True
+            "u0",
+            "newton_maxiter",
+            "newton_tol",
+            "stop_at_nan",
+            localVars=locals(),
+            readOnly=True,
         )
 
     def u_exact(self, t):
@@ -88,11 +93,13 @@ class nonlinear_ODE_1(ptype):
             n += 1
 
         if np.isnan(res) and self.stop_at_nan:
-            raise ProblemError('Newton got nan after %i iterations, aborting...' % n)
+            raise ProblemError("Newton got nan after %i iterations, aborting..." % n)
         elif np.isnan(res):
-            self.logger.warning('Newton got nan after %i iterations...' % n)
+            self.logger.warning("Newton got nan after %i iterations..." % n)
 
         if n == self.newton_maxiter:
-            raise ProblemError('Newton did not converge after %i iterations, error is %s' % (n, res))
+            raise ProblemError(
+                "Newton did not converge after %i iterations, error is %s" % (n, res)
+            )
 
         return u

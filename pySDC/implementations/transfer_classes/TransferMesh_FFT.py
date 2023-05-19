@@ -45,7 +45,7 @@ class mesh_to_mesh_fft(space_transfer):
             G.impl[:] = F.impl[:: self.ratio]
             G.expl[:] = F.expl[:: self.ratio]
         else:
-            raise TransferError('Unknown data type, got %s' % type(F))
+            raise TransferError("Unknown data type, got %s" % type(F))
         return G
 
     def prolong(self, G):
@@ -78,5 +78,5 @@ class mesh_to_mesh_fft(space_transfer):
             tmpF_expl[-1] = tmpG_expl[-1]
             F.expl[:] = np.fft.irfft(tmpF_expl) * self.ratio
         else:
-            raise TransferError('Unknown data type, got %s' % type(G))
+            raise TransferError("Unknown data type, got %s" % type(G))
         return F

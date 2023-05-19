@@ -7,17 +7,17 @@ from pySDC.helpers.pysdc_helper import FrozenClass
 
 
 class Fault(FrozenClass):
-    '''
+    """
     Class for storing all the data that belongs to a fault, i.e. when and where it happens
-    '''
+    """
 
     def __init__(self, params=None):
-        '''
+        """
         Initialization routine for faults
 
         Args:
             params (dict): Parameters regarding when the fault will be inserted
-        '''
+        """
 
         params = {} if params is None else params
 
@@ -29,7 +29,7 @@ class Fault(FrozenClass):
         self.problem_pos = None
         self.bit = None
         self.target = 0
-        self.when = 'after'  # before or after an iteration?
+        self.when = "after"  # before or after an iteration?
 
         for k, v in params.items():
             setattr(self, k, v)
@@ -38,7 +38,7 @@ class Fault(FrozenClass):
 
     @classmethod
     def random(cls, args, rnd_params, random_generator=None):
-        '''
+        """
         Classmethod to initialize a random fault
 
         Args:
@@ -47,24 +47,33 @@ class Fault(FrozenClass):
             random_generator (numpy.random.RandomState): Give a random generator to ensure repeatability
 
         Returns Fault: Randomly generated fault
-        '''
+        """
 
         if random_generator is None:
             random_generator = np.random.RandomState(2187)
 
         random = {
-            'level_number': random_generator.randint(low=0, high=rnd_params['level_number']),
-            'node': random_generator.randint(low=rnd_params.get('min_node', 0), high=rnd_params['node'] + 1),
-            'iteration': random_generator.randint(low=1, high=rnd_params['iteration'] + 1),
-            'problem_pos': [random_generator.randint(low=0, high=i) for i in rnd_params['problem_pos']],
-            'bit': random_generator.randint(low=0, high=rnd_params['bit']),
+            "level_number": random_generator.randint(
+                low=0, high=rnd_params["level_number"]
+            ),
+            "node": random_generator.randint(
+                low=rnd_params.get("min_node", 0), high=rnd_params["node"] + 1
+            ),
+            "iteration": random_generator.randint(
+                low=1, high=rnd_params["iteration"] + 1
+            ),
+            "problem_pos": [
+                random_generator.randint(low=0, high=i)
+                for i in rnd_params["problem_pos"]
+            ],
+            "bit": random_generator.randint(low=0, high=rnd_params["bit"]),
         }
 
         return cls({**random, **args})
 
     @classmethod
     def index_to_combination(cls, args, rnd_params, generator=None):
-        '''
+        """
         Classmethod to initialize a fault based on an index to translate to a combination of fault parameters, in order
         to loop through all combinations. Probably only makes sense for ODEs.
 
@@ -78,57 +87,68 @@ class Fault(FrozenClass):
 
         Returns:
             Fault: Generated from a specific combination of parameters
-        '''
+        """
 
         ranges = [
-            (0, rnd_params['level_number']),
-            (rnd_params.get('min_node', 0), rnd_params['node'] + 1),
-            (1, rnd_params['iteration'] + 1),
-            (0, rnd_params['bit']),
+            (0, rnd_params["level_number"]),
+            (rnd_params.get("min_node", 0), rnd_params["node"] + 1),
+            (1, rnd_params["iteration"] + 1),
+            (0, rnd_params["bit"]),
         ]
-        ranges += [(0, i) for i in rnd_params['problem_pos']]
+        ranges += [(0, i) for i in rnd_params["problem_pos"]]
 
         # get values for taking modulo later
         mods = [me[1] - me[0] for me in ranges]
 
         if len(np.unique(mods)) < len(mods):
             raise NotImplementedError(
-                'I can\'t deal with combinations when parameters have the same admissible number\
- of values yet!'
+                "I can't deal with combinations when parameters have the same admissible number\
+ of values yet!"
             )
 
-        coeff = [(generator // np.prod(mods[:i], dtype=int)) % mods[i] for i in range(len(mods))]
+        coeff = [
+            (generator // np.prod(mods[:i], dtype=int)) % mods[i]
+            for i in range(len(mods))
+        ]
 
         combinations = {
-            'level_number': coeff[0],
-            'node': coeff[1],
-            'iteration': coeff[2] + 1,
-            'bit': coeff[3],
-            'problem_pos': [coeff[4 + i] for i in range(len(rnd_params['problem_pos']))],
+            "level_number": coeff[0],
+            "node": coeff[1],
+            "iteration": coeff[2] + 1,
+            "bit": coeff[3],
+            "problem_pos": [
+                coeff[4 + i] for i in range(len(rnd_params["problem_pos"]))
+            ],
         }
 
         return cls({**combinations, **args})
 
 
 class FaultInjector(hooks):
-    '''
+    """
     Class to use as base for hooks class instead of abstract hooks class to insert faults using hooks
-    '''
+    """
 
     def __init__(self):
-        '''
+        """
         Initialization routine
-        '''
+        """
         super(FaultInjector, self).__init__()
         self.fault_frequency_time = np.inf
         self.fault_frequency_iter = np.inf
         self.faults = []
-        self.fault_init = []  # add faults to this list when the random parameters have not been set up yet
+        self.fault_init = (
+            []
+        )  # add faults to this list when the random parameters have not been set up yet
         self.rnd_params = {}
-        self.random_generator = np.random.RandomState(2187)  # number of the cell in which Princess Leia is held
+        self.random_generator = np.random.RandomState(
+            2187
+        )  # number of the cell in which Princess Leia is held
 
     @classmethod
-    def generate_fault_stuff_single_fault(cls, bit=0, iteration=1, problem_pos=None, level_number=0, node=1, time=None):
+    def generate_fault_stuff_single_fault(
+        cls, bit=0, iteration=1, problem_pos=None, level_number=0, node=1, time=None
+    ):
         """
         Generate a fault stuff object which will insert a single fault at the supplied parameters. Because there will
         be some parameter set for everything, there is no randomization anymore.
@@ -144,20 +164,22 @@ class FaultInjector(hooks):
         Returns:
             dict: Can be supplied to the run functions in the resilience project to generate the single fault
         """
-        assert problem_pos is not None, "Please supply a spatial position for the fault as `problem_pos`!"
+        assert (
+            problem_pos is not None
+        ), "Please supply a spatial position for the fault as `problem_pos`!"
         assert time is not None, "Please supply a time for the fault as `time`!"
         fault_stuff = {
-            'rng': np.random.RandomState(0),
-            'args': {
-                'bit': bit,
-                'iteration': iteration,
-                'level_number': level_number,
-                'problem_pos': problem_pos,
-                'node': node,
-                'time': time,
+            "rng": np.random.RandomState(0),
+            "args": {
+                "bit": bit,
+                "iteration": iteration,
+                "level_number": level_number,
+                "problem_pos": problem_pos,
+                "node": node,
+                "time": time,
             },
         }
-        fault_stuff['rnd_args'] = fault_stuff['args']
+        fault_stuff["rnd_args"] = fault_stuff["args"]
         return fault_stuff
 
     def add_fault(self, args, rnd_args):
@@ -167,27 +189,29 @@ class FaultInjector(hooks):
             self.add_random_fault(args, rnd_args)
         else:
             raise NotImplementedError(
-                f'Don\'t know how to add fault with generator of type \
-{type(self.random_generator)}'
+                f"Don't know how to add fault with generator of type \
+{type(self.random_generator)}"
             )
 
     def add_stored_faults(self):
-        '''
+        """
         Method to add faults that are recorded for later adding in the pre run hook
 
         Returns:
             None
-        '''
+        """
         for f in self.fault_init:
-            if f['kind'] == 'random':
-                self.add_random_fault(args=f['args'], rnd_args=f['rnd_args'])
-            elif f['kind'] == 'combination':
-                self.add_fault_from_combination(args=f['args'], rnd_args=f['rnd_args'])
+            if f["kind"] == "random":
+                self.add_random_fault(args=f["args"], rnd_args=f["rnd_args"])
+            elif f["kind"] == "combination":
+                self.add_fault_from_combination(args=f["args"], rnd_args=f["rnd_args"])
             else:
-                raise NotImplementedError(f'I don\'t know how to add stored fault of kind {f["kind"]}')
+                raise NotImplementedError(
+                    f'I don\'t know how to add stored fault of kind {f["kind"]}'
+                )
 
     def add_random_fault(self, args=None, rnd_args=None):
-        '''
+        """
         Method to generate a random fault and add it to the list of faults to be injected at some point
 
         Args:
@@ -196,7 +220,7 @@ class FaultInjector(hooks):
 
         Returns:
             None
-        '''
+        """
 
         # replace args and rnd_args with empty dict if we didn't specify anything
         args = {} if args is None else args
@@ -204,18 +228,20 @@ class FaultInjector(hooks):
 
         # check if we can add the fault directly, or if we have to store its parameters and add it in the pre_run hook
         if self.rnd_params == {}:
-            self.fault_init += [{'args': args, 'rnd_args': rnd_args, 'kind': 'random'}]
+            self.fault_init += [{"args": args, "rnd_args": rnd_args, "kind": "random"}]
         else:
             self.faults += [
                 Fault.random(
-                    args=args, rnd_params={**self.rnd_params, **rnd_args}, random_generator=self.random_generator
+                    args=args,
+                    rnd_params={**self.rnd_params, **rnd_args},
+                    random_generator=self.random_generator,
                 )
             ]
 
         return None
 
     def add_fault_from_combination(self, args=None, rnd_args=None):
-        '''
+        """
         Method to generate a random fault and add it to the list of faults to be injected at some point
 
         Args:
@@ -224,7 +250,7 @@ class FaultInjector(hooks):
 
         Returns:
             None
-        '''
+        """
 
         # replace args and rnd_args with empty dict if we didn't specify anything
         args = {} if args is None else args
@@ -232,18 +258,22 @@ class FaultInjector(hooks):
 
         # check if we can add the fault directly, or if we have to store its parameters and add it in the pre_run hook
         if self.rnd_params == {}:
-            self.fault_init += [{'args': args, 'rnd_args': rnd_args, 'kind': 'combination'}]
+            self.fault_init += [
+                {"args": args, "rnd_args": rnd_args, "kind": "combination"}
+            ]
         else:
             self.faults += [
                 Fault.index_to_combination(
-                    args=args, rnd_params={**self.rnd_params, **rnd_args}, generator=self.random_generator
+                    args=args,
+                    rnd_params={**self.rnd_params, **rnd_args},
+                    generator=self.random_generator,
                 )
             ]
 
         return None
 
     def inject_fault(self, step, f):
-        '''
+        """
         Method to inject a fault into a step.
 
         Args:
@@ -252,14 +282,14 @@ class FaultInjector(hooks):
 
         Returns:
             None
-        '''
+        """
         L = step.levels[f.level_number]
         _abs_before = None
         _abs_after = None
 
         # insert the fault in some target
         if f.target == 0:
-            '''
+            """
             Target 0 means we flip a bit in the solution.
 
             To make sure the faults have some impact, we have to reevaluate the right hand side. Otherwise the fault is
@@ -269,18 +299,22 @@ class FaultInjector(hooks):
             To be fair to iteration based resilience strategies, we also reevaluate the residual. Otherwise, when a
             fault happens in the last iteration, it will not show up in the residual and the iteration is wrongly
             stopped.
-            '''
+            """
             _abs_before = abs(L.u[f.node][tuple(f.problem_pos)])
-            L.u[f.node][tuple(f.problem_pos)] = self.flip_bit(L.u[f.node][tuple(f.problem_pos)], f.bit)
-            L.f[f.node] = L.prob.eval_f(L.u[f.node], L.time + L.dt * L.sweep.coll.nodes[max([0, f.node - 1])])
+            L.u[f.node][tuple(f.problem_pos)] = self.flip_bit(
+                L.u[f.node][tuple(f.problem_pos)], f.bit
+            )
+            L.f[f.node] = L.prob.eval_f(
+                L.u[f.node], L.time + L.dt * L.sweep.coll.nodes[max([0, f.node - 1])]
+            )
             L.sweep.compute_residual()
             _abs_after = abs(L.u[f.node][tuple(f.problem_pos)])
         else:
-            raise NotImplementedError(f'Target {f.target} for faults not implemented!')
+            raise NotImplementedError(f"Target {f.target} for faults not implemented!")
 
         # log what happened to stats and screen
         self.logger.info(
-            f'Flipping bit {f.bit} {f.when} iteration {f.iteration} in node {f.node}. Target: {f.target}. Abs: {_abs_before:.2e} -> {_abs_after:.2e}'
+            f"Flipping bit {f.bit} {f.when} iteration {f.iteration} in node {f.node}. Target: {f.target}. Abs: {_abs_before:.2e} -> {_abs_after:.2e}"
         )
         self.add_to_stats(
             process=step.status.slot,
@@ -288,7 +322,7 @@ class FaultInjector(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='bitflip',
+            type="bitflip",
             value=(f.level_number, f.iteration, f.node, f.problem_pos, f.bit, f.target),
         )
 
@@ -298,7 +332,7 @@ class FaultInjector(hooks):
         return None
 
     def pre_run(self, step, level_number):
-        '''
+        """
         Setup random parameters and add the faults that we couldn't before here
 
         Args:
@@ -307,14 +341,14 @@ class FaultInjector(hooks):
 
         Returns:
             None
-        '''
+        """
 
         super(FaultInjector, self).pre_run(step, level_number)
 
         if not type(step.levels[level_number].u[0]) == mesh:
             raise NotImplementedError(
-                f'Fault insertion is only implemented for type mesh, not \
-{type(step.levels[level_number].u[0])}'
+                f"Fault insertion is only implemented for type mesh, not \
+{type(step.levels[level_number].u[0])}"
             )
 
         dtype = step.levels[level_number].prob.u_exact(t=0).dtype
@@ -323,23 +357,25 @@ class FaultInjector(hooks):
         elif dtype in [complex]:
             bit = 128
         else:
-            raise NotImplementedError(f'Don\'t know how many bits type {dtype} has')
+            raise NotImplementedError(f"Don't know how many bits type {dtype} has")
 
         # define parameters for randomization
         self.rnd_params = {
-            'level_number': len(step.levels),
-            'node': step.levels[0].sweep.params.num_nodes,
-            'iteration': step.params.maxiter,
-            'problem_pos': step.levels[level_number].u[0].shape,
-            'bit': bit,  # change manually if you ever have something else
+            "level_number": len(step.levels),
+            "node": step.levels[0].sweep.params.num_nodes,
+            "iteration": step.params.maxiter,
+            "problem_pos": step.levels[level_number].u[0].shape,
+            "bit": bit,  # change manually if you ever have something else
             **self.rnd_params,
         }
 
         # initialize the faults have been added before we knew the random parameters
         self.add_stored_faults()
 
-        if self.rnd_params['level_number'] > 1:
-            raise NotImplementedError('I don\'t know how to insert faults in this multi-level madness :(')
+        if self.rnd_params["level_number"] > 1:
+            raise NotImplementedError(
+                "I don't know how to insert faults in this multi-level madness :("
+            )
 
         # initialize parameters for periodic fault injection
         self.timestep_idx = 0
@@ -348,7 +384,7 @@ class FaultInjector(hooks):
         return None
 
     def pre_step(self, step, level_number):
-        '''
+        """
         Deal with periodic fault injection here:
           - Increment the index for counting time steps
           - Add a random fault in this time step if it is time for it based on the frequency
@@ -359,18 +395,21 @@ class FaultInjector(hooks):
 
         Returns:
             None
-        '''
+        """
         super(FaultInjector, self).pre_step(step, level_number)
 
         self.timestep_idx += 1
 
-        if self.timestep_idx % self.fault_frequency_time == 0 and not self.timestep_idx == 0:
-            self.add_random_fault(args={'timestep': self.timestep_idx})
+        if (
+            self.timestep_idx % self.fault_frequency_time == 0
+            and not self.timestep_idx == 0
+        ):
+            self.add_random_fault(args={"timestep": self.timestep_idx})
 
         return None
 
     def pre_iteration(self, step, level_number):
-        '''
+        """
         Check if we have a fault that should be inserted here and deal with periodic injection per iteration count
 
         Args:
@@ -379,16 +418,18 @@ class FaultInjector(hooks):
 
         Returns:
             None
-        '''
+        """
 
         super(FaultInjector, self).pre_iteration(step, level_number)
 
         # check if the fault-free iteration count period has elapsed
         if self.iter_idx % self.fault_frequency_iter == 0 and not self.iter_idx == 0:
-            self.add_random_fault(args={'timestep': self.timestep_idx, 'iteration': step.status.iter})
+            self.add_random_fault(
+                args={"timestep": self.timestep_idx, "iteration": step.status.iter}
+            )
 
         # loop though all unhappened faults and check if they are scheduled now
-        for f in [me for me in self.faults if me.when == 'before']:
+        for f in [me for me in self.faults if me.when == "before"]:
             # based on iteration number
             if self.timestep_idx == f.timestep and step.status.iter == f.iteration:
                 self.inject_fault(step, f)
@@ -402,7 +443,7 @@ class FaultInjector(hooks):
         return None
 
     def post_iteration(self, step, level_number):
-        '''
+        """
         Check if we have a fault that should be inserted here
 
         Args:
@@ -411,12 +452,12 @@ class FaultInjector(hooks):
 
         Returns:
             None
-        '''
+        """
 
         super(FaultInjector, self).post_iteration(step, level_number)
 
         # loop though all unhappened faults and check if they are scheduled now
-        for f in [me for me in self.faults if me.when == 'after']:
+        for f in [me for me in self.faults if me.when == "after"]:
             # based on iteration number
             if self.timestep_idx == f.timestep and step.status.iter == f.iteration:
                 self.inject_fault(step, f)
@@ -429,7 +470,7 @@ class FaultInjector(hooks):
 
     @classmethod
     def to_binary(cls, f):
-        '''
+        """
         Converts a single float in a string containing its binary representation in memory following IEEE754
         The struct.pack function returns the input with the applied conversion code in 8 bit blocks, which are then
         concatenated as a string. Complex numbers will be returned as two consecutive strings.
@@ -439,21 +480,23 @@ class FaultInjector(hooks):
 
         Returns:
             (str) Binary representation of f following IEEE754 as a string
-        '''
+        """
         if type(f) in [np.float64, float]:
-            conversion_code = '>d'  # big endian, double
+            conversion_code = ">d"  # big endian, double
         elif type(f) in [np.float32]:
-            conversion_code = '>f'  # big endian, float
+            conversion_code = ">f"  # big endian, float
         elif type(f) in [np.complex128]:
-            return f'{cls.to_binary(f.real)}{cls.to_binary(f.imag)}'
+            return f"{cls.to_binary(f.real)}{cls.to_binary(f.imag)}"
         else:
-            raise NotImplementedError(f'Don\'t know how to convert number of type {type(f)} to binary')
+            raise NotImplementedError(
+                f"Don't know how to convert number of type {type(f)} to binary"
+            )
 
-        return ''.join('{:0>8b}'.format(c) for c in struct.pack(conversion_code, f))
+        return "".join("{:0>8b}".format(c) for c in struct.pack(conversion_code, f))
 
     @classmethod
     def to_float(cls, s):
-        '''
+        """
         Converts a string of a IEEE754 binary representation in a float. The string is converted to integer with base 2
         and converted to bytes, which can be unpacked into a Python float by the struct module.
 
@@ -462,12 +505,12 @@ class FaultInjector(hooks):
 
         Returns:
             (float) floating point representation of the binary string
-        '''
+        """
         if len(s) == 64:
-            conversion_code = '>d'  # big endian, double
+            conversion_code = ">d"  # big endian, double
             byte_count = 8
         elif len(s) == 32:
-            conversion_code = '>f'  # big endian, float
+            conversion_code = ">f"  # big endian, float
             byte_count = 4
         elif len(s) == 128:  # complex floats
             real = s[0:64]
@@ -475,13 +518,15 @@ class FaultInjector(hooks):
             return cls.to_float(real) + cls.to_float(imag) * 1j
 
         else:
-            raise NotImplementedError(f'Don\'t know how to convert string of length {len(s)} to float')
+            raise NotImplementedError(
+                f"Don't know how to convert string of length {len(s)} to float"
+            )
 
-        return struct.unpack(conversion_code, int(s, 2).to_bytes(byte_count, 'big'))[0]
+        return struct.unpack(conversion_code, int(s, 2).to_bytes(byte_count, "big"))[0]
 
     @classmethod
     def flip_bit(cls, target, bit):
-        '''
+        """
         Flips a bit at position bit in a target using the bitwise xor operator
 
         Args:
@@ -490,9 +535,9 @@ class FaultInjector(hooks):
 
         Returns:
             (float) The floating point number resulting from flipping the respective bit in target
-        '''
+        """
         binary = cls.to_binary(target)
-        return cls.to_float(f'{binary[:bit]}{int(binary[bit]) ^ 1}{binary[bit+1:]}')
+        return cls.to_float(f"{binary[:bit]}{int(binary[bit]) ^ 1}{binary[bit+1:]}")
 
 
 def prepare_controller_for_faults(controller, fault_stuff, rnd_args, args):
@@ -510,19 +555,19 @@ def prepare_controller_for_faults(controller, fault_stuff, rnd_args, args):
         None
     """
     faultHook = get_fault_injector_hook(controller)
-    faultHook.random_generator = fault_stuff['rng']
+    faultHook.random_generator = fault_stuff["rng"]
 
-    for key in ['fault_frequency_iter']:
+    for key in ["fault_frequency_iter"]:
         if key in fault_stuff.keys():
             faultHook.__dict__[key] = fault_stuff[key]
 
-    for key, val in fault_stuff.get('rnd_params', {}).items():
+    for key, val in fault_stuff.get("rnd_params", {}).items():
         faultHook.rnd_params[key] = val
 
     if not len(faultHook.rnd_params.keys()) > 0:
         faultHook.add_fault(
-            rnd_args={**rnd_args, **fault_stuff.get('rnd_params', {})},
-            args={**args, **fault_stuff.get('args', {})},
+            rnd_args={**rnd_args, **fault_stuff.get("rnd_params", {})},
+            args={**args, **fault_stuff.get("args", {})},
         )
 
 
@@ -544,5 +589,7 @@ def get_fault_injector_hook(controller):
         return get_fault_injector_hook(controller)
     else:
         hook_idx = [i for i in range(len(hook_types)) if hook_types[i] == FaultInjector]
-        assert len(hook_idx) == 1, f'Expected exactly one FaultInjector, got {len(hook_idx)}!'
+        assert (
+            len(hook_idx) == 1
+        ), f"Expected exactly one FaultInjector, got {len(hook_idx)}!"
         return controller.hooks[hook_idx[0]]

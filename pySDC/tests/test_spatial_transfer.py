@@ -4,7 +4,7 @@ import numpy as np
 
 
 # setup id for gathering the results (will sort by nvars)
-ID = namedtuple('ID', ('nvars_fine', 'iorder'))
+ID = namedtuple("ID", ("nvars_fine", "iorder"))
 
 
 @pytest.mark.base
@@ -20,10 +20,14 @@ def get_accuracy_orders(results):
     """
 
     # retrieve the list of nvars from results
-    assert 'nvars_fine_list' in results, 'ERROR: expecting the list of nvars in the results dictionary'
-    assert 'iorder_list' in results, 'ERROR: expecting the list of iorders in the results dictionary'
-    nvars_fine_list = sorted(results['nvars_fine_list'])
-    iorder_list = sorted(results['iorder_list'])
+    assert (
+        "nvars_fine_list" in results
+    ), "ERROR: expecting the list of nvars in the results dictionary"
+    assert (
+        "iorder_list" in results
+    ), "ERROR: expecting the list of iorders in the results dictionary"
+    nvars_fine_list = sorted(results["nvars_fine_list"])
+    iorder_list = sorted(results["iorder_list"])
 
     order = []
     # loop over list of interpolation orders
@@ -41,7 +45,9 @@ def get_accuracy_orders(results):
             else:
                 nvars = nvars_fine_list[i]
                 nvars_prev = nvars_fine_list[i - 1]
-            computed_order = np.log(results[id_prev] / results[id]) / np.log(nvars / nvars_prev)
+            computed_order = np.log(results[id_prev] / results[id]) / np.log(
+                nvars / nvars_prev
+            )
             order.append((nvars_fine_list[i], iorder, computed_order))
 
     return order
@@ -57,37 +63,39 @@ def test_mesh_to_mesh_1d_dirichlet():
 
     # initialize problem parameters
     problem_params = {}
-    problem_params['nu'] = 0.1  # diffusion coefficient
-    problem_params['freq'] = 3  # frequency for the test value
-    problem_params['bc'] = 'dirichlet-zero'  # BCs
+    problem_params["nu"] = 0.1  # diffusion coefficient
+    problem_params["freq"] = 3  # frequency for the test value
+    problem_params["bc"] = "dirichlet-zero"  # BCs
 
     # initialize transfer parameters
     space_transfer_params = {}
-    space_transfer_params['rorder'] = 2
+    space_transfer_params["rorder"] = 2
 
     iorder_list = [2, 4, 6, 8]
     nvars_fine_list = [2**p - 1 for p in range(5, 9)]
 
     # set up dictionary to store results (plus lists)
     results = {}
-    results['nvars_fine_list'] = nvars_fine_list
-    results['iorder_list'] = iorder_list
+    results["nvars_fine_list"] = nvars_fine_list
+    results["iorder_list"] = iorder_list
 
     # loop over interpolation orders and number of DOFs
     for iorder in iorder_list:
-        space_transfer_params['iorder'] = iorder
+        space_transfer_params["iorder"] = iorder
 
         for nvars_fine in nvars_fine_list:
             # instantiate fine problem
-            problem_params['nvars'] = nvars_fine  # number of degrees of freedom
+            problem_params["nvars"] = nvars_fine  # number of degrees of freedom
             Pfine = heatNd_unforced(**problem_params)
 
             # instantiate coarse problem
-            problem_params['nvars'] = int((nvars_fine + 1) / 2.0 - 1)
+            problem_params["nvars"] = int((nvars_fine + 1) / 2.0 - 1)
             Pcoarse = heatNd_unforced(**problem_params)
 
             # instantiate spatial interpolation
-            T = mesh_to_mesh(fine_prob=Pfine, coarse_prob=Pcoarse, params=space_transfer_params)
+            T = mesh_to_mesh(
+                fine_prob=Pfine, coarse_prob=Pcoarse, params=space_transfer_params
+            )
 
             # set exact fine solution to compare with
             uexact_fine = Pfine.u_exact(t=0)
@@ -108,7 +116,9 @@ def test_mesh_to_mesh_1d_dirichlet():
         # print(abs(orders[p][1] - orders[p][2]) / orders[p][1])
         assert (
             abs(orders[p][1] - orders[p][2]) / orders[p][1] < 0.151
-        ), 'ERROR: did not get expected orders for interpolation, got %s' % str(orders[p])
+        ), "ERROR: did not get expected orders for interpolation, got %s" % str(
+            orders[p]
+        )
 
 
 @pytest.mark.base
@@ -116,44 +126,48 @@ def test_mesh_to_mesh_1d_periodic():
     """
     A simple test program to test periodic interpolation order in space
     """
-    from pySDC.implementations.problem_classes.AdvectionEquation_ND_FD import advectionNd
+    from pySDC.implementations.problem_classes.AdvectionEquation_ND_FD import (
+        advectionNd,
+    )
     from pySDC.implementations.transfer_classes.TransferMesh import mesh_to_mesh
 
     # initialize problem parameters
     problem_params = {}
-    problem_params['c'] = 0.1  # advection coefficient
-    problem_params['freq'] = 4  # frequency for the test value
-    problem_params['stencil_type'] = 'center'
-    problem_params['bc'] = 'periodic'  # boundary conditions
+    problem_params["c"] = 0.1  # advection coefficient
+    problem_params["freq"] = 4  # frequency for the test value
+    problem_params["stencil_type"] = "center"
+    problem_params["bc"] = "periodic"  # boundary conditions
 
     # initialize transfer parameters
     space_transfer_params = {}
-    space_transfer_params['rorder'] = 2
-    space_transfer_params['periodic'] = True
+    space_transfer_params["rorder"] = 2
+    space_transfer_params["periodic"] = True
 
     iorder_list = [2, 4, 6, 8]
     nvars_fine_list = [2**p for p in range(5, 9)]
 
     # set up dictionary to store results (plus lists)
     results = {}
-    results['nvars_fine_list'] = nvars_fine_list
-    results['iorder_list'] = iorder_list
+    results["nvars_fine_list"] = nvars_fine_list
+    results["iorder_list"] = iorder_list
 
     # loop over interpolation orders and number of DOFs
     for iorder in iorder_list:
-        space_transfer_params['iorder'] = iorder
+        space_transfer_params["iorder"] = iorder
 
         for nvars_fine in nvars_fine_list:
             # instantiate fine problem
-            problem_params['nvars'] = nvars_fine  # number of degrees of freedom
+            problem_params["nvars"] = nvars_fine  # number of degrees of freedom
             Pfine = advectionNd(**problem_params)
 
             # instantiate coarse problem
-            problem_params['nvars'] = int(nvars_fine / 2)
+            problem_params["nvars"] = int(nvars_fine / 2)
             Pcoarse = advectionNd(**problem_params)
 
             # instantiate spatial interpolation
-            T = mesh_to_mesh(fine_prob=Pfine, coarse_prob=Pcoarse, params=space_transfer_params)
+            T = mesh_to_mesh(
+                fine_prob=Pfine, coarse_prob=Pcoarse, params=space_transfer_params
+            )
 
             # set exact fine solution to compare with
             uexact_fine = Pfine.u_exact(t=0)
@@ -177,7 +191,9 @@ def test_mesh_to_mesh_1d_periodic():
         # print(abs(orders[p][1]-orders[p][2])/orders[p][1])
         assert (
             abs(orders[p][1] - orders[p][2]) / orders[p][1] < 0.051
-        ), 'ERROR: did not get expected orders for interpolation, got %s' % str(orders[p])
+        ), "ERROR: did not get expected orders for interpolation, got %s" % str(
+            orders[p]
+        )
 
 
 @pytest.mark.base
@@ -190,38 +206,40 @@ def test_mesh_to_mesh_2d_periodic():
 
     # initialize problem parameters
     problem_params = {}
-    problem_params['freq'] = (2, 2)
-    problem_params['nu'] = 1.0
-    problem_params['bc'] = 'periodic'
+    problem_params["freq"] = (2, 2)
+    problem_params["nu"] = 1.0
+    problem_params["bc"] = "periodic"
 
     # initialize transfer parameters
     space_transfer_params = {}
-    space_transfer_params['rorder'] = 2
-    space_transfer_params['periodic'] = True
+    space_transfer_params["rorder"] = 2
+    space_transfer_params["periodic"] = True
 
     iorder_list = [2, 4, 6, 8]
     nvars_fine_list = [(2**p, 2**p) for p in range(5, 9)]
 
     # set up dictionary to store results (plus lists)
     results = {}
-    results['nvars_fine_list'] = nvars_fine_list
-    results['iorder_list'] = iorder_list
+    results["nvars_fine_list"] = nvars_fine_list
+    results["iorder_list"] = iorder_list
 
     # loop over interpolation orders and number of DOFs
     for iorder in iorder_list:
-        space_transfer_params['iorder'] = iorder
+        space_transfer_params["iorder"] = iorder
 
         for nvars_fine in nvars_fine_list:
             # instantiate fine problem
-            problem_params['nvars'] = nvars_fine  # number of degrees of freedom
+            problem_params["nvars"] = nvars_fine  # number of degrees of freedom
             Pfine = heatNd_unforced(**problem_params)
 
             # instantiate coarse problem
-            problem_params['nvars'] = (int(nvars_fine[0] / 2), int(nvars_fine[1] / 2))
+            problem_params["nvars"] = (int(nvars_fine[0] / 2), int(nvars_fine[1] / 2))
             Pcoarse = heatNd_unforced(**problem_params)
 
             # instantiate spatial interpolation
-            T = mesh_to_mesh(fine_prob=Pfine, coarse_prob=Pcoarse, params=space_transfer_params)
+            T = mesh_to_mesh(
+                fine_prob=Pfine, coarse_prob=Pcoarse, params=space_transfer_params
+            )
 
             # set exact fine solution to compare with
             uexact_fine = Pfine.u_exact(t=0)
@@ -245,7 +263,9 @@ def test_mesh_to_mesh_2d_periodic():
         # print(abs(orders[p][1] - orders[p][2]) / orders[p][1])
         assert (
             abs(orders[p][1] - orders[p][2]) / orders[p][1] < 0.115
-        ), 'ERROR: did not get expected orders for interpolation, got %s' % str(orders[p])
+        ), "ERROR: did not get expected orders for interpolation, got %s" % str(
+            orders[p]
+        )
 
 
 if __name__ == "__main__":

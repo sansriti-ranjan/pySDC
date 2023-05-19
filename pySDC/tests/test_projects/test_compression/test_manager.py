@@ -32,23 +32,39 @@ def test_mesh_operations():
     from pySDC.projects.compression.compressed_mesh import compressed_mesh
     import numpy as np
 
-    #TODO: Add method to change default error bound before creating first mesh
-    arr1 = compressed_mesh(init=((30,),None,np.float64),val=1)
-    arr2 = compressed_mesh(init=((30,),None,np.float64),val=2.)
+    # TODO: Add method to change default error bound before creating first mesh
+    arr1 = compressed_mesh(init=((30,), None, np.float64), val=1)
+    arr2 = compressed_mesh(init=((30,), None, np.float64), val=2.0)
 
-    np_arr1 = np.ones((30,))*3.
+    np_arr1 = np.ones((30,)) * 3.0
 
-    assert all(me == 3. for me in (arr1+arr2)), "Addition of two compressed meshes failed unexpectedly."
-    assert all(me == -1 for me in (arr1-arr2)), "Subtraction of two compressed meshes failed unexpectedly."
-    assert all(me == 4 for me in (arr1+np_arr1)), "Addition of a compressed mesh and numpy array failed unexpectedly."
-    assert all(me == -2 for me in (arr1-np_arr1)), "Subtraction of a compressed mesh and numpy array failed unexpectedly."
-    assert all(me == 5 for me in (4.+arr1)), "Addition of a float and compressed mesh failed unexpectedly."
-    assert all(me == 2 for me in (4.-arr2)), "Subtraction of a float and compressed mesh failed unexpectedly."
-    assert all(me == 4 for me in (4.*arr1)), "Multiplication of a float and compressed mesh failed unexpectedly."
-    assert all(me == 5 for me in (arr1+4.0)), "Addition of a compressed mesh and float failed unexpectedly."
-    assert all(me == -2 for me in (arr2-4.0)), "Subtraction of a compressed mesh and float failed unexpectedly."
-
-
+    assert all(
+        me == 3.0 for me in (arr1 + arr2)
+    ), "Addition of two compressed meshes failed unexpectedly."
+    assert all(
+        me == -1 for me in (arr1 - arr2)
+    ), "Subtraction of two compressed meshes failed unexpectedly."
+    assert all(
+        me == 4 for me in (arr1 + np_arr1)
+    ), "Addition of a compressed mesh and numpy array failed unexpectedly."
+    assert all(
+        me == -2 for me in (arr1 - np_arr1)
+    ), "Subtraction of a compressed mesh and numpy array failed unexpectedly."
+    assert all(
+        me == 5 for me in (4.0 + arr1)
+    ), "Addition of a float and compressed mesh failed unexpectedly."
+    assert all(
+        me == 2 for me in (4.0 - arr2)
+    ), "Subtraction of a float and compressed mesh failed unexpectedly."
+    assert all(
+        me == 4 for me in (4.0 * arr1)
+    ), "Multiplication of a float and compressed mesh failed unexpectedly."
+    assert all(
+        me == 5 for me in (arr1 + 4.0)
+    ), "Addition of a compressed mesh and float failed unexpectedly."
+    assert all(
+        me == -2 for me in (arr2 - 4.0)
+    ), "Subtraction of a compressed mesh and float failed unexpectedly."
 
 
 if __name__ == "__main__":

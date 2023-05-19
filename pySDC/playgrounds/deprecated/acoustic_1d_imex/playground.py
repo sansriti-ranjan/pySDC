@@ -10,18 +10,17 @@ from pySDC.implementations.datatype_classes import mesh, rhs_imex_mesh
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 
 if __name__ == "__main__":
-
     # set global logger (remove this if you do not want the output at all)
-    logger = Log.setup_custom_logger('root')
+    logger = Log.setup_custom_logger("root")
 
     num_procs = 1
 
     # This comes as read-in for the level class
     lparams = {}
-    lparams['restol'] = 1e-10
+    lparams["restol"] = 1e-10
 
     sparams = {}
-    sparams['maxiter'] = 2
+    sparams["maxiter"] = 2
 
     # setup parameters "in time"
     t0 = 0.0
@@ -30,26 +29,26 @@ if __name__ == "__main__":
 
     # This comes as read-in for the problem class
     pparams = {}
-    pparams['nvars'] = [(2, 512)]
-    pparams['cadv'] = 0.1
-    pparams['cs'] = 1.0
-    pparams['order_adv'] = 5
+    pparams["nvars"] = [(2, 512)]
+    pparams["cadv"] = 0.1
+    pparams["cs"] = 1.0
+    pparams["order_adv"] = 5
 
     # This comes as read-in for the transfer operations
     tparams = {}
-    tparams['finter'] = True
+    tparams["finter"] = True
 
     # Fill description dictionary for easy hierarchy creation
     description = {}
-    description['problem_class'] = acoustic_1d_imex
-    description['problem_params'] = pparams
-    description['dtype_u'] = mesh
-    description['dtype_f'] = rhs_imex_mesh
-    description['collocation_class'] = collclass.CollGaussLobatto
-    description['num_nodes'] = 2
-    description['sweeper_class'] = imex_1st_order
-    description['level_params'] = lparams
-    description['hook_class'] = plot_solution
+    description["problem_class"] = acoustic_1d_imex
+    description["problem_params"] = pparams
+    description["dtype_u"] = mesh
+    description["dtype_f"] = rhs_imex_mesh
+    description["collocation_class"] = collclass.CollGaussLobatto
+    description["num_nodes"] = 2
+    description["sweeper_class"] = imex_1st_order
+    description["level_params"] = lparams
+    description["hook_class"] = plot_solution
     # description['transfer_class'] = mesh_to_mesh
     # description['transfer_params'] = tparams
 
@@ -67,8 +66,12 @@ if __name__ == "__main__":
     uex = P.u_exact(Tend)
 
     print(
-        'error at time %s: %s'
-        % (Tend, np.linalg.norm(uex.values - uend.values, np.inf) / np.linalg.norm(uex.values, np.inf))
+        "error at time %s: %s"
+        % (
+            Tend,
+            np.linalg.norm(uex.values - uend.values, np.inf)
+            / np.linalg.norm(uex.values, np.inf),
+        )
     )
 
     fig = plt.figure(figsize=(8, 8))
@@ -77,7 +80,7 @@ if __name__ == "__main__":
     x_0 = 0.75
 
     # plt.plot(P.mesh, uex.values[0,:],  '+', color='b', label='u (exact)')
-    plt.plot(P.mesh, uend.values[1, :], '-', color='b', label='SDC')
+    plt.plot(P.mesh, uend.values[1, :], "-", color="b", label="SDC")
     # plt.plot(P.mesh, uex.values[1,:],  '+', color='r', label='p (exact)')
     # plt.plot(P.mesh, uend.values[1,:], '-', color='b', linewidth=2.0, label='p (SDC)')
     p_slow = np.exp(-np.square(P.mesh - x_0) / (sigma_0 * sigma_0))
@@ -88,5 +91,10 @@ if __name__ == "__main__":
     fig.gca().grid()
     # plt.show()
     plt.gcf().savefig(
-        'fwsw-sdc-K' + str(sparams['maxiter']) + '-M' + str(description['num_nodes']) + '.pdf', bbox_inches='tight'
+        "fwsw-sdc-K"
+        + str(sparams["maxiter"])
+        + "-M"
+        + str(description["num_nodes"])
+        + ".pdf",
+        bbox_inches="tight",
     )

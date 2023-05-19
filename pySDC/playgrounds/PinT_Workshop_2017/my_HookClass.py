@@ -26,6 +26,6 @@ class error_output(hooks):
         err = abs(uex - L.uend)
 
         print(
-            '--- Current error (vs. exact solution) at iteration %2i and time %4.2f: %6.4e'
+            "--- Current error (vs. exact solution) at iteration %2i and time %4.2f: %6.4e"
             % (step.status.iter, step.time, err)
         )

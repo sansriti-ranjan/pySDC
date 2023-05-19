@@ -67,7 +67,7 @@ class monitor_and_dump(hooks):
             radius = np.sqrt(vol / np.pi)
             self.init_vol = np.pi * L.prob.params.radius**2
         else:
-            raise NotImplementedError('Can use this only for 2 or 3D problems')
+            raise NotImplementedError("Can use this only for 2 or 3D problems")
 
         self.init_radius = L.prob.params.radius
         self.corr_rad = self.init_radius / radius
@@ -83,7 +83,7 @@ class monitor_and_dump(hooks):
                 level=-1,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='computed_radius',
+                type="computed_radius",
                 value=radius,
             )
             self.add_to_stats(
@@ -92,7 +92,7 @@ class monitor_and_dump(hooks):
                 level=-1,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='exact_radius',
+                type="exact_radius",
                 value=self.init_radius,
             )
             self.add_to_stats(
@@ -101,7 +101,7 @@ class monitor_and_dump(hooks):
                 level=-1,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='computed_volume',
+                type="computed_volume",
                 value=vol,
             )
             self.add_to_stats(
@@ -110,7 +110,7 @@ class monitor_and_dump(hooks):
                 level=-1,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='exact_volume',
+                type="exact_volume",
                 value=self.init_vol,
             )
 
@@ -131,16 +131,16 @@ class monitor_and_dump(hooks):
         # write json description
         if self.rank == 0 and step.status.slot == 0:
             json_obj = dict()
-            json_obj['type'] = 'dataset'
-            json_obj['datatype'] = str(tmp.dtype)
-            json_obj['endian'] = str(tmp.dtype.byteorder)
-            json_obj['time'] = L.time
-            json_obj['space_comm_size'] = self.size
-            json_obj['time_comm_size'] = step.status.time_size
-            json_obj['shape'] = L.prob.params.nvars
-            json_obj['elementsize'] = tmp.dtype.itemsize
+            json_obj["type"] = "dataset"
+            json_obj["datatype"] = str(tmp.dtype)
+            json_obj["endian"] = str(tmp.dtype.byteorder)
+            json_obj["time"] = L.time
+            json_obj["space_comm_size"] = self.size
+            json_obj["time_comm_size"] = step.status.time_size
+            json_obj["shape"] = L.prob.params.nvars
+            json_obj["elementsize"] = tmp.dtype.itemsize
 
-            with open(fname + '.json', 'w') as fp:
+            with open(fname + ".json", "w") as fp:
                 json.dump(json_obj, fp)
 
         # set step count
@@ -177,7 +177,12 @@ class monitor_and_dump(hooks):
         if self.ndim == 3:
             vol = c_global * L.prob.dx**3
             radius = (vol / (np.pi * 4.0 / 3.0)) ** (1.0 / 3.0)
-            exact_vol = np.pi * 4.0 / 3.0 * (max(self.init_radius**2 - 4.0 * (L.time + L.dt), 0)) ** (3.0 / 2.0)
+            exact_vol = (
+                np.pi
+                * 4.0
+                / 3.0
+                * (max(self.init_radius**2 - 4.0 * (L.time + L.dt), 0)) ** (3.0 / 2.0)
+            )
             exact_radius = (exact_vol / (np.pi * 4.0 / 3.0)) ** (1.0 / 3.0)
         elif self.ndim == 2:
             vol = c_global * L.prob.dx**2
@@ -185,7 +190,7 @@ class monitor_and_dump(hooks):
             exact_vol = np.pi * max(self.init_radius**2 - 2.0 * (L.time + L.dt), 0)
             exact_radius = np.sqrt(exact_vol / np.pi)
         else:
-            raise NotImplementedError('Can use this only for 2 or 3D problems')
+            raise NotImplementedError("Can use this only for 2 or 3D problems")
 
         radius *= self.corr_rad
         vol *= self.corr_vol
@@ -197,7 +202,7 @@ class monitor_and_dump(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='computed_radius',
+            type="computed_radius",
             value=radius,
         )
         self.add_to_stats(
@@ -206,7 +211,7 @@ class monitor_and_dump(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='exact_radius',
+            type="exact_radius",
             value=exact_radius,
         )
         self.add_to_stats(
@@ -215,7 +220,7 @@ class monitor_and_dump(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='computed_volume',
+            type="computed_volume",
             value=vol,
         )
         self.add_to_stats(
@@ -224,7 +229,7 @@ class monitor_and_dump(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='exact_volume',
+            type="exact_volume",
             value=exact_vol,
         )
 
@@ -245,16 +250,16 @@ class monitor_and_dump(hooks):
         # write json description
         if self.rank == 0:
             json_obj = dict()
-            json_obj['type'] = 'dataset'
-            json_obj['datatype'] = str(tmp.dtype)
-            json_obj['endian'] = str(tmp.dtype.byteorder)
-            json_obj['time'] = L.time + L.dt
-            json_obj['space_comm_size'] = self.size
-            json_obj['time_comm_size'] = step.status.time_size
-            json_obj['shape'] = L.prob.params.nvars
-            json_obj['elementsize'] = tmp.dtype.itemsize
+            json_obj["type"] = "dataset"
+            json_obj["datatype"] = str(tmp.dtype)
+            json_obj["endian"] = str(tmp.dtype.byteorder)
+            json_obj["time"] = L.time + L.dt
+            json_obj["space_comm_size"] = self.size
+            json_obj["time_comm_size"] = step.status.time_size
+            json_obj["shape"] = L.prob.params.nvars
+            json_obj["elementsize"] = tmp.dtype.itemsize
 
-            with open(fname + '.json', 'w') as fp:
+            with open(fname + ".json", "w") as fp:
                 json.dump(json_obj, fp)
 
         # update step count

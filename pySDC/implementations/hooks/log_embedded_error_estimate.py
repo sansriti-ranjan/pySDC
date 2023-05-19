@@ -6,12 +6,12 @@ class LogEmbeddedErrorEstimate(hooks):
     Store the embedded error estimate at the end of each step as "error_embedded_estimate".
     """
 
-    def log_error(self, step, level_number, appendix=''):
+    def log_error(self, step, level_number, appendix=""):
         L = step.levels[level_number]
 
-        for flavour in ['', '_collocation']:
-            if L.status.get(f'error_embedded_estimate{flavour}'):
-                if flavour == '_collocation':
+        for flavour in ["", "_collocation"]:
+            if L.status.get(f"error_embedded_estimate{flavour}"):
+                if flavour == "_collocation":
                     iter, value = L.status.error_embedded_estimate_collocation
                 else:
                     iter = step.status.iter
@@ -22,11 +22,11 @@ class LogEmbeddedErrorEstimate(hooks):
                     level=L.level_index,
                     iter=iter,
                     sweep=L.status.sweep,
-                    type=f'error_embedded_estimate{flavour}{appendix}',
+                    type=f"error_embedded_estimate{flavour}{appendix}",
                     value=value,
                 )
 
-    def post_step(self, step, level_number, appendix=''):
+    def post_step(self, step, level_number, appendix=""):
         """
         Record embedded error estimate
 
@@ -61,7 +61,7 @@ class LogEmbeddedErrorEstimatePostIter(LogEmbeddedErrorEstimate):
             None
         """
         super().post_iteration(step, level_number)
-        self.log_error(step, level_number, '_post_iteration')
+        self.log_error(step, level_number, "_post_iteration")
 
     def post_step(self, step, level_number):
-        super().post_step(step, level_number, appendix='_post_iteration')
+        super().post_step(step, level_number, appendix="_post_iteration")

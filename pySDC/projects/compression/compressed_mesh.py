@@ -55,7 +55,11 @@ class compressed_mesh(object):
                 # compType="sz3",
                 # errBound=self.manager.errBound,
             )
-            self.manager.compress(np.full(init[0], fill_value=val,dtype=np.dtype('float64')), self.name, 0)
+            self.manager.compress(
+                np.full(init[0], fill_value=val, dtype=np.dtype("float64")),
+                self.name,
+                0,
+            )
         # something is wrong, if none of the ones above hit
         else:
             raise DataError(
@@ -80,7 +84,6 @@ class compressed_mesh(object):
 
         me = compressed_mesh(self)
         values = self.manager.decompress(self.name, 0)
-        
 
         if isinstance(other, compressed_mesh):
             # always create new mesh, since otherwise c = a - b changes a as well!
@@ -93,7 +96,7 @@ class compressed_mesh(object):
             ov = other
         self.manager.compress(values + ov, me.name, 0)
         return me
-    
+
     def __radd__(self, other):
         return self.__add__(other)
 
@@ -110,7 +113,6 @@ class compressed_mesh(object):
         """
         me = compressed_mesh(self)
         values = self.manager.decompress(self.name, 0)
-        
 
         if isinstance(other, compressed_mesh):
             # always create new mesh, since otherwise c = a - b changes a as well!
@@ -166,9 +168,9 @@ class compressed_mesh(object):
         self.manager.compress(ov * values, me.name, 0)
         return me
 
-    def __mul__(self,other):
+    def __mul__(self, other):
         return self.__rmul__(other)
-    
+
     def __abs__(self):
         """
         Overloading the abs operator for mesh types

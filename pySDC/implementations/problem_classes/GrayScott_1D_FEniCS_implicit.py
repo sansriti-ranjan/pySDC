@@ -40,27 +40,40 @@ class fenics_grayscott(ptype):
             return on_boundary
 
         # these parameters will be used later, so assert their existence
-        essential_keys = ['c_nvars', 't0', 'family', 'order', 'refinements', 'Du', 'Dv', 'A', 'B']
+        essential_keys = [
+            "c_nvars",
+            "t0",
+            "family",
+            "order",
+            "refinements",
+            "Du",
+            "Dv",
+            "A",
+            "B",
+        ]
         for key in essential_keys:
             if key not in problem_params:
-                msg = 'need %s to instantiate problem, only got %s' % (key, str(problem_params.keys()))
+                msg = "need %s to instantiate problem, only got %s" % (
+                    key,
+                    str(problem_params.keys()),
+                )
                 raise ParameterError(msg)
 
         # set logger level for FFC and dolfin
         df.set_log_level(df.WARNING)
-        logging.getLogger('FFC').setLevel(logging.WARNING)
+        logging.getLogger("FFC").setLevel(logging.WARNING)
 
         # set solver and form parameters
         df.parameters["form_compiler"]["optimize"] = True
         df.parameters["form_compiler"]["cpp_optimize"] = True
 
         # set mesh and refinement (for multilevel)
-        mesh = df.IntervalMesh(problem_params['c_nvars'], 0, 100)
-        for _ in range(problem_params['refinements']):
+        mesh = df.IntervalMesh(problem_params["c_nvars"], 0, 100)
+        for _ in range(problem_params["refinements"]):
             mesh = df.refine(mesh)
 
         # define function space for future reference
-        V = df.FunctionSpace(mesh, problem_params['family'], problem_params['order'])
+        V = df.FunctionSpace(mesh, problem_params["family"], problem_params["order"])
         self.V = V * V
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
@@ -144,10 +157,10 @@ class fenics_grayscott(ptype):
         solver = df.NonlinearVariationalSolver(problem)
 
         prm = solver.parameters
-        prm['newton_solver']['absolute_tolerance'] = 1e-09
-        prm['newton_solver']['relative_tolerance'] = 1e-08
-        prm['newton_solver']['maximum_iterations'] = 100
-        prm['newton_solver']['relaxation_parameter'] = 1.0
+        prm["newton_solver"]["absolute_tolerance"] = 1e-09
+        prm["newton_solver"]["relative_tolerance"] = 1e-08
+        prm["newton_solver"]["maximum_iterations"] = 100
+        prm["newton_solver"]["relaxation_parameter"] = 1.0
 
         solver.solve()
 
@@ -200,7 +213,7 @@ class fenics_grayscott(ptype):
             def value_shape(self):
                 return (2,)
 
-        assert t == 0, 'ERROR: u_exact only valid for t=0'
+        assert t == 0, "ERROR: u_exact only valid for t=0"
 
         uinit = InitialConditions()
 

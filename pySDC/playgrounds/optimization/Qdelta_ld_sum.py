@@ -12,11 +12,11 @@ def evaluate(solution):
 
     Qd = np.array(
         [
-            [x['x11'], 0.0, 0.0, 0.0, 0.0],
-            [x['x21'], x['x22'], 0.0, 0.0, 0.0],
-            [x['x31'], x['x32'], x['x33'], 0.0, 0.0],
-            [x['x41'], x['x42'], x['x43'], x['x44'], 0.0],
-            [x['x51'], x['x52'], x['x53'], x['x54'], x['x55']],
+            [x["x11"], 0.0, 0.0, 0.0, 0.0],
+            [x["x21"], x["x22"], 0.0, 0.0, 0.0],
+            [x["x31"], x["x32"], x["x33"], 0.0, 0.0],
+            [x["x41"], x["x42"], x["x43"], x["x44"], 0.0],
+            [x["x51"], x["x52"], x["x53"], x["x54"], x["x55"]],
         ]
     )
 
@@ -43,26 +43,116 @@ y = [0.0, 0.0, 0.0, 0.0, 0.0]
 ymax = 20.0
 ymin = 0.0
 params = dict()
-params['x11'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[0]}
-params['x21'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x22'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[1]}
-params['x31'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x32'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x33'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[2]}
-params['x41'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x42'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x43'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x44'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[3]}
-params['x51'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x52'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x53'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x54'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x55'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[4]}
+params["x11"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[0],
+}
+params["x21"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x22"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[1],
+}
+params["x31"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x32"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x33"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[2],
+}
+params["x41"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x42"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x43"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x44"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[3],
+}
+params["x51"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x52"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x53"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x54"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x55"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[4],
+}
 
 problem = {
-    'problem_name': 'Qdelta_ld_sum',
-    'parameters': params,
-    'metrics': {'rho': {'type': 'objective', 'goal': 'minimize'}},
+    "problem_name": "Qdelta_ld_sum",
+    "parameters": params,
+    "metrics": {"rho": {"type": "objective", "goal": "minimize"}},
 }
 
 worker = indiesolver.indiesolver()

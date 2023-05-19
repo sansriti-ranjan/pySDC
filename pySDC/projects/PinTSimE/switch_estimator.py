@@ -28,14 +28,14 @@ class SwitchEstimator(ConvergenceController):
         # for RK4 sweeper, sweep.coll.nodes now consists of values of ButcherTableau
         # for this reason, collocation nodes will be generated here
         coll = CollBase(
-            num_nodes=description['sweeper_params']['num_nodes'],
-            quad_type=description['sweeper_params']['quad_type'],
+            num_nodes=description["sweeper_params"]["num_nodes"],
+            quad_type=description["sweeper_params"]["quad_type"],
         )
 
         defaults = {
-            'control_order': 100,
-            'tol': description['level_params']['dt'],
-            'nodes': coll.nodes,
+            "control_order": 100,
+            "tol": description["level_params"]["dt"],
+            "nodes": coll.nodes,
         }
         return {**defaults, **params}
 
@@ -47,7 +47,7 @@ class SwitchEstimator(ConvergenceController):
             controller (pySDC.Controller): The controller
         """
 
-        self.status = Status(['switch_detected', 't_switch'])
+        self.status = Status(["switch_detected", "t_switch"])
 
     def reset_status_variables(self, controller, **kwargs):
         """
@@ -74,10 +74,15 @@ class SwitchEstimator(ConvergenceController):
         L = S.levels[0]
 
         if S.status.iter == S.params.maxiter:
-            self.status.switch_detected, m_guess, vC_switch = L.prob.get_switching_info(L.u, L.time)
+            self.status.switch_detected, m_guess, vC_switch = L.prob.get_switching_info(
+                L.u, L.time
+            )
 
             if self.status.switch_detected:
-                t_interp = [L.time + L.dt * self.params.nodes[m] for m in range(len(self.params.nodes))]
+                t_interp = [
+                    L.time + L.dt * self.params.nodes[m]
+                    for m in range(len(self.params.nodes))
+                ]
 
                 # only find root if vc_switch[0], vC_switch[-1] have opposite signs (intermediate value theorem)
                 if vC_switch[0] * vC_switch[-1] < 0:
@@ -85,7 +90,9 @@ class SwitchEstimator(ConvergenceController):
 
                     if L.time <= self.status.t_switch <= L.time + L.dt:
                         dt_switch = self.status.t_switch - L.time
-                        if not np.isclose(self.status.t_switch - L.time, L.dt, atol=self.params.tol):
+                        if not np.isclose(
+                            self.status.t_switch - L.time, L.dt, atol=self.params.tol
+                        ):
                             self.log(
                                 f"Located Switch at time {self.status.t_switch:.6f} is outside the range of tol={self.params.tol:.4e}",
                                 S,
@@ -93,7 +100,8 @@ class SwitchEstimator(ConvergenceController):
 
                         else:
                             self.log(
-                                f"Switch located at time {self.status.t_switch:.6f} inside tol={self.params.tol:.4e}", S
+                                f"Switch located at time {self.status.t_switch:.6f} inside tol={self.params.tol:.4e}",
+                                S,
                             )
 
                             L.prob.t_switch = self.status.t_switch
@@ -103,13 +111,17 @@ class SwitchEstimator(ConvergenceController):
                                 level=L.level_index,
                                 iter=0,
                                 sweep=L.status.sweep,
-                                type='switch',
+                                type="switch",
                                 value=self.status.t_switch,
                             )
 
                             L.prob.count_switches()
 
-                        dt_planned = L.status.dt_new if L.status.dt_new is not None else L.params.dt
+                        dt_planned = (
+                            L.status.dt_new
+                            if L.status.dt_new is not None
+                            else L.params.dt
+                        )
 
                         # when a switch is found, time step to match with switch should be preferred
                         if self.status.switch_detected:
@@ -158,7 +170,9 @@ class SwitchEstimator(ConvergenceController):
         L = S.levels[0]
 
         if self.status.t_switch is None:
-            L.status.dt_new = L.status.dt_new if L.status.dt_new is not None else L.params.dt_initial
+            L.status.dt_new = (
+                L.status.dt_new if L.status.dt_new is not None else L.params.dt_initial
+            )
 
         super().post_step_processing(controller, S, **kwargs)
 
@@ -176,11 +190,11 @@ class SwitchEstimator(ConvergenceController):
             t_switch (np.float): time point of th switch
         """
 
-        p = sp.interpolate.interp1d(t_interp, vC_switch, 'cubic', bounds_error=False)
+        p = sp.interpolate.interp1d(t_interp, vC_switch, "cubic", bounds_error=False)
 
         SwitchResults = sp.optimize.root_scalar(
             p,
-            method='brentq',
+            method="brentq",
             bracket=[t_interp[0], t_interp[m_guess]],
             x0=t_interp[m_guess],
             xtol=1e-10,

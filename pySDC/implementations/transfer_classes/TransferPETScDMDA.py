@@ -1,6 +1,10 @@
 from pySDC.core.Errors import TransferError
 from pySDC.core.SpaceTransfer import space_transfer
-from pySDC.implementations.datatype_classes.petsc_vec import petsc_vec, petsc_vec_imex, petsc_vec_comp2
+from pySDC.implementations.datatype_classes.petsc_vec import (
+    petsc_vec,
+    petsc_vec_imex,
+    petsc_vec_comp2,
+)
 
 
 class mesh_to_mesh_petsc_dmda(space_transfer):
@@ -47,7 +51,7 @@ class mesh_to_mesh_petsc_dmda(space_transfer):
             self.inject.mult(F.comp1, u_coarse.comp1)
             self.inject.mult(F.comp2, u_coarse.comp2)
         else:
-            raise TransferError('Unknown type of fine data, got %s' % type(F))
+            raise TransferError("Unknown type of fine data, got %s" % type(F))
 
         return u_coarse
 
@@ -70,6 +74,6 @@ class mesh_to_mesh_petsc_dmda(space_transfer):
             self.interp.mult(G.comp1, u_fine.comp1)
             self.interp.mult(G.comp2, u_fine.comp2)
         else:
-            raise TransferError('Unknown type of coarse data, got %s' % type(G))
+            raise TransferError("Unknown type of coarse data, got %s" % type(G))
 
         return u_fine

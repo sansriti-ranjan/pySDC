@@ -9,8 +9,8 @@ def test_main():
 
     # Set python path once
     my_env = os.environ.copy()
-    my_env['PYTHONPATH'] = '../../..:.'
-    my_env['COVERAGE_PROCESS_START'] = 'pyproject.toml'
+    my_env["PYTHONPATH"] = "../../..:."
+    my_env["COVERAGE_PROCESS_START"] = "pyproject.toml"
 
     # set list of number of parallel steps
     num_procs_list = [1, 2, 5, 8]
@@ -22,7 +22,9 @@ def test_main():
         p = subprocess.Popen(cmd, env=my_env, cwd=".")
 
         p.wait()
-        assert p.returncode == 0, 'ERROR: did not get return code 0, got %s with %2i processes' % (
+        assert (
+            p.returncode == 0
+        ), "ERROR: did not get return code 0, got %s with %2i processes" % (
             p.returncode,
             num_procs,
         )

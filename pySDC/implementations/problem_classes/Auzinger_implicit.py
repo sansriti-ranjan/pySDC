@@ -23,8 +23,10 @@ class auzinger(ptype):
             dtype_f: mesh data type (will be passed to parent class)
         """
         # invoke super init, passing dtype_u and dtype_f, plus setting number of elements to 2
-        super().__init__((2, None, np.dtype('float64')))
-        self._makeAttributeAndRegister('newton_maxiter', 'newton_tol', localVars=locals(), readOnly=True)
+        super().__init__((2, None, np.dtype("float64")))
+        self._makeAttributeAndRegister(
+            "newton_maxiter", "newton_tol", localVars=locals(), readOnly=True
+        )
 
     def u_exact(self, t):
         """

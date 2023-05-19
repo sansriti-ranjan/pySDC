@@ -1,7 +1,7 @@
 from pathlib import Path
 import matplotlib
 
-matplotlib.use('Agg')
+matplotlib.use("Agg")
 
 from collections import namedtuple
 import matplotlib.pylab as plt
@@ -13,7 +13,7 @@ from pySDC.core.Collocation import CollBase
 from pySDC.implementations.problem_classes.HeatEquation_ND_FD import heatNd_unforced
 
 # setup id for gathering the results (will sort by dt)
-ID = namedtuple('ID', 'dt')
+ID = namedtuple("ID", "dt")
 
 
 def main():
@@ -23,16 +23,18 @@ def main():
 
     # initialize problem parameters
     problem_params = {}
-    problem_params['nu'] = 0.1  # diffusion coefficient
-    problem_params['freq'] = 4  # frequency for the test value
-    problem_params['nvars'] = 16383  # number of DOFs in space
-    problem_params['bc'] = 'dirichlet-zero'  # boundary conditions
+    problem_params["nu"] = 0.1  # diffusion coefficient
+    problem_params["freq"] = 4  # frequency for the test value
+    problem_params["nvars"] = 16383  # number of DOFs in space
+    problem_params["bc"] = "dirichlet-zero"  # boundary conditions
 
     # instantiate problem
     prob = heatNd_unforced(**problem_params)
 
     # instantiate collocation class, relative to the time interval [0,1]
-    coll = CollBase(num_nodes=3, tleft=0, tright=1, node_type='LEGENDRE', quad_type='RADAU-RIGHT')
+    coll = CollBase(
+        num_nodes=3, tleft=0, tright=1, node_type="LEGENDRE", quad_type="RADAU-RIGHT"
+    )
 
     # assemble list of dt
     dt_list = [0.1 / 2**p for p in range(0, 4)]
@@ -44,17 +46,17 @@ def main():
     order = get_accuracy_order(results)
 
     Path("data").mkdir(parents=True, exist_ok=True)
-    f = open('data/step_1_D_out.txt', 'w')
+    f = open("data/step_1_D_out.txt", "w")
     for l in range(len(order)):
-        out = 'Expected order: %2i -- Computed order %4.3f' % (5, order[l])
-        f.write(out + '\n')
+        out = "Expected order: %2i -- Computed order %4.3f" % (5, order[l])
+        f.write(out + "\n")
         print(out)
     f.close()
 
     # visualize results
     plot_accuracy(results)
 
-    assert os.path.isfile('data/step_1_accuracy_test_coll.png')
+    assert os.path.isfile("data/step_1_accuracy_test_coll.png")
 
     assert all(np.isclose(order, 2 * coll.num_nodes - 1, rtol=0.4)), (
         "ERROR: did not get order of accuracy as expected, got %s" % order
@@ -100,7 +102,7 @@ def run_accuracy_check(prob, coll, dt_list):
         results[id] = err
 
     # add list of dt to results for easier access
-    results['dt_list'] = dt_list
+    results["dt_list"] = dt_list
     return results
 
 
@@ -116,8 +118,10 @@ def get_accuracy_order(results):
     """
 
     # retrieve the list of dt from results
-    assert 'dt_list' in results, 'ERROR: expecting the list of dt in the results dictionary'
-    dt_list = sorted(results['dt_list'], reverse=True)
+    assert (
+        "dt_list" in results
+    ), "ERROR: expecting the list of dt in the results dictionary"
+    dt_list = sorted(results["dt_list"], reverse=True)
 
     order = []
     # loop over two consecutive errors/dt pairs
@@ -127,7 +131,9 @@ def get_accuracy_order(results):
         id_prev = ID(dt=dt_list[i - 1])
 
         # compute order as log(prev_error/this_error)/log(this_dt/old_dt) <-- depends on the sorting of the list!
-        tmp = np.log(results[id] / results[id_prev]) / np.log(dt_list[i] / dt_list[i - 1])
+        tmp = np.log(results[id] / results[id_prev]) / np.log(
+            dt_list[i] / dt_list[i - 1]
+        )
         order.append(tmp)
 
     return order
@@ -142,18 +148,20 @@ def plot_accuracy(results):
     """
 
     # retrieve the list of nvars from results
-    assert 'dt_list' in results, 'ERROR: expecting the list of dts in the results dictionary'
-    dt_list = sorted(results['dt_list'])
+    assert (
+        "dt_list" in results
+    ), "ERROR: expecting the list of dts in the results dictionary"
+    dt_list = sorted(results["dt_list"])
 
     # Set up plotting parameters
     params = {
-        'legend.fontsize': 20,
-        'figure.figsize': (12, 8),
-        'axes.labelsize': 20,
-        'axes.titlesize': 20,
-        'xtick.labelsize': 16,
-        'ytick.labelsize': 16,
-        'lines.linewidth': 3,
+        "legend.fontsize": 20,
+        "figure.figsize": (12, 8),
+        "axes.labelsize": 20,
+        "axes.titlesize": 20,
+        "xtick.labelsize": 16,
+        "ytick.labelsize": 16,
+        "lines.linewidth": 3,
     }
     plt.rcParams.update(params)
 
@@ -161,8 +169,8 @@ def plot_accuracy(results):
     plt.figure()
     # take x-axis limits from nvars_list + some spacning left and right
     plt.xlim([min(dt_list) / 2, max(dt_list) * 2])
-    plt.xlabel('dt')
-    plt.ylabel('abs. error')
+    plt.xlabel("dt")
+    plt.ylabel("abs. error")
     plt.grid()
 
     # get guide for the order of accuracy, i.e. the errors to expect
@@ -171,7 +179,7 @@ def plot_accuracy(results):
     base_error = results[id]
     # assemble optimal errors for 5th order method and plot
     order_guide_space = [base_error * (2 ** (5 * i)) for i in range(0, len(dt_list))]
-    plt.loglog(dt_list, order_guide_space, color='k', ls='--', label='5th order')
+    plt.loglog(dt_list, order_guide_space, color="k", ls="--", label="5th order")
 
     min_err = 1e99
     max_err = 0e00
@@ -183,15 +191,15 @@ def plot_accuracy(results):
         min_err = min(err, min_err)
         max_err = max(err, max_err)
         err_list.append(err)
-    plt.loglog(dt_list, err_list, ls=' ', marker='o', markersize=10, label='experiment')
+    plt.loglog(dt_list, err_list, ls=" ", marker="o", markersize=10, label="experiment")
 
     # adjust y-axis limits, add legend
     plt.ylim([min_err / 10, max_err * 10])
     plt.legend(loc=2, ncol=1, numpoints=1)
 
     # save plot as PDF, beautify
-    fname = 'data/step_1_accuracy_test_coll.png'
-    plt.savefig(fname, bbox_inches='tight')
+    fname = "data/step_1_accuracy_test_coll.png"
+    plt.savefig(fname, bbox_inches="tight")
 
     return None
 

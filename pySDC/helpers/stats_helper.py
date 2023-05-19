@@ -1,7 +1,16 @@
 import numpy as np
 
 
-def filter_stats(stats, process=None, time=None, level=None, iter=None, type=None, recomputed=None, num_restarts=None):
+def filter_stats(
+    stats,
+    process=None,
+    time=None,
+    level=None,
+    iter=None,
+    type=None,
+    recomputed=None,
+    num_restarts=None,
+):
     """
     Helper function to extract data from the dictrionary of statistics
 
@@ -19,7 +28,9 @@ def filter_stats(stats, process=None, time=None, level=None, iter=None, type=Non
     """
     result = {}
 
-    for k, v in stats.items() if recomputed is None else filter_recomputed(stats.copy()).items():
+    for k, v in (
+        stats.items() if recomputed is None else filter_recomputed(stats.copy()).items()
+    ):
         # get data if key matches the filter (if specified)
         if (
             (k.time == time or time is None)
@@ -77,12 +88,19 @@ def filter_recomputed(stats):
     # delete values that have been recorded and superseded by similar, but not identical keys
     times_restarted = np.unique([me.time for me in stats.keys() if me.num_restarts > 0])
     for t in times_restarted:
-        restarts = max([me.num_restarts for me in filter_stats(stats, type='_recomputed', time=t).keys()])
+        restarts = max(
+            [
+                me.num_restarts
+                for me in filter_stats(stats, type="_recomputed", time=t).keys()
+            ]
+        )
         for i in range(restarts):
             [stats.pop(me) for me in filter_stats(stats, time=t, num_restarts=i).keys()]
 
     # delete values that were recorded at times that shouldn't be recorded because we performed a different step after the restart
-    other_restarted_steps = [me for me in filter_stats(stats, type='_recomputed') if stats[me]]
+    other_restarted_steps = [
+        me for me in filter_stats(stats, type="_recomputed") if stats[me]
+    ]
     for step in other_restarted_steps:
         [stats.pop(me) for me in filter_stats(stats, time=step.time).keys()]
 
@@ -108,7 +126,7 @@ def get_list_of_types(stats):
     return type_list
 
 
-def get_sorted(stats, sortby='time', comm=None, **kwargs):
+def get_sorted(stats, sortby="time", comm=None, **kwargs):
     """
     Utility for filtering and sorting stats in a single call. Pass a communicatior if using MPI.
     Keyword arguments are passed to `filter_stats` for filtering.

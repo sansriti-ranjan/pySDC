@@ -25,7 +25,9 @@ class cupy_mesh(cp.ndarray):
 
         """
         if isinstance(init, cupy_mesh):
-            obj = cp.ndarray.__new__(cls, shape=init.shape, dtype=init.dtype, strides=strides, order=order)
+            obj = cp.ndarray.__new__(
+                cls, shape=init.shape, dtype=init.dtype, strides=strides, order=order
+            )
             obj[:] = init[:]
             obj._comm = init._comm
         elif (
@@ -33,7 +35,9 @@ class cupy_mesh(cp.ndarray):
             and (init[1] is None or isinstance(init[1], MPI.Intracomm))
             and isinstance(init[2], cp.dtype)
         ):
-            obj = cp.ndarray.__new__(cls, init[0], dtype=init[2], strides=strides, order=order)
+            obj = cp.ndarray.__new__(
+                cls, init[0], dtype=init[2], strides=strides, order=order
+            )
             obj.fill(val)
             obj._comm = init[1]
         else:
@@ -53,7 +57,7 @@ class cupy_mesh(cp.ndarray):
         """
         if obj is None:
             return
-        self._comm = getattr(obj, '_comm', None)
+        self._comm = getattr(obj, "_comm", None)
 
     def __array_ufunc__(self, ufunc, method, *inputs, out=None, **kwargs):
         """
@@ -67,8 +71,12 @@ class cupy_mesh(cp.ndarray):
                 comm = input_.comm
             else:
                 args.append(input_)
-        results = super(cupy_mesh, self).__array_ufunc__(ufunc, method, *args, **kwargs).view(cupy_mesh)
-        if not method == 'reduce':
+        results = (
+            super(cupy_mesh, self)
+            .__array_ufunc__(ufunc, method, *args, **kwargs)
+            .view(cupy_mesh)
+        )
+        if not method == "reduce":
             results._comm = comm
         return results
 
@@ -85,7 +93,9 @@ class cupy_mesh(cp.ndarray):
         if self.comm is not None:
             if self.comm.Get_size() > 1:
                 global_absval = 0.0
-                global_absval = max(self.comm.allreduce(sendobj=local_absval, op=MPI.MAX), global_absval)
+                global_absval = max(
+                    self.comm.allreduce(sendobj=local_absval, op=MPI.MAX), global_absval
+                )
             else:
                 global_absval = local_absval
         else:
@@ -171,7 +181,9 @@ class imex_cupy_mesh(object):
             self.expl = cupy_mesh(init, val=val)
         # something is wrong, if none of the ones above hit
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )
 
 
 class comp2_cupy_mesh(object):
@@ -206,4 +218,6 @@ class comp2_cupy_mesh(object):
             self.comp2 = cupy_mesh(init, val=val)
         # something is wrong, if none of the ones above hit
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )

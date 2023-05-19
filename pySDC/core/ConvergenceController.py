@@ -60,7 +60,9 @@ class ConvergenceController(object):
         Returns:
             None
         """
-        self.logger.log(level, f'Process {S.status.slot:2d} on time {S.time:.6f} - {msg}')
+        self.logger.log(
+            level, f"Process {S.status.slot:2d} on time {S.time:.6f} - {msg}"
+        )
         return None
 
     def setup(self, controller, params, description, **kwargs):
@@ -93,7 +95,10 @@ class ConvergenceController(object):
             (dict): The updated params dictionary after setup
         """
         # allow to change parameters by adding the convergence controller manually
-        return {**params, **description.get('convergence_controllers', {}).get(type(self), {})}
+        return {
+            **params,
+            **description.get("convergence_controllers", {}).get(type(self), {}),
+        }
 
     def dependencies(self, controller, description, **kwargs):
         """
@@ -313,7 +318,7 @@ class ConvergenceController(object):
             request handle of the communication
         """
         # log what's happening for debug purposes
-        self.logger.debug(f'Step {comm.rank} initiates send to step {dest}')
+        self.logger.debug(f"Step {comm.rank} initiates send to step {dest}")
 
         if blocking:
             req = comm.send(data, dest=dest, **kwargs)
@@ -321,7 +326,7 @@ class ConvergenceController(object):
             req = comm.isend(data, dest=dest, **kwargs)
 
         # log what's happening for debug purposes
-        self.logger.debug(f'Step {comm.rank} leaves send to step {dest}')
+        self.logger.debug(f"Step {comm.rank} leaves send to step {dest}")
 
         return req
 
@@ -337,16 +342,18 @@ class ConvergenceController(object):
             whatever has been received
         """
         # log what's happening for debug purposes
-        self.logger.debug(f'Step {comm.rank} initiates receive from step {source}')
+        self.logger.debug(f"Step {comm.rank} initiates receive from step {source}")
 
         data = comm.recv(source=source, **kwargs)
 
         # log what's happening for debug purposes
-        self.logger.debug(f'Step {comm.rank} leaves receive from step {source}')
+        self.logger.debug(f"Step {comm.rank} leaves receive from step {source}")
 
         return data
 
-    def reset_variable(self, controller, name, MPI=False, place=None, where=None, init=None):
+    def reset_variable(
+        self, controller, name, MPI=False, place=None, where=None, init=None
+    ):
         """
         Utility function for resetting variables. This function will call the `add_variable` function with all the same
         arguments, but with `allow_overwrite = True`.
@@ -362,9 +369,20 @@ class ConvergenceController(object):
         Returns:
             None
         """
-        self.add_variable(controller, name, MPI, place, where, init, allow_overwrite=True)
+        self.add_variable(
+            controller, name, MPI, place, where, init, allow_overwrite=True
+        )
 
-    def add_variable(self, controller, name, MPI=False, place=None, where=None, init=None, allow_overwrite=False):
+    def add_variable(
+        self,
+        controller,
+        name,
+        MPI=False,
+        place=None,
+        where=None,
+        init=None,
+        allow_overwrite=False,
+    ):
         """
         Add a variable to a frozen class.
 
@@ -399,11 +417,15 @@ class ConvergenceController(object):
             variable_exitsts = name in place.__dict__.keys()
             # check if the variable already exists and raise an error in case we are about to introduce a bug
             if not allow_overwrite and variable_exitsts:
-                raise ValueError(f"Key \"{name}\" already exists in {place}! Please rename the variable in {self}")
+                raise ValueError(
+                    f'Key "{name}" already exists in {place}! Please rename the variable in {self}'
+                )
             # if we allow overwriting, but the variable does not exist already, we are violating the intended purpose
             # of this function, so we also raise an error if someone should be so mad as to attempt this
             elif allow_overwrite and not variable_exitsts:
-                raise ValueError(f"Key \"{name}\" is supposed to be overwritten in {place}, but it does not exist!")
+                raise ValueError(
+                    f'Key "{name}" is supposed to be overwritten in {place}, but it does not exist!'
+                )
 
             # actually add or overwrite the variable
             place.__dict__[name] = init

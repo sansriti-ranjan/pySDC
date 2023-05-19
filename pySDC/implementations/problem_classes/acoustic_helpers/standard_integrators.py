@@ -13,7 +13,9 @@ class rk_imex:
     def __init__(self, M_fast, M_slow, order):
         assert np.shape(M_fast)[0] == np.shape(M_fast)[1], "A_fast must be square"
         assert np.shape(M_slow)[0] == np.shape(M_slow)[1], "A_slow must be square"
-        assert np.shape(M_fast)[0] == np.shape(M_slow)[0], "A_fast and A_slow must be of the same size"
+        assert (
+            np.shape(M_fast)[0] == np.shape(M_slow)[0]
+        ), "A_fast and A_slow must be of the same size"
 
         assert order in [1, 2, 3, 4, 5], "Order must be between 2 and 5"
         self.order = order
@@ -30,7 +32,14 @@ class rk_imex:
             alpha = 0.24169426078821
             beta = 0.06042356519705
             eta = 0.12915286960590
-            self.A_hat = np.array([[0, 0, 0, 0], [0, 0, 0, 0], [0, 1.0, 0, 0], [0, 1.0 / 4.0, 1.0 / 4.0, 0]])
+            self.A_hat = np.array(
+                [
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 1.0, 0, 0],
+                    [0, 1.0 / 4.0, 1.0 / 4.0, 0],
+                ]
+            )
             self.A = np.array(
                 [
                     [alpha, 0, 0, 0],
@@ -80,7 +89,14 @@ class rk_imex:
                     [0, 0, 0, 0, 0, 0],
                     [1.0 / 4, 1.0 / 4, 0, 0, 0, 0],
                     [8611.0 / 62500.0, -1743.0 / 31250.0, 1.0 / 4, 0, 0, 0],
-                    [5012029.0 / 34652500.0, -654441.0 / 2922500.0, 174375.0 / 388108.0, 1.0 / 4, 0, 0],
+                    [
+                        5012029.0 / 34652500.0,
+                        -654441.0 / 2922500.0,
+                        174375.0 / 388108.0,
+                        1.0 / 4,
+                        0,
+                        0,
+                    ],
                     [
                         15267082809.0 / 155376265600.0,
                         -71443401.0 / 120774400.0,
@@ -89,10 +105,26 @@ class rk_imex:
                         1.0 / 4,
                         0,
                     ],
-                    [82889.0 / 524892.0, 0, 15625.0 / 83664.0, 69875.0 / 102672.0, -2260.0 / 8211, 1.0 / 4],
+                    [
+                        82889.0 / 524892.0,
+                        0,
+                        15625.0 / 83664.0,
+                        69875.0 / 102672.0,
+                        -2260.0 / 8211,
+                        1.0 / 4,
+                    ],
                 ]
             )
-            self.b = np.array([82889.0 / 524892.0, 0, 15625.0 / 83664.0, 69875.0 / 102672.0, -2260.0 / 8211, 1.0 / 4])
+            self.b = np.array(
+                [
+                    82889.0 / 524892.0,
+                    0,
+                    15625.0 / 83664.0,
+                    69875.0 / 102672.0,
+                    -2260.0 / 8211,
+                    1.0 / 4,
+                ]
+            )
             self.b_hat = np.array(
                 [
                     4586570599.0 / 29645900160.0,
@@ -203,7 +235,7 @@ class rk_imex:
         self.M_slow = sp.csc_matrix(M_slow)
         self.ndof = np.shape(M_fast)[0]
 
-        self.stages = np.zeros((self.nstages, self.ndof), dtype='complex')
+        self.stages = np.zeros((self.nstages, self.ndof), dtype="complex")
 
     def timestep(self, u0, dt):
         # Solve for stages
@@ -211,9 +243,9 @@ class rk_imex:
             # Construct RHS
             rhs = np.copy(u0)
             for j in range(0, i):
-                rhs += dt * self.A_hat[i, j] * (self.f_slow(self.stages[j, :])) + dt * self.A[i, j] * (
-                    self.f_fast(self.stages[j, :])
-                )
+                rhs += dt * self.A_hat[i, j] * (
+                    self.f_slow(self.stages[j, :])
+                ) + dt * self.A[i, j] * (self.f_fast(self.stages[j, :]))
 
             # Solve for stage i
             if self.A[i, i] == 0:
@@ -224,9 +256,9 @@ class rk_imex:
 
         # Update
         for i in range(0, self.nstages):
-            u0 += dt * self.b_hat[i] * (self.f_slow(self.stages[i, :])) + dt * self.b[i] * (
-                self.f_fast(self.stages[i, :])
-            )
+            u0 += dt * self.b_hat[i] * (self.f_slow(self.stages[i, :])) + dt * self.b[
+                i
+            ] * (self.f_fast(self.stages[i, :]))
 
         return u0
 
@@ -288,7 +320,7 @@ class dirk:
         self.M = sp.csc_matrix(M)
         self.order = order
 
-        assert self.order in [2, 22, 3, 4, 5], 'Order must be 2,22,3,4'
+        assert self.order in [2, 22, 3, 4, 5], "Order must be 2,22,3,4"
 
         if self.order == 2:
             self.nstages = 1
@@ -381,7 +413,7 @@ class dirk:
             self.b[3] = 5001116467727.0 / 12224457745473.0
             self.b[4] = 1509636094297.0 / 3891594770934.0
 
-        self.stages = np.zeros((self.nstages, self.Ndof), dtype='complex')
+        self.stages = np.zeros((self.nstages, self.Ndof), dtype="complex")
 
     def timestep(self, u0, dt):
         uend = u0

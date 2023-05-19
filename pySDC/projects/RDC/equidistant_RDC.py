@@ -39,21 +39,37 @@ class Equidistant_RDC(CollBase):
             nnodes = num_nodes
         else:
             if type(num_nodes) is not tuple:
-                raise ParameterError('Expecting int or tuple for num_nodes parameter, got %s' % type(num_nodes))
+                raise ParameterError(
+                    "Expecting int or tuple for num_nodes parameter, got %s"
+                    % type(num_nodes)
+                )
             if len(num_nodes) != 2:
-                raise ParameterError('Expecting 1 or 2 arguments for num_nodes, got %s' % num_nodes)
+                raise ParameterError(
+                    "Expecting 1 or 2 arguments for num_nodes, got %s" % num_nodes
+                )
             if type(num_nodes[0]) is not int:
-                raise ParameterError('Expecting int type for first num_nodes argument, got %s' % type(num_nodes[0]))
+                raise ParameterError(
+                    "Expecting int type for first num_nodes argument, got %s"
+                    % type(num_nodes[0])
+                )
             if type(num_nodes[1]) is not int:
-                raise ParameterError('Expecting int type for second num_nodes argument, got %s' % type(num_nodes[1]))
+                raise ParameterError(
+                    "Expecting int type for second num_nodes argument, got %s"
+                    % type(num_nodes[1])
+                )
             max_d = num_nodes[1]
             nnodes = num_nodes[0]
 
         if nnodes < 2:
-            raise CollocationError("Number of nodes should be at least 2 for equidistant, but is %d" % num_nodes)
+            raise CollocationError(
+                "Number of nodes should be at least 2 for equidistant, but is %d"
+                % num_nodes
+            )
 
         try:
-            super(Equidistant_RDC, self).__init__(num_nodes=nnodes, node_type='EQUID', quad_type='LOBATTO', **kwargs)
+            super(Equidistant_RDC, self).__init__(
+                num_nodes=nnodes, node_type="EQUID", quad_type="LOBATTO", **kwargs
+            )
         except AttributeError:
             pass
 
@@ -116,13 +132,19 @@ class Equidistant_RDC(CollBase):
             numpy.ndarray: weights of the collocation formula given by the nodes
         """
         if self.nodes is None:
-            raise CollocationError("Need nodes before computing weights, got %s" % self.nodes)
+            raise CollocationError(
+                "Need nodes before computing weights, got %s" % self.nodes
+            )
 
         circ_one = np.zeros(self.num_nodes)
         circ_one[0] = 1.0
         tcks = []
         for i in range(self.num_nodes):
-            tcks.append(MyBarycentricInterpolator(self.nodes, np.roll(circ_one, i), self.fh_weights))
+            tcks.append(
+                MyBarycentricInterpolator(
+                    self.nodes, np.roll(circ_one, i), self.fh_weights
+                )
+            )
 
         # Generate evaluation points for quadrature
         tau, omega = roots_legendre(self.num_nodes)
@@ -142,7 +164,9 @@ class Equidistant_RDC(CollBase):
             numpy.ndarray: matrix containing the weights for tleft to node
         """
         if self.nodes is None:
-            raise CollocationError(f"Need nodes before computing weights, got {self.nodes}")
+            raise CollocationError(
+                f"Need nodes before computing weights, got {self.nodes}"
+            )
         M = self.num_nodes
         Q = np.zeros([M + 1, M + 1])
 
@@ -151,7 +175,11 @@ class Equidistant_RDC(CollBase):
         circ_one[0] = 1.0
         tcks = []
         for i in range(M):
-            tcks.append(MyBarycentricInterpolator(self.nodes, np.roll(circ_one, i), self.fh_weights))
+            tcks.append(
+                MyBarycentricInterpolator(
+                    self.nodes, np.roll(circ_one, i), self.fh_weights
+                )
+            )
 
         # Generate evaluation points for quadrature
         a, b = self.tleft, self.nodes[:, None]

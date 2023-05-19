@@ -18,7 +18,7 @@ from dask.distributed import LocalCluster, Client
 # (x + 1)[::2, ::2].sum().compute(scheduler='threads')
 # print(time.perf_counter() - t0)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     c = LocalCluster(n_workers=2, processes=True, threads_per_worker=24)
     print(c)
 

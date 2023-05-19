@@ -8,13 +8,15 @@ from pySDC.implementations.hooks.log_errors import LogGlobalErrorPostRun
 from pySDC.implementations.hooks.log_solution import LogSolution
 from pySDC.projects.compression.compressed_problems import heat_ND_compressed
 from pySDC.projects.compression.log_datatype_creations import LogDatatypeCreations
-from pySDC.projects.compression.compression_convergence_controller import Compression_Conv_Controller
+from pySDC.projects.compression.compression_convergence_controller import (
+    Compression_Conv_Controller,
+)
 
 
-def run_heat(residual_tolerance = 1e-4,errBound=1e-8,resolution=64,Tend=1):
+def run_heat(residual_tolerance=1e-4, errBound=1e-8, resolution=64, Tend=1):
     # setup communicator
     # comm = MPI.COMM_WORLD if comm is None else comm
-    
+
     # initialize problem parameters
     problem_params = {}
     problem_params["nu"] = 1.0
@@ -23,11 +25,15 @@ def run_heat(residual_tolerance = 1e-4,errBound=1e-8,resolution=64,Tend=1):
     problem_params["lintol"] = 1e-7
     problem_params["liniter"] = 99
     problem_params["solver_type"] = "CG"
-    problem_params["nvars"] = (resolution, resolution, resolution)  # Have to be the same, Nx = Ny = Nz
+    problem_params["nvars"] = (
+        resolution,
+        resolution,
+        resolution,
+    )  # Have to be the same, Nx = Ny = Nz
     problem_params["bc"] = "periodic"
 
     convergence_controllers = {}
-    convergence_controllers[Compression_Conv_Controller] = {'errBound':errBound}
+    convergence_controllers[Compression_Conv_Controller] = {"errBound": errBound}
 
     # initialize level parameters
     level_params = {}
@@ -54,12 +60,12 @@ def run_heat(residual_tolerance = 1e-4,errBound=1e-8,resolution=64,Tend=1):
     controller_params["hook_class"] = [
         LogSolution,
         LogGlobalErrorPostRun,
-        #LogDatatypeCreations,
+        # LogDatatypeCreations,
     ]
 
     # fill description dictionary for easy step instantiation
     description = {}
-    #description['problem_class'] = heatNd_forced#     heat_ND_compressed
+    # description['problem_class'] = heatNd_forced#     heat_ND_compressed
     description["problem_class"] = heat_ND_compressed
     description["problem_params"] = problem_params
     description["sweeper_class"] = imex_1st_order

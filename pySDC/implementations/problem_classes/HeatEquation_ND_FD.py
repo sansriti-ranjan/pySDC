@@ -10,19 +10,21 @@ class heatNd_unforced(GenericNDimFinDiff):
         nvars=512,
         nu=0.1,
         freq=2,
-        stencil_type='center',
+        stencil_type="center",
         order=2,
         lintol=1e-12,
         liniter=10000,
-        solver_type='direct',
-        bc='periodic',
+        solver_type="direct",
+        bc="periodic",
         sigma=6e-2,
     ):
-        super().__init__(nvars, nu, 2, freq, stencil_type, order, lintol, liniter, solver_type, bc)
-        if solver_type == 'GMRES':
-            self.logger.warn('GMRES is not usually used for heat equation')
-        self._makeAttributeAndRegister('nu', localVars=locals(), readOnly=True)
-        self._makeAttributeAndRegister('sigma', localVars=locals())
+        super().__init__(
+            nvars, nu, 2, freq, stencil_type, order, lintol, liniter, solver_type, bc
+        )
+        if solver_type == "GMRES":
+            self.logger.warn("GMRES is not usually used for heat equation")
+        self._makeAttributeAndRegister("nu", localVars=locals(), readOnly=True)
+        self._makeAttributeAndRegister("sigma", localVars=locals())
 
     def u_exact(self, t, **kwargs):
         """
@@ -34,7 +36,14 @@ class heatNd_unforced(GenericNDimFinDiff):
         Returns:
             dtype_u: exact solution
         """
-        ndim, freq, nu, sigma, dx, sol = self.ndim, self.freq, self.nu, self.sigma, self.dx, self.u_init
+        ndim, freq, nu, sigma, dx, sol = (
+            self.ndim,
+            self.freq,
+            self.nu,
+            self.sigma,
+            self.dx,
+            self.u_init,
+        )
 
         if ndim == 1:
             x = self.grids
@@ -48,7 +57,11 @@ class heatNd_unforced(GenericNDimFinDiff):
                 2.0 - 2.0 * np.cos(np.pi * freq[1] * dx)
             ) / dx**2
             x, y = self.grids
-            sol[:] = np.sin(np.pi * freq[0] * x) * np.sin(np.pi * freq[1] * y) * np.exp(-t * nu * rho)
+            sol[:] = (
+                np.sin(np.pi * freq[0] * x)
+                * np.sin(np.pi * freq[1] * y)
+                * np.exp(-t * nu * rho)
+            )
         elif ndim == 3:
             rho = (
                 (2.0 - 2.0 * np.cos(np.pi * freq[0] * dx)) / dx**2
@@ -97,14 +110,18 @@ class heatNd_forced(heatNd_unforced):
         if ndim == 1:
             x = self.grids
             f.expl[:] = np.sin(np.pi * freq[0] * x) * (
-                nu * np.pi**2 * sum([freq**2 for freq in freq]) * np.cos(t) - np.sin(t)
+                nu * np.pi**2 * sum([freq**2 for freq in freq]) * np.cos(t)
+                - np.sin(t)
             )
         elif ndim == 2:
             x, y = self.grids
             f.expl[:] = (
                 np.sin(np.pi * freq[0] * x)
                 * np.sin(np.pi * freq[1] * y)
-                * (nu * np.pi**2 * sum([freq**2 for freq in freq]) * np.cos(t) - np.sin(t))
+                * (
+                    nu * np.pi**2 * sum([freq**2 for freq in freq]) * np.cos(t)
+                    - np.sin(t)
+                )
             )
         elif ndim == 3:
             x, y, z = self.grids
@@ -112,7 +129,10 @@ class heatNd_forced(heatNd_unforced):
                 np.sin(np.pi * freq[0] * x)
                 * np.sin(np.pi * freq[1] * y)
                 * np.sin(np.pi * freq[2] * z)
-                * (nu * np.pi**2 * sum([freq**2 for freq in freq]) * np.cos(t) - np.sin(t))
+                * (
+                    nu * np.pi**2 * sum([freq**2 for freq in freq]) * np.cos(t)
+                    - np.sin(t)
+                )
             )
 
         return f
@@ -133,8 +153,15 @@ class heatNd_forced(heatNd_unforced):
             sol[:] = np.sin(np.pi * freq[0] * x) * np.cos(t)
         elif ndim == 2:
             x, y = self.grids
-            sol[:] = np.sin(np.pi * freq[0] * x) * np.sin(np.pi * freq[1] * y) * np.cos(t)
+            sol[:] = (
+                np.sin(np.pi * freq[0] * x) * np.sin(np.pi * freq[1] * y) * np.cos(t)
+            )
         elif ndim == 3:
             x, y, z = self.grids
-            sol[:] = np.sin(np.pi * freq[0] * x) * np.sin(np.pi * freq[1] * y) * np.sin(np.pi * freq[2] * z) * np.cos(t)
+            sol[:] = (
+                np.sin(np.pi * freq[0] * x)
+                * np.sin(np.pi * freq[1] * y)
+                * np.sin(np.pi * freq[2] * z)
+                * np.cos(t)
+            )
         return sol

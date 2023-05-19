@@ -28,7 +28,7 @@ class advection_2d_explicit(ptype):
         """
 
         # these parameters will be used later, so assert their existence
-        assert 'nvars' in cparams
+        assert "nvars" in cparams
 
         # add parameters as attributes for further reference
         for k, v in cparams.items():
@@ -37,11 +37,13 @@ class advection_2d_explicit(ptype):
         # invoke super init, passing number of dofs, dtype_u and dtype_f
         super(advection_2d_explicit, self).__init__(self.nvars, dtype_u, dtype_f)
 
-        riemann_solver = riemann.advection_2D  # NOTE: This uses the FORTRAN kernels of clawpack
+        riemann_solver = (
+            riemann.advection_2D
+        )  # NOTE: This uses the FORTRAN kernels of clawpack
         self.solver = pyclaw.SharpClawSolver2D(riemann.advection_2D)
         self.solver.weno_order = 5
-        self.solver.time_integrator = 'Euler'  # Remove later
-        self.solver.kernel_language = 'Fortran'
+        self.solver.time_integrator = "Euler"  # Remove later
+        self.solver.kernel_language = "Fortran"
         self.solver.bc_lower[0] = pyclaw.BC.periodic
         self.solver.bc_upper[0] = pyclaw.BC.periodic
         self.solver.bc_lower[1] = pyclaw.BC.periodic
@@ -49,15 +51,15 @@ class advection_2d_explicit(ptype):
         self.solver.cfl_max = 1.0
         assert self.solver.is_valid()
 
-        x = pyclaw.Dimension(-1.0, 1.0, self.nvars[1], name='x')
-        y = pyclaw.Dimension(0.0, 1.0, self.nvars[2], name='y')
+        x = pyclaw.Dimension(-1.0, 1.0, self.nvars[1], name="x")
+        y = pyclaw.Dimension(0.0, 1.0, self.nvars[2], name="y")
         self.domain = pyclaw.Domain([x, y])
 
         self.state = pyclaw.State(self.domain, self.solver.num_eqn)
         # self.dx = self.state.grid.x.centers[1] - self.state.grid.x.centers[0]
 
-        self.state.problem_data['u'] = 1.0
-        self.state.problem_data['v'] = 0.0
+        self.state.problem_data["u"] = 1.0
+        self.state.problem_data["v"] = 0.0
 
         solution = pyclaw.Solution(self.state, self.domain)
         self.solver.setup(solution)

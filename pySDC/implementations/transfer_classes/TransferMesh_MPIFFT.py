@@ -52,7 +52,7 @@ class fft_to_fft(space_transfer):
         if isinstance(F, mesh):
             if self.spectral:
                 G = self.coarse_prob.dtype_u(self.coarse_prob.init)
-                if hasattr(self.fine_prob, 'ncomp'):
+                if hasattr(self.fine_prob, "ncomp"):
                     for i in range(self.fine_prob.ncomp):
                         tmpF = newDistArray(self.fine_prob.fft, False)
                         tmpF = self.fine_prob.fft.backward(F[..., i], tmpF)
@@ -66,7 +66,7 @@ class fft_to_fft(space_transfer):
                 G = self.coarse_prob.dtype_u(self.coarse_prob.init)
                 G[:] = F[:: int(self.ratio[0]), :: int(self.ratio[1])]
         else:
-            raise TransferError('Unknown data type, got %s' % type(F))
+            raise TransferError("Unknown data type, got %s" % type(F))
 
         return G
 
@@ -80,7 +80,7 @@ class fft_to_fft(space_transfer):
         if isinstance(G, mesh):
             if self.spectral:
                 F = self.fine_prob.dtype_u(self.fine_prob.init)
-                if hasattr(self.fine_prob, 'ncomp'):
+                if hasattr(self.fine_prob, "ncomp"):
                     for i in range(self.fine_prob.ncomp):
                         tmpF = self.fft_pad.backward(G[..., i])
                         F[..., i] = self.fine_prob.fft.forward(tmpF, F[..., i])
@@ -89,7 +89,7 @@ class fft_to_fft(space_transfer):
                     F[:] = self.fine_prob.fft.forward(tmpF, F)
             else:
                 F = self.fine_prob.dtype_u(self.fine_prob.init)
-                if hasattr(self.fine_prob, 'ncomp'):
+                if hasattr(self.fine_prob, "ncomp"):
                     for i in range(self.fine_prob.ncomp):
                         G_hat = self.coarse_prob.fft.forward(G[..., i])
                         F[..., i] = self.fft_pad.backward(G_hat, F[..., i])
@@ -99,12 +99,16 @@ class fft_to_fft(space_transfer):
         elif isinstance(G, imex_mesh):
             if self.spectral:
                 F = self.fine_prob.dtype_f(self.fine_prob.init)
-                if hasattr(self.fine_prob, 'ncomp'):
+                if hasattr(self.fine_prob, "ncomp"):
                     for i in range(self.fine_prob.ncomp):
                         tmpF = self.fft_pad.backward(G.impl[..., i])
-                        F.impl[..., i] = self.fine_prob.fft.forward(tmpF, F.impl[..., i])
+                        F.impl[..., i] = self.fine_prob.fft.forward(
+                            tmpF, F.impl[..., i]
+                        )
                         tmpF = self.fft_pad.backward(G.expl[..., i])
-                        F.expl[..., i] = self.fine_prob.fft.forward(tmpF, F.expl[..., i])
+                        F.expl[..., i] = self.fine_prob.fft.forward(
+                            tmpF, F.expl[..., i]
+                        )
                 else:
                     tmpF = self.fft_pad.backward(G.impl)
                     F.impl[:] = self.fine_prob.fft.forward(tmpF, F.impl)
@@ -112,7 +116,7 @@ class fft_to_fft(space_transfer):
                     F.expl[:] = self.fine_prob.fft.forward(tmpF, F.expl)
             else:
                 F = self.fine_prob.dtype_f(self.fine_prob.init)
-                if hasattr(self.fine_prob, 'ncomp'):
+                if hasattr(self.fine_prob, "ncomp"):
                     for i in range(self.fine_prob.ncomp):
                         G_hat = self.coarse_prob.fft.forward(G.impl[..., i])
                         F.impl[..., i] = self.fft_pad.backward(G_hat, F.impl[..., i])
@@ -124,6 +128,6 @@ class fft_to_fft(space_transfer):
                     G_hat = self.coarse_prob.fft.forward(G.expl)
                     F.expl[:] = self.fft_pad.backward(G_hat, F.expl)
         else:
-            raise TransferError('Unknown data type, got %s' % type(G))
+            raise TransferError("Unknown data type, got %s" % type(G))
 
         return F

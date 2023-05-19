@@ -35,7 +35,7 @@ class base_transfer_mass(base_transfer):
 
         # only if the level is unlocked at least by prediction
         if not F.status.unlocked:
-            raise UnlockError('fine level is still locked, cannot use data from there')
+            raise UnlockError("fine level is still locked, cannot use data from there")
 
         # restrict fine values in space
         tmp_u = []
@@ -128,7 +128,9 @@ class base_transfer_mass(base_transfer):
 
         # only of the level is unlocked at least by prediction or restriction
         if not G.status.unlocked:
-            raise UnlockError('coarse level is still locked, cannot use data from there')
+            raise UnlockError(
+                "coarse level is still locked, cannot use data from there"
+            )
 
         # build coarse correction
 
@@ -167,7 +169,9 @@ class base_transfer_mass(base_transfer):
 
         # only of the level is unlocked at least by prediction or restriction
         if not G.status.unlocked:
-            raise UnlockError('coarse level is still locked, cannot use data from there')
+            raise UnlockError(
+                "coarse level is still locked, cannot use data from there"
+            )
 
         # build coarse correction
 

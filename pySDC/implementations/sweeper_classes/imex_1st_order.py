@@ -22,10 +22,10 @@ class imex_1st_order(sweeper):
             params: parameters for the sweeper
         """
 
-        if 'QI' not in params:
-            params['QI'] = 'IE'
-        if 'QE' not in params:
-            params['QE'] = 'EE'
+        if "QI" not in params:
+            params["QI"] = "IE"
+        if "QE" not in params:
+            params["QE"] = "EE"
 
         # call parent's initialization routine
         super(imex_1st_order, self).__init__(params)
@@ -82,7 +82,9 @@ class imex_1st_order(sweeper):
         for m in range(M):
             # subtract QIFI(u^k)_m + QEFE(u^k)_m
             for j in range(1, M + 1):
-                integral[m] -= L.dt * (self.QI[m + 1, j] * L.f[j].impl + self.QE[m + 1, j] * L.f[j].expl)
+                integral[m] -= L.dt * (
+                    self.QI[m + 1, j] * L.f[j].impl + self.QE[m + 1, j] * L.f[j].expl
+                )
             # add initial value
             integral[m] += L.u[0]
             # add tau if associated
@@ -94,11 +96,16 @@ class imex_1st_order(sweeper):
             # build rhs, consisting of the known values from above and new values from previous nodes (at k+1)
             rhs = P.dtype_u(integral[m])
             for j in range(1, m + 1):
-                rhs += L.dt * (self.QI[m + 1, j] * L.f[j].impl + self.QE[m + 1, j] * L.f[j].expl)
+                rhs += L.dt * (
+                    self.QI[m + 1, j] * L.f[j].impl + self.QE[m + 1, j] * L.f[j].expl
+                )
 
             # implicit solve with prefactor stemming from QI
             L.u[m + 1] = P.solve_system(
-                rhs, L.dt * self.QI[m + 1, m + 1], L.u[m + 1], L.time + L.dt * self.coll.nodes[m]
+                rhs,
+                L.dt * self.QI[m + 1, m + 1],
+                L.u[m + 1],
+                L.time + L.dt * self.coll.nodes[m],
             )
 
             # update function values
@@ -131,7 +138,9 @@ class imex_1st_order(sweeper):
             # start with u0 and add integral over the full interval (using coll.weights)
             L.uend = P.dtype_u(L.u[0])
             for m in range(self.coll.num_nodes):
-                L.uend += L.dt * self.coll.weights[m] * (L.f[m + 1].impl + L.f[m + 1].expl)
+                L.uend += (
+                    L.dt * self.coll.weights[m] * (L.f[m + 1].impl + L.f[m + 1].expl)
+                )
             # add up tau correction of the full interval (last entry)
             if L.tau[-1] is not None:
                 L.uend += L.tau[-1]
@@ -163,14 +172,18 @@ class imex_1st_order(sweeper):
         if lambdas is None:
             pass
             # should use lambdas from attached problem and make sure it is a scalar IMEX
-            raise NotImplementedError("At the moment, the values for lambda have to be provided")
+            raise NotImplementedError(
+                "At the moment, the values for lambda have to be provided"
+            )
         else:
             lambda_fast = lambdas[0]
             lambda_slow = lambdas[1]
         nnodes = self.coll.num_nodes
         dt = self.level.dt
         LHS = np.eye(nnodes) - dt * (lambda_fast * QI + lambda_slow * QE)
-        RHS = dt * ((lambda_fast + lambda_slow) * Q - (lambda_fast * QI + lambda_slow * QE))
+        RHS = dt * (
+            (lambda_fast + lambda_slow) * Q - (lambda_fast * QI + lambda_slow * QE)
+        )
         return LHS, RHS
 
     def get_scalar_problems_manysweep_mat(self, nsweeps, lambdas=None):

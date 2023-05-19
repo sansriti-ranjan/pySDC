@@ -17,15 +17,23 @@ for k in range(ldim):
     j = k % n
     i = k // n
     # set up target
-    x.setValue(iglobal, np.sin(2 * np.pi * (i + 1) * dx) * np.sin(2 * np.pi * (j + 1) * dx))
+    x.setValue(
+        iglobal, np.sin(2 * np.pi * (i + 1) * dx) * np.sin(2 * np.pi * (j + 1) * dx)
+    )
     # set up exact solution
-    y.setValue(iglobal, -2 * (2.0 * np.pi) ** 2 * np.sin(2 * np.pi * (i + 1) * dx) * np.sin(2 * np.pi * (j + 1) * dx))
+    y.setValue(
+        iglobal,
+        -2
+        * (2.0 * np.pi) ** 2
+        * np.sin(2 * np.pi * (i + 1) * dx)
+        * np.sin(2 * np.pi * (j + 1) * dx),
+    )
 x.assemblyBegin()
 x.assemblyEnd()
 
 # set up 2nd order FD matrix, taken from https://bitbucket.org/petsc/petsc4py/src/master/demo/kspsolve/petsc-mat.py
 A = da.createMatrix()
-A.setType('aij')  # sparse
+A.setType("aij")  # sparse
 A.setFromOptions()
 A.setPreallocationNNZ((5, 5))
 A.setUp()

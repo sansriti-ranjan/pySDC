@@ -46,6 +46,6 @@ class monitor(hooks):
         # plt.draw()
         # plt.pause(0.0001)
 
-        u_max = np.amax(abs(L.uend.values[1]['g']))
+        u_max = np.amax(abs(L.uend.values[1]["g"]))
 
         print(u_max)

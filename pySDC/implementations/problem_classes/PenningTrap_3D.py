@@ -3,7 +3,11 @@ from numba import jit
 
 from pySDC.core.Errors import ProblemError
 from pySDC.core.Problem import ptype
-from pySDC.implementations.datatype_classes.particles import particles, fields, acceleration
+from pySDC.implementations.datatype_classes.particles import (
+    particles,
+    fields,
+    acceleration,
+)
 
 
 # noinspection PyUnusedLocal
@@ -17,9 +21,11 @@ class penningtrap(ptype):
 
     def __init__(self, omega_B, omega_E, u0, nparts, sig):
         # invoke super init, passing nparts, dtype_u and dtype_f
-        super().__init__(((3, nparts), None, np.dtype('float64')))
-        self._makeAttributeAndRegister('nparts', localVars=locals(), readOnly=True)
-        self._makeAttributeAndRegister('omega_B', 'omega_E', 'u0', 'sig', localVars=locals())
+        super().__init__(((3, nparts), None, np.dtype("float64")))
+        self._makeAttributeAndRegister("nparts", localVars=locals(), readOnly=True)
+        self._makeAttributeAndRegister(
+            "omega_B", "omega_E", "u0", "sig", localVars=locals()
+        )
 
     @staticmethod
     @jit(nopython=True, nogil=True)
@@ -79,7 +85,11 @@ class penningtrap(ptype):
         f.elec[:] = self.get_interactions(part)
 
         for n in range(N):
-            f.elec[:, n] += self.omega_E**2 / (part.q[n] / part.m[n]) * np.dot(Emat, part.pos[:, n])
+            f.elec[:, n] += (
+                self.omega_E**2
+                / (part.q[n] / part.m[n])
+                * np.dot(Emat, part.pos[:, n])
+            )
             f.magn[:, n] = self.omega_B * np.array([0, 0, 1])
 
         return f
@@ -99,7 +109,7 @@ class penningtrap(ptype):
         u = self.dtype_u(self.init)
 
         if u0[2][0] != 1 or u0[3][0] != 1:
-            raise ProblemError('so far only q = m = 1 is implemented')
+            raise ProblemError("so far only q = m = 1 is implemented")
 
         # set first particle to u0
         u.pos[0, 0] = u0[0][0]
@@ -161,7 +171,7 @@ class penningtrap(ptype):
         u0 = self.u0
 
         if N != 1:
-            raise ProblemError('u_exact is only valid for a single particle')
+            raise ProblemError("u_exact is only valid for a single particle")
 
         u = self.dtype_u(((3, 1), self.init[1], self.init[2]))
 
@@ -180,9 +190,13 @@ class penningtrap(ptype):
         Ip = u0[0][1] - Im
 
         # compute position in complex notation
-        w = (Rp + Ip * 1j) * np.exp(-Op * t * 1j) + (Rm + Im * 1j) * np.exp(-Om * t * 1j)
+        w = (Rp + Ip * 1j) * np.exp(-Op * t * 1j) + (Rm + Im * 1j) * np.exp(
+            -Om * t * 1j
+        )
         # compute velocity as time derivative of the position
-        dw = -1j * Op * (Rp + Ip * 1j) * np.exp(-Op * t * 1j) - 1j * Om * (Rm + Im * 1j) * np.exp(-Om * t * 1j)
+        dw = -1j * Op * (Rp + Ip * 1j) * np.exp(-Op * t * 1j) - 1j * Om * (
+            Rm + Im * 1j
+        ) * np.exp(-Om * t * 1j)
 
         # get the appropriate real and imaginary parts
         u.pos[0, 0] = w.real
@@ -205,13 +219,17 @@ class penningtrap(ptype):
         """
 
         if not isinstance(part, particles):
-            raise ProblemError('something is wrong during build_f, got %s' % type(part))
+            raise ProblemError("something is wrong during build_f, got %s" % type(part))
 
         N = self.nparts
 
         rhs = acceleration(self.init)
         for n in range(N):
-            rhs[:, n] = part.q[n] / part.m[n] * (f.elec[:, n] + np.cross(part.vel[:, n], f.magn[:, n]))
+            rhs[:, n] = (
+                part.q[n]
+                / part.m[n]
+                * (f.elec[:, n] + np.cross(part.vel[:, n], f.magn[:, n]))
+            )
 
         return rhs
 
@@ -238,7 +256,14 @@ class penningtrap(ptype):
         for n in range(N):
             a = old_parts.q[n] / old_parts.m[n]
 
-            c[:, n] += dt / 2 * a * np.cross(old_parts.vel[:, n], old_fields.magn[:, n] - new_fields.magn[:, n])
+            c[:, n] += (
+                dt
+                / 2
+                * a
+                * np.cross(
+                    old_parts.vel[:, n], old_fields.magn[:, n] - new_fields.magn[:, n]
+                )
+            )
 
             # pre-velocity, separated by the electric forces (and the c term)
             vm = old_parts.vel[:, n] + dt / 2 * a * Emean[:, n] + c[:, n] / 2

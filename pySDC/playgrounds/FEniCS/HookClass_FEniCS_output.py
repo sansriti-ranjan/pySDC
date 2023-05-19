@@ -2,7 +2,9 @@ import dolfin as df
 
 from pySDC.core.Hooks import hooks
 
-file = df.File('output1d/grayscott.pvd')  # dirty, but this has to be unique (and not per step or level)
+file = df.File(
+    "output1d/grayscott.pvd"
+)  # dirty, but this has to be unique (and not per step or level)
 
 
 class fenics_output(hooks):
@@ -29,7 +31,6 @@ class fenics_output(hooks):
     #     file << v
 
     def post_iteration(self, step, level_number):
-
         super(fenics_output, self).post_iteration(step, level_number)
 
         # some abbreviations
@@ -45,7 +46,7 @@ class fenics_output(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='error',
+            type="error",
             value=err,
         )
 
@@ -55,7 +56,7 @@ class fenics_output(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='residual',
+            type="residual",
             value=L.status.residual / abs(L.u[0]),
         )
 

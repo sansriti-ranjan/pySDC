@@ -66,20 +66,22 @@ class advectionNd(GenericNDimFinDiff):
         nvars=512,
         c=1.0,
         freq=2,
-        stencil_type='center',
+        stencil_type="center",
         order=2,
         lintol=1e-12,
         liniter=10000,
-        solver_type='direct',
-        bc='periodic',
+        solver_type="direct",
+        bc="periodic",
         sigma=6e-2,
     ):
-        super().__init__(nvars, -c, 1, freq, stencil_type, order, lintol, liniter, solver_type, bc)
+        super().__init__(
+            nvars, -c, 1, freq, stencil_type, order, lintol, liniter, solver_type, bc
+        )
 
-        if solver_type == 'CG':  # pragma: no cover
-            self.logger.warn('CG is not usually used for advection equation')
-        self._makeAttributeAndRegister('c', localVars=locals(), readOnly=True)
-        self._makeAttributeAndRegister('sigma', localVars=locals())
+        if solver_type == "CG":  # pragma: no cover
+            self.logger.warn("CG is not usually used for advection equation")
+        self._makeAttributeAndRegister("c", localVars=locals(), readOnly=True)
+        self._makeAttributeAndRegister("sigma", localVars=locals())
 
     def u_exact(self, t, **kwargs):
         """
@@ -98,7 +100,13 @@ class advectionNd(GenericNDimFinDiff):
             The exact solution.
         """
         # Initialize pointers and variables
-        ndim, freq, c, sigma, sol = self.ndim, self.freq, self.c, self.sigma, self.u_init
+        ndim, freq, c, sigma, sol = (
+            self.ndim,
+            self.freq,
+            self.c,
+            self.sigma,
+            self.u_init,
+        )
 
         if ndim == 1:
             x = self.grids
@@ -110,7 +118,9 @@ class advectionNd(GenericNDimFinDiff):
 
         elif ndim == 2:
             x, y = self.grids
-            sol[:] = np.sin(np.pi * freq[0] * (x - c * t)) * np.sin(np.pi * freq[1] * (y - c * t))
+            sol[:] = np.sin(np.pi * freq[0] * (x - c * t)) * np.sin(
+                np.pi * freq[1] * (y - c * t)
+            )
 
         elif ndim == 3:
             x, y, z = self.grids

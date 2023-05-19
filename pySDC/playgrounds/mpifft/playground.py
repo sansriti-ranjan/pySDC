@@ -23,7 +23,7 @@ def get_local_wavenumbermesh(FFT, L):
     k = [np.fft.fftfreq(n, 1.0 / n).astype(int) for n in N[:-1]]
     k.append(np.fft.rfftfreq(N[-1], 1.0 / N[-1]).astype(int))
     K = [ki[si] for ki, si in zip(k, s)]
-    Ks = np.meshgrid(*K, indexing='ij', sparse=True)
+    Ks = np.meshgrid(*K, indexing="ij", sparse=True)
     Lp = 2 * np.pi / L
     for i in range(ndim):
         Ks[i] = (Ks[i] * Lp[i]).astype(float)
@@ -66,7 +66,7 @@ lap_u = np.zeros_like(u)
 lap_u = fft.backward(lap_u_hat, lap_u)
 local_error = np.amax(abs(lap_u - uex))
 err = MPI.COMM_WORLD.allreduce(local_error, MPI.MAX)
-print('Laplace error:', err)
+print("Laplace error:", err)
 
 ratio = 2
 Nc = np.array([nvars // ratio] * ndim, dtype=int)
@@ -84,29 +84,33 @@ uexc[:] = 0.5 * (1.0 + np.tanh((0.25 - np.sqrt(r2c)) / (np.sqrt(2) * 0.04)))
 uc = uex[::ratio, ::ratio]
 local_error = np.amax(abs(uc - uexc))
 err = MPI.COMM_WORLD.allreduce(local_error, MPI.MAX)
-print('Restriction error real:', err)
+print("Restriction error real:", err)
 
 uexcs = fftc.forward(uexc)
 uc = uex[::ratio, ::ratio]
 ucs = fftc.forward(uc)
 local_error = np.amax(abs(ucs - uexcs))
 err = MPI.COMM_WORLD.allreduce(local_error, MPI.MAX)
-print('Restriction error spectral:', err)
+print("Restriction error spectral:", err)
 
 uexc_hat = fftc.forward(uexc)
-fft_pad = PFFT(MPI.COMM_WORLD, Nc, padding=[ratio] * ndim, axes=axes, dtype=np.float, slab=True)
+fft_pad = PFFT(
+    MPI.COMM_WORLD, Nc, padding=[ratio] * ndim, axes=axes, dtype=np.float, slab=True
+)
 uf = newDistArray(fft_pad, False)
 uf = fft_pad.backward(uexc_hat, uf)
 local_error = np.amax(abs(uf - uex))
 err = MPI.COMM_WORLD.allreduce(local_error, MPI.MAX)
-print('Interpolation error real:', err)
+print("Interpolation error real:", err)
 
 
 uexs = fft.forward(uex)
-fft_pad = PFFT(MPI.COMM_WORLD, Nc, padding=[ratio] * ndim, axes=axes, dtype=np.float, slab=True)
+fft_pad = PFFT(
+    MPI.COMM_WORLD, Nc, padding=[ratio] * ndim, axes=axes, dtype=np.float, slab=True
+)
 # uf = fft_pad.backward(uexc_hat)
 # ufs = fft.forward(uf)
-ufs = np.pad(uexc_hat, [(0, Nc[0]), (0, Nc[1] // 2)], mode='constant')
+ufs = np.pad(uexc_hat, [(0, Nc[0]), (0, Nc[1] // 2)], mode="constant")
 # ufs[:][0] *= 2
 print(uexc_hat[1])
 print(uexs[1])
@@ -114,7 +118,7 @@ print(uexc_hat.shape, ufs.shape, uexs.shape)
 
 local_error = np.amax(abs(ufs / 4 - uexs))
 err = MPI.COMM_WORLD.allreduce(local_error, MPI.MAX)
-print('Interpolation error spectral:', err)
+print("Interpolation error spectral:", err)
 exit()
 
 u = newDistArray(fft, False)

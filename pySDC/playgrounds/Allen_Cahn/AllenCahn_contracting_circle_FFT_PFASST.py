@@ -28,44 +28,44 @@ def setup_parameters(nsweeps=None):
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-07
-    level_params['dt'] = 1e-03 / 2
-    level_params['nsweeps'] = [nsweeps, 1]
+    level_params["restol"] = 1e-07
+    level_params["dt"] = 1e-03 / 2
+    level_params["nsweeps"] = [nsweeps, 1]
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = [3]
-    sweeper_params['QI'] = ['LU']
-    sweeper_params['QE'] = ['EE']
-    sweeper_params['initial_guess'] = 'zero'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = [3]
+    sweeper_params["QI"] = ["LU"]
+    sweeper_params["QE"] = ["EE"]
+    sweeper_params["initial_guess"] = "zero"
 
     # This comes as read-in for the problem class
     problem_params = dict()
-    problem_params['nu'] = 2
-    problem_params['L'] = 1.0
-    problem_params['nvars'] = [(128, 128), (32, 32)]
-    problem_params['eps'] = 0.04
-    problem_params['radius'] = 0.25
+    problem_params["nu"] = 2
+    problem_params["L"] = 1.0
+    problem_params["nvars"] = [(128, 128), (32, 32)]
+    problem_params["eps"] = 0.04
+    problem_params["radius"] = 0.25
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30
-    controller_params['hook_class'] = monitor
+    controller_params["logger_level"] = 30
+    controller_params["hook_class"] = monitor
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = allencahn2d_imex  # pass problem class
-    description['problem_params'] = problem_params  # pass problem parameters
-    description['sweeper_class'] = imex_1st_order  # pass sweeper (see part B)
-    description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    description['level_params'] = level_params  # pass level parameters
-    description['step_params'] = step_params  # pass step parameters
-    description['space_transfer_class'] = mesh_to_mesh_fft2d
+    description["problem_class"] = allencahn2d_imex  # pass problem class
+    description["problem_params"] = problem_params  # pass problem parameters
+    description["sweeper_class"] = imex_1st_order  # pass sweeper (see part B)
+    description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    description["level_params"] = level_params  # pass level parameters
+    description["step_params"] = step_params  # pass step parameters
+    description["space_transfer_class"] = mesh_to_mesh_fft2d
 
     return description, controller_params
 
@@ -117,7 +117,9 @@ def run_variant(nsweeps):
     Tend = 0.032
 
     # instantiate controller
-    controller = controller_MPI(controller_params=controller_params, description=description, comm=time_comm)
+    controller = controller_MPI(
+        controller_params=controller_params, description=description, comm=time_comm
+    )
 
     # get initial values on finest level
     P = controller.S.levels[0].prob
@@ -127,25 +129,31 @@ def run_variant(nsweeps):
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 
     # filter statistics by variant (number of iterations)
-    iter_counts = get_sorted(stats, type='niter', sortby='time')
+    iter_counts = get_sorted(stats, type="niter", sortby="time")
 
     # compute and print statistics
     niters = np.array([item[1] for item in iter_counts])
-    out = '   Mean number of iterations: %4.2f' % np.mean(niters)
+    out = "   Mean number of iterations: %4.2f" % np.mean(niters)
     print(out)
-    out = '   Range of values for number of iterations: %2i ' % np.ptp(niters)
+    out = "   Range of values for number of iterations: %2i " % np.ptp(niters)
     print(out)
-    out = '   Position of max/min number of iterations: %2i -- %2i' % (int(np.argmax(niters)), int(np.argmin(niters)))
+    out = "   Position of max/min number of iterations: %2i -- %2i" % (
+        int(np.argmax(niters)),
+        int(np.argmin(niters)),
+    )
     print(out)
-    out = '   Std and var for number of iterations: %4.2f -- %4.2f' % (float(np.std(niters)), float(np.var(niters)))
+    out = "   Std and var for number of iterations: %4.2f -- %4.2f" % (
+        float(np.std(niters)),
+        float(np.var(niters)),
+    )
     print(out)
 
-    timing = get_sorted(stats, type='timing_run', sortby='time')
+    timing = get_sorted(stats, type="timing_run", sortby="time")
 
     maxtiming = comm.allreduce(sendobj=timing[0][1], op=MPI.MAX)
 
     if time_rank == time_size - 1 and space_rank == 0:
-        print('Time to solution: %6.4f sec.' % maxtiming)
+        print("Time to solution: %6.4f sec." % maxtiming)
 
     # if time_rank == time_size - 1:
     #     fname = 'data/AC_reference_FFT_Tend{:.1e}'.format(Tend) + '.npz'
@@ -159,7 +167,7 @@ def run_variant(nsweeps):
     return stats
 
 
-def main(cwd=''):
+def main(cwd=""):
     """
     Main driver
 
@@ -170,7 +178,7 @@ def main(cwd=''):
     if len(sys.argv) >= 2:
         nsweeps = int(sys.argv[1])
     else:
-        raise NotImplementedError('Need input of nsweeps, got % s' % sys.argv)
+        raise NotImplementedError("Need input of nsweeps, got % s" % sys.argv)
 
     # Loop over variants, exact and inexact solves
     _ = run_variant(nsweeps=nsweeps)

@@ -7,13 +7,12 @@ import scipy.sparse.linalg as LA
 
 class dirk:
     def __init__(self, M, order):
-
         assert np.shape(M)[0] == np.shape(M)[1], "Matrix M must be quadratic"
         self.Ndof = np.shape(M)[0]
         self.M = M
         self.order = order
 
-        assert self.order in [2, 22, 3, 4], 'Order must be 2,22,3,4'
+        assert self.order in [2, 22, 3, 4], "Order must be 2,22,3,4"
 
         if self.order == 2:
             self.nstages = 1
@@ -77,10 +76,8 @@ class dirk:
         self.stages = np.zeros((self.nstages, self.Ndof))
 
     def timestep(self, u0, dt):
-
         uend = u0
         for i in range(0, self.nstages):
-
             b = u0
 
             # Compute right hand side for this stage's implicit step

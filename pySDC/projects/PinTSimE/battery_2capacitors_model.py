@@ -45,7 +45,16 @@ def run():
     for problem, sweeper in zip(problem_classes, sweeper_classes):
         for use_SE in use_switch_estimator:
             description, controller_params = generate_description(
-                dt, problem, sweeper, log_data, False, use_SE, ncapacitors, alpha, V_ref, C
+                dt,
+                problem,
+                sweeper,
+                log_data,
+                False,
+                use_SE,
+                ncapacitors,
+                alpha,
+                V_ref,
+                C,
             )
 
             # Assertions
@@ -53,14 +62,31 @@ def run():
 
             proof_assertions_time(dt, Tend, V_ref, alpha)
 
-            stats = controller_run(description, controller_params, False, use_SE, t0, Tend)
+            stats = controller_run(
+                description, controller_params, False, use_SE, t0, Tend
+            )
 
             check_solution(stats, dt, use_SE)
 
-            plot_voltages(description, problem.__name__, sweeper.__name__, recomputed, use_SE, False)
+            plot_voltages(
+                description,
+                problem.__name__,
+                sweeper.__name__,
+                recomputed,
+                use_SE,
+                False,
+            )
 
 
-def plot_voltages(description, problem, sweeper, recomputed, use_switch_estimator, use_adaptivity, cwd='./'):
+def plot_voltages(
+    description,
+    problem,
+    sweeper,
+    recomputed,
+    use_switch_estimator,
+    use_adaptivity,
+    cwd="./",
+):
     """
     Routine to plot the numerical solution of the model
 
@@ -74,38 +100,59 @@ def plot_voltages(description, problem, sweeper, recomputed, use_switch_estimato
         cwd (str): current working directory
     """
 
-    f = open(cwd + 'data/{}_{}_USE{}_USA{}.dat'.format(problem, sweeper, use_switch_estimator, use_adaptivity), 'rb')
+    f = open(
+        cwd
+        + "data/{}_{}_USE{}_USA{}.dat".format(
+            problem, sweeper, use_switch_estimator, use_adaptivity
+        ),
+        "rb",
+    )
     stats = dill.load(f)
     f.close()
 
     # convert filtered statistics to list of iterations count, sorted by process
-    cL = np.array([me[1][0] for me in get_sorted(stats, type='u', recomputed=recomputed)])
-    vC1 = np.array([me[1][1] for me in get_sorted(stats, type='u', recomputed=recomputed)])
-    vC2 = np.array([me[1][2] for me in get_sorted(stats, type='u', recomputed=recomputed)])
+    cL = np.array(
+        [me[1][0] for me in get_sorted(stats, type="u", recomputed=recomputed)]
+    )
+    vC1 = np.array(
+        [me[1][1] for me in get_sorted(stats, type="u", recomputed=recomputed)]
+    )
+    vC2 = np.array(
+        [me[1][2] for me in get_sorted(stats, type="u", recomputed=recomputed)]
+    )
 
-    t = np.array([me[0] for me in get_sorted(stats, type='u', recomputed=recomputed)])
+    t = np.array([me[0] for me in get_sorted(stats, type="u", recomputed=recomputed)])
 
     setup_mpl()
     fig, ax = plt_helper.plt.subplots(1, 1, figsize=(4.5, 3))
-    ax.plot(t, cL, label='$i_L$')
-    ax.plot(t, vC1, label='$v_{C_1}$')
-    ax.plot(t, vC2, label='$v_{C_2}$')
+    ax.plot(t, cL, label="$i_L$")
+    ax.plot(t, vC1, label="$v_{C_1}$")
+    ax.plot(t, vC2, label="$v_{C_2}$")
 
     if use_switch_estimator:
-        switches = get_recomputed(stats, type='switch', sortby='time')
+        switches = get_recomputed(stats, type="switch", sortby="time")
         if recomputed is not None:
-            assert len(switches) >= 2, f"Expected at least 2 switches, got {len(switches)}!"
+            assert (
+                len(switches) >= 2
+            ), f"Expected at least 2 switches, got {len(switches)}!"
         t_switches = [v[1] for v in switches]
 
         for i in range(len(t_switches)):
-            ax.axvline(x=t_switches[i], linestyle='--', color='k', label='Switch {}'.format(i + 1))
+            ax.axvline(
+                x=t_switches[i],
+                linestyle="--",
+                color="k",
+                label="Switch {}".format(i + 1),
+            )
 
-    ax.legend(frameon=False, fontsize=12, loc='upper right')
+    ax.legend(frameon=False, fontsize=12, loc="upper right")
 
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Energy')
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Energy")
 
-    fig.savefig('data/battery_2capacitors_model_solution.png', dpi=300, bbox_inches='tight')
+    fig.savefig(
+        "data/battery_2capacitors_model_solution.png", dpi=300, bbox_inches="tight"
+    )
     plt_helper.plt.close(fig)
 
 
@@ -122,62 +169,62 @@ def check_solution(stats, dt, use_switch_estimator):
     data = get_data_dict(stats, use_switch_estimator)
 
     if use_switch_estimator:
-        msg = f'Error when using the switch estimator for battery_2capacitors for dt={dt:.1e}:'
+        msg = f"Error when using the switch estimator for battery_2capacitors for dt={dt:.1e}:"
         if dt == 1e-2:
             expected = {
-                'cL': 1.207906161238752,
-                'vC1': 1.0094825899806945,
-                'vC2': 1.00000000000412,
-                'switch1': 1.6094379124373626,
-                'switch2': 3.209437912437337,
-                'restarts': 1.0,
-                'sum_niters': 1412.0,
+                "cL": 1.207906161238752,
+                "vC1": 1.0094825899806945,
+                "vC2": 1.00000000000412,
+                "switch1": 1.6094379124373626,
+                "switch2": 3.209437912437337,
+                "restarts": 1.0,
+                "sum_niters": 1412.0,
             }
         elif dt == 4e-1:
             expected = {
-                'cL': 1.5090409300896785,
-                'vC1': 1.0094891393319418,
-                'vC2': 1.0018593331860708,
-                'switch1': 1.6075867934844466,
-                'switch2': 3.2094445842818007,
-                'restarts': 2.0,
-                'sum_niters': 52.0,
+                "cL": 1.5090409300896785,
+                "vC1": 1.0094891393319418,
+                "vC2": 1.0018593331860708,
+                "switch1": 1.6075867934844466,
+                "switch2": 3.2094445842818007,
+                "restarts": 2.0,
+                "sum_niters": 52.0,
             }
         elif dt == 4e-2:
             expected = {
-                'cL': 1.2708164018400792,
-                'vC1': 1.0094825917376264,
-                'vC2': 1.000030506091851,
-                'switch1': 1.6094074085553605,
-                'switch2': 3.209437914186951,
-                'restarts': 2.0,
-                'sum_niters': 368.0,
+                "cL": 1.2708164018400792,
+                "vC1": 1.0094825917376264,
+                "vC2": 1.000030506091851,
+                "switch1": 1.6094074085553605,
+                "switch2": 3.209437914186951,
+                "restarts": 2.0,
+                "sum_niters": 368.0,
             }
         elif dt == 4e-3:
             expected = {
-                'cL': 1.1564912472685411,
-                'vC1': 1.001438946726028,
-                'vC2': 1.0000650435224532,
-                'switch1': 1.6093728710270467,
-                'switch2': 3.217437912434931,
-                'restarts': 2.0,
-                'sum_niters': 3516.0,
+                "cL": 1.1564912472685411,
+                "vC1": 1.001438946726028,
+                "vC2": 1.0000650435224532,
+                "switch1": 1.6093728710270467,
+                "switch2": 3.217437912434931,
+                "restarts": 2.0,
+                "sum_niters": 3516.0,
             }
 
     got = {
-        'cL': data['cL'][-1],
-        'vC1': data['vC1'][-1],
-        'vC2': data['vC2'][-1],
-        'switch1': data['switch1'],
-        'switch2': data['switch2'],
-        'restarts': data['restarts'],
-        'sum_niters': data['sum_niters'],
+        "cL": data["cL"][-1],
+        "vC1": data["vC1"][-1],
+        "vC2": data["vC2"][-1],
+        "switch1": data["switch1"],
+        "switch2": data["switch2"],
+        "restarts": data["restarts"],
+        "sum_niters": data["sum_niters"],
     }
 
     for key in expected.keys():
         assert np.isclose(
             expected[key], got[key], rtol=1e-4
-        ), f'{msg} Expected {key}={expected[key]:.4e}, got {key}={got[key]:.4e}'
+        ), f"{msg} Expected {key}={expected[key]:.4e}, got {key}={got[key]:.4e}"
 
 
 def get_data_dict(stats, use_switch_estimator, recomputed=False):
@@ -195,13 +242,38 @@ def get_data_dict(stats, use_switch_estimator, recomputed=False):
     """
 
     data = dict()
-    data['cL'] = np.array([me[1][0] for me in get_sorted(stats, type='u', recomputed=False, sortby='time')])
-    data['vC1'] = np.array([me[1][1] for me in get_sorted(stats, type='u', recomputed=False, sortby='time')])
-    data['vC2'] = np.array([me[1][2] for me in get_sorted(stats, type='u', recomputed=False, sortby='time')])
-    data['switch1'] = np.array(get_recomputed(stats, type='switch', sortby='time'))[0, 1]
-    data['switch2'] = np.array(get_recomputed(stats, type='switch', sortby='time'))[-1, 1]
-    data['restarts'] = np.sum(np.array(get_sorted(stats, type='restart', recomputed=None, sortby='time'))[:, 1])
-    data['sum_niters'] = np.sum(np.array(get_sorted(stats, type='niter', recomputed=None, sortby='time'))[:, 1])
+    data["cL"] = np.array(
+        [
+            me[1][0]
+            for me in get_sorted(stats, type="u", recomputed=False, sortby="time")
+        ]
+    )
+    data["vC1"] = np.array(
+        [
+            me[1][1]
+            for me in get_sorted(stats, type="u", recomputed=False, sortby="time")
+        ]
+    )
+    data["vC2"] = np.array(
+        [
+            me[1][2]
+            for me in get_sorted(stats, type="u", recomputed=False, sortby="time")
+        ]
+    )
+    data["switch1"] = np.array(get_recomputed(stats, type="switch", sortby="time"))[
+        0, 1
+    ]
+    data["switch2"] = np.array(get_recomputed(stats, type="switch", sortby="time"))[
+        -1, 1
+    ]
+    data["restarts"] = np.sum(
+        np.array(get_sorted(stats, type="restart", recomputed=None, sortby="time"))[
+            :, 1
+        ]
+    )
+    data["sum_niters"] = np.sum(
+        np.array(get_sorted(stats, type="niter", recomputed=None, sortby="time"))[:, 1]
+    )
 
     return data
 

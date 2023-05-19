@@ -36,14 +36,14 @@ class implicit_sweeper_faults(generic_implicit):
             params: parameters for the sweeper
         """
 
-        if 'allow_fault_correction' not in params:
-            params['allow_fault_correction'] = False
+        if "allow_fault_correction" not in params:
+            params["allow_fault_correction"] = False
 
-        if 'detector_threshold' not in params:
-            params['detector_threshold'] = 1.0
+        if "detector_threshold" not in params:
+            params["detector_threshold"] = 1.0
 
-        if 'dump_injections_filehandle' not in params:
-            params['dump_injections_filehandle'] = None
+        if "dump_injections_filehandle" not in params:
+            params["dump_injections_filehandle"] = None
 
         # call parent's initialization routine
         super(implicit_sweeper_faults, self).__init__(params)
@@ -77,8 +77,8 @@ class implicit_sweeper_faults(generic_implicit):
         Returns:
             float representation of b
         """
-        s = struct.pack('>q', b)
-        return struct.unpack('>d', s)[0]
+        s = struct.pack(">q", b)
+        return struct.unpack(">d", s)[0]
 
     @staticmethod
     def floatToBits(f):
@@ -91,8 +91,8 @@ class implicit_sweeper_faults(generic_implicit):
         Returns:
             bit representation of f
         """
-        s = struct.pack('>d', f)
-        return struct.unpack('>q', s)[0]
+        s = struct.pack(">d", f)
+        return struct.unpack(">q", s)[0]
 
     def do_bitflip(self, a, pos):
         """
@@ -130,7 +130,7 @@ class implicit_sweeper_faults(generic_implicit):
         bitflip_entry = 0
 
         # do bitflip in u
-        if type == 'u':
+        if type == "u":
             # do something to target = u here!
             # do a bitflip at random vector entry of u at random position in bit representation
             ulen = len(target)
@@ -143,7 +143,7 @@ class implicit_sweeper_faults(generic_implicit):
             self.fault_stats.nfaults_injected_u += 1
 
         # do bitflip in f
-        elif type == 'f':
+        elif type == "f":
             # do something to target = f here!
             # do a bitflip at random vector entry of f at random position in bit representation
             flen = len(target)
@@ -157,18 +157,24 @@ class implicit_sweeper_faults(generic_implicit):
 
         else:
             tmp = None
-            print('ERROR: wrong fault type specified, got %s' % type)
+            print("ERROR: wrong fault type specified, got %s" % type)
             exit()
 
         self.fault_injected = True
 
         if self.params.dump_injections_filehandle is not None:
             out = str(datetime.now())
-            out += ' --- '
-            out += type + ' ' + str(bitflip_entry) + ' ' + str(pos)
-            out += ' --- '
-            out += str(tmp) + ' ' + str(target[bitflip_entry]) + ' ' + str(np.abs(tmp - target[bitflip_entry]))
-            out += '\n'
+            out += " --- "
+            out += type + " " + str(bitflip_entry) + " " + str(pos)
+            out += " --- "
+            out += (
+                str(tmp)
+                + " "
+                + str(target[bitflip_entry])
+                + " "
+                + str(np.abs(tmp - target[bitflip_entry]))
+            )
+            out += "\n"
             self.params.dump_injections_filehandle.write(out)
 
     def detect_fault(self, current_node=None, rhs=None):
@@ -184,7 +190,11 @@ class implicit_sweeper_faults(generic_implicit):
         L = self.level
 
         # calculate solver residual
-        res = L.u[current_node] - L.dt * self.QI[current_node, current_node] * L.f[current_node] - rhs
+        res = (
+            L.u[current_node]
+            - L.dt * self.QI[current_node, current_node] * L.f[current_node]
+            - rhs
+        )
         res_norm = np.linalg.norm(res, np.inf)
         if np.isnan(res_norm) or res_norm > self.params.detector_threshold:
             # print('     FAULT DETECTED!')
@@ -281,11 +291,14 @@ class implicit_sweeper_faults(generic_implicit):
             if fault_at_u:
                 # implicit solve with prefactor stemming from the diagonal of Qd
                 L.u[m + 1] = P.solve_system(
-                    rhs, L.dt * self.QI[m + 1, m + 1], L.u[m + 1], L.time + L.dt * self.coll.nodes[m]
+                    rhs,
+                    L.dt * self.QI[m + 1, m + 1],
+                    L.u[m + 1],
+                    L.time + L.dt * self.coll.nodes[m],
                 )
 
                 # inject fault at some u value
-                self.inject_fault(type='u', target=L.u[m + 1])
+                self.inject_fault(type="u", target=L.u[m + 1])
 
                 # update function values
                 L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
@@ -293,19 +306,25 @@ class implicit_sweeper_faults(generic_implicit):
             elif fault_at_f:
                 # implicit solve with prefactor stemming from the diagonal of Qd
                 L.u[m + 1] = P.solve_system(
-                    rhs, L.dt * self.QI[m + 1, m + 1], L.u[m + 1], L.time + L.dt * self.coll.nodes[m]
+                    rhs,
+                    L.dt * self.QI[m + 1, m + 1],
+                    L.u[m + 1],
+                    L.time + L.dt * self.coll.nodes[m],
                 )
 
                 # update function values
                 L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
 
                 # inject fault at some f value
-                self.inject_fault(type='f', target=L.f[m + 1])
+                self.inject_fault(type="f", target=L.f[m + 1])
 
             else:
                 # implicit solve with prefactor stemming from the diagonal of Qd
                 L.u[m + 1] = P.solve_system(
-                    rhs, L.dt * self.QI[m + 1, m + 1], L.u[m + 1], L.time + L.dt * self.coll.nodes[m]
+                    rhs,
+                    L.dt * self.QI[m + 1, m + 1],
+                    L.u[m + 1],
+                    L.time + L.dt * self.coll.nodes[m],
                 )
 
                 # update function values
@@ -315,7 +334,11 @@ class implicit_sweeper_faults(generic_implicit):
             self.detect_fault(current_node=m + 1, rhs=rhs)
 
             # if we are allowed to try correction, do so, otherwise proceed with sweep
-            if not self.in_correction and self.fault_detected and self.params.allow_fault_correction:
+            if (
+                not self.in_correction
+                and self.fault_detected
+                and self.params.allow_fault_correction
+            ):
                 self.correct_fault()
             else:
                 self.in_correction = False

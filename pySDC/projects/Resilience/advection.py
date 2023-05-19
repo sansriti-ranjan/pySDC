@@ -9,14 +9,19 @@ from pySDC.projects.Resilience.strategies import merge_descriptions
 
 
 def plot_embedded(stats, ax):
-    u = get_sorted(stats, type='u', recomputed=False)
-    uold = get_sorted(stats, type='uold', recomputed=False)
+    u = get_sorted(stats, type="u", recomputed=False)
+    uold = get_sorted(stats, type="uold", recomputed=False)
     t = [me[0] for me in u]
-    e_em = get_sorted(stats, type='error_embedded_estimate', recomputed=False)
+    e_em = get_sorted(stats, type="error_embedded_estimate", recomputed=False)
     e_em_semi_glob = [abs(u[i][1] - uold[i][1]) for i in range(len(u))]
-    ax.plot(t, e_em_semi_glob, label=r'$\|u^{\left(k-1\right)}-u^{\left(k\right)}\|$')
-    ax.plot([me[0] for me in e_em], [me[1] for me in e_em], linestyle='--', label=r'$\epsilon$')
-    ax.set_xlabel(r'$t$')
+    ax.plot(t, e_em_semi_glob, label=r"$\|u^{\left(k-1\right)}-u^{\left(k\right)}\|$")
+    ax.plot(
+        [me[0] for me in e_em],
+        [me[1] for me in e_em],
+        linestyle="--",
+        label=r"$\epsilon$",
+    )
+    ax.set_xlabel(r"$t$")
     ax.legend(frameon=False)
 
 
@@ -49,37 +54,46 @@ def run_advection(
     """
     # initialize level parameters
     level_params = {}
-    level_params['dt'] = 0.05
+    level_params["dt"] = 0.05
 
     # initialize sweeper parameters
     sweeper_params = {}
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
-    sweeper_params['QI'] = 'IE'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
+    sweeper_params["QI"] = "IE"
 
-    problem_params = {'freq': 2, 'nvars': 2**9, 'c': 1.0, 'stencil_type': 'center', 'order': 4, 'bc': 'periodic'}
+    problem_params = {
+        "freq": 2,
+        "nvars": 2**9,
+        "c": 1.0,
+        "stencil_type": "center",
+        "order": 4,
+        "bc": "periodic",
+    }
 
     # initialize step parameters
     step_params = {}
-    step_params['maxiter'] = 5
+    step_params["maxiter"] = 5
 
     # initialize controller parameters
     controller_params = {}
-    controller_params['logger_level'] = 30
-    controller_params['hook_class'] = hook_collection + (hook_class if type(hook_class) == list else [hook_class])
-    controller_params['mssdc_jac'] = False
+    controller_params["logger_level"] = 30
+    controller_params["hook_class"] = hook_collection + (
+        hook_class if type(hook_class) == list else [hook_class]
+    )
+    controller_params["mssdc_jac"] = False
 
     if custom_controller_params is not None:
         controller_params = {**controller_params, **custom_controller_params}
 
     # fill description dictionary for easy step instantiation
     description = {}
-    description['problem_class'] = advectionNd
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = generic_implicit
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
-    description['step_params'] = step_params
+    description["problem_class"] = advectionNd
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = generic_implicit
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
+    description["step_params"] = step_params
 
     if custom_description is not None:
         description = merge_descriptions(description, custom_description)
@@ -90,19 +104,27 @@ def run_advection(
     # instantiate controller
     if use_MPI:
         from mpi4py import MPI
-        from pySDC.implementations.controller_classes.controller_MPI import controller_MPI
+        from pySDC.implementations.controller_classes.controller_MPI import (
+            controller_MPI,
+        )
 
-        comm = kwargs.get('comm', MPI.COMM_WORLD)
-        controller = controller_MPI(controller_params=controller_params, description=description, comm=comm)
+        comm = kwargs.get("comm", MPI.COMM_WORLD)
+        controller = controller_MPI(
+            controller_params=controller_params, description=description, comm=comm
+        )
 
         # get initial values on finest level
         P = controller.S.levels[0].prob
         uinit = P.u_exact(t0)
     else:
-        from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
+        from pySDC.implementations.controller_classes.controller_nonMPI import (
+            controller_nonMPI,
+        )
 
         controller = controller_nonMPI(
-            num_procs=num_procs, controller_params=controller_params, description=description
+            num_procs=num_procs,
+            controller_params=controller_params,
+            description=description,
         )
 
         # get initial values on finest level
@@ -112,11 +134,11 @@ def run_advection(
     # insert faults
     if fault_stuff is not None:
         rnd_args = {
-            'iteration': 5,
+            "iteration": 5,
         }
         args = {
-            'time': 1e-1,
-            'target': 0,
+            "time": 1e-1,
+            "target": 0,
         }
         prepare_controller_for_faults(controller, fault_stuff, rnd_args, args)
 
@@ -125,24 +147,26 @@ def run_advection(
     return stats, controller, Tend
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import matplotlib.pyplot as plt
-    from pySDC.implementations.convergence_controller_classes.adaptivity import Adaptivity
+    from pySDC.implementations.convergence_controller_classes.adaptivity import (
+        Adaptivity,
+    )
     from pySDC.projects.Resilience.hook import LogUold
 
     adaptivity_params = {}
-    adaptivity_params['e_tol'] = 1e-8
+    adaptivity_params["e_tol"] = 1e-8
 
     convergence_controllers = {}
     convergence_controllers[Adaptivity] = adaptivity_params
 
     description = {}
-    description['convergence_controllers'] = convergence_controllers
+    description["convergence_controllers"] = convergence_controllers
 
     fig, axs = plt.subplots(1, 2, figsize=(12, 4), sharex=True, sharey=True)
     plot_embedded(run_advection(description, 1, hook_class=LogUold)[0], axs[0])
     plot_embedded(run_advection(description, 4, hook_class=LogUold)[0], axs[1])
-    axs[0].set_title('1 process')
-    axs[1].set_title('4 processes')
+    axs[0].set_title("1 process")
+    axs[1].set_title("4 processes")
     fig.tight_layout()
     plt.show()

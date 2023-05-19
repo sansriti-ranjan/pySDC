@@ -6,7 +6,10 @@ from mpi4py import MPI
 from pySDC.helpers.stats_helper import get_sorted
 
 from pySDC.implementations.controller_classes.controller_MPI import controller_MPI
-from pySDC.implementations.problem_classes.AllenCahn_2D_FFT import allencahn2d_imex, allencahn2d_imex_stab
+from pySDC.implementations.problem_classes.AllenCahn_2D_FFT import (
+    allencahn2d_imex,
+    allencahn2d_imex_stab,
+)
 
 # from pySDC.implementations.problem_classes.AllenCahn_2D_parFFT import allencahn2d_imex, allencahn2d_imex_stab
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
@@ -32,44 +35,44 @@ def setup_parameters():
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-08
-    level_params['dt'] = 1e-02
-    level_params['nsweeps'] = [3, 1]
+    level_params["restol"] = 1e-08
+    level_params["dt"] = 1e-02
+    level_params["nsweeps"] = [3, 1]
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = [3]
-    sweeper_params['QI'] = ['LU']
-    sweeper_params['QE'] = ['EE']
-    sweeper_params['initial_guess'] = 'zero'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = [3]
+    sweeper_params["QI"] = ["LU"]
+    sweeper_params["QE"] = ["EE"]
+    sweeper_params["initial_guess"] = "zero"
 
     # This comes as read-in for the problem class
     problem_params = dict()
-    problem_params['nu'] = 2
-    problem_params['L'] = 1.0
-    problem_params['nvars'] = [(256, 256), (64, 64)]
-    problem_params['eps'] = [0.04, 0.16]
-    problem_params['radius'] = 0.25
+    problem_params["nu"] = 2
+    problem_params["L"] = 1.0
+    problem_params["nvars"] = [(256, 256), (64, 64)]
+    problem_params["eps"] = [0.04, 0.16]
+    problem_params["radius"] = 0.25
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 20
-    controller_params['hook_class'] = monitor
+    controller_params["logger_level"] = 20
+    controller_params["hook_class"] = monitor
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = None  # pass problem class
-    description['problem_params'] = problem_params  # pass problem parameters
-    description['sweeper_class'] = None  # pass sweeper (see part B)
-    description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    description['level_params'] = level_params  # pass level parameters
-    description['step_params'] = step_params  # pass step parameters
-    description['space_transfer_class'] = mesh_to_mesh_fft2d
+    description["problem_class"] = None  # pass problem class
+    description["problem_params"] = problem_params  # pass problem parameters
+    description["sweeper_class"] = None  # pass sweeper (see part B)
+    description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    description["level_params"] = level_params  # pass level parameters
+    description["step_params"] = step_params  # pass step parameters
+    description["space_transfer_class"] = mesh_to_mesh_fft2d
 
     return description, controller_params
 
@@ -90,14 +93,14 @@ def run_SDC_variant(variant=None):
     description, controller_params = setup_parameters()
 
     # add stuff based on variant
-    if variant == 'semi-implicit':
-        description['problem_class'] = allencahn2d_imex
-        description['sweeper_class'] = imex_1st_order
-    elif variant == 'semi-implicit-stab':
-        description['problem_class'] = allencahn2d_imex_stab
-        description['sweeper_class'] = imex_1st_order
+    if variant == "semi-implicit":
+        description["problem_class"] = allencahn2d_imex
+        description["sweeper_class"] = imex_1st_order
+    elif variant == "semi-implicit-stab":
+        description["problem_class"] = allencahn2d_imex_stab
+        description["sweeper_class"] = imex_1st_order
     else:
-        raise NotImplemented('Wrong variant specified, got %s' % variant)
+        raise NotImplemented("Wrong variant specified, got %s" % variant)
 
     # setup parameters "in time"
     t0 = 0.0
@@ -132,12 +135,16 @@ def run_SDC_variant(variant=None):
         % (world_rank, world_size, space_rank, space_size, time_rank, time_size)
     )
 
-    description['problem_params']['comm'] = space_comm
+    description["problem_params"]["comm"] = space_comm
     # set level depending on rank
-    controller_params['logger_level'] = controller_params['logger_level'] if space_rank == 0 else 99
+    controller_params["logger_level"] = (
+        controller_params["logger_level"] if space_rank == 0 else 99
+    )
 
     # instantiate controller
-    controller = controller_MPI(controller_params=controller_params, description=description, comm=time_comm)
+    controller = controller_MPI(
+        controller_params=controller_params, description=description, comm=time_comm
+    )
 
     # get initial values on finest level
     P = controller.S.levels[0].prob
@@ -159,22 +166,22 @@ def run_SDC_variant(variant=None):
     rank = comm.Get_rank()
 
     # filter statistics by variant (number of iterations)
-    iter_counts = get_sorted(stats, type='niter', sortby='time')
+    iter_counts = get_sorted(stats, type="niter", sortby="time")
 
     # compute and print statistics
     niters = np.array([item[1] for item in iter_counts])
-    print(f'Mean number of iterations on rank {rank}: {np.mean(niters):.4f}')
+    print(f"Mean number of iterations on rank {rank}: {np.mean(niters):.4f}")
 
     if rank == 0:
-        timing = get_sorted(stats, type='timing_run', sortby='time')
+        timing = get_sorted(stats, type="timing_run", sortby="time")
 
-        print(f'---> Time to solution: {timing[0][1]:.4f} sec.')
+        print(f"---> Time to solution: {timing[0][1]:.4f} sec.")
         print()
 
     return stats
 
 
-def main(cwd=''):
+def main(cwd=""):
     """
     Main driver
 
@@ -184,9 +191,8 @@ def main(cwd=''):
 
     # Loop over variants, exact and inexact solves
     results = {}
-    for variant in ['semi-implicit-stab']:
-
-        results[(variant, 'exact')] = run_SDC_variant(variant=variant)
+    for variant in ["semi-implicit-stab"]:
+        results[(variant, "exact")] = run_SDC_variant(variant=variant)
 
 
 if __name__ == "__main__":

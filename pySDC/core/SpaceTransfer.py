@@ -40,7 +40,7 @@ class space_transfer(object):
         self.params = _Pars(space_transfer_params)
 
         # set up logger
-        self.logger = logging.getLogger('space-transfer')
+        self.logger = logging.getLogger("space-transfer")
 
         # just copy by object
         self.fine_prob = fine_prob
@@ -53,7 +53,9 @@ class space_transfer(object):
         Args:
             F: the fine level data (easier to access than via the fine attribute)
         """
-        raise NotImplementedError('ERROR: space_transfer has to implement restrict(self, F)')
+        raise NotImplementedError(
+            "ERROR: space_transfer has to implement restrict(self, F)"
+        )
 
     def prolong(self, G):
         """
@@ -62,4 +64,6 @@ class space_transfer(object):
         Args:
             G: the coarse level data (easier to access than via the coarse attribute)
         """
-        raise NotImplementedError('ERROR: space_transfer has to implement prolong(self, G)')
+        raise NotImplementedError(
+            "ERROR: space_transfer has to implement prolong(self, G)"
+        )

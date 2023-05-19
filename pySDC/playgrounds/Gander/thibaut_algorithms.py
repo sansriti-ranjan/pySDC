@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 
 
 collDict = {
-    'LOBATTO': CollGaussLobatto,
-    'RADAU_LEFT': CollGaussRadau_Left,
-    'RADAU_RIGHT': CollGaussRadau_Right,
-    'EQUID': Equidistant,
+    "LOBATTO": CollGaussLobatto,
+    "RADAU_LEFT": CollGaussRadau_Left,
+    "RADAU_RIGHT": CollGaussRadau_Right,
+    "EQUID": Equidistant,
 }
 
 # Problem parameters
@@ -19,8 +19,8 @@ u0 = 1  # initial solution
 # Discretization parameters
 L = 8  # number of time steps
 M = 5  # number of nodes
-sweepType = 'BE'
-nodesType = 'EQUID'
+sweepType = "BE"
+nodesType = "EQUID"
 
 # Time interval decomposition
 times = np.linspace(tBeg, tEnd, num=L)
@@ -35,12 +35,12 @@ Q = Q * lam * dt
 
 # Generate Q_\Delta
 QDelta = np.zeros((M, M))
-if sweepType in ['BE', 'FE']:
-    offset = 1 if sweepType == 'FE' else 0
+if sweepType in ["BE", "FE"]:
+    offset = 1 if sweepType == "FE" else 0
     for i in range(offset, M):
         QDelta[i:, : M - i] += np.diag(deltas[: M - i])
 else:
-    raise ValueError(f'sweepType={sweepType}')
+    raise ValueError(f"sweepType={sweepType}")
 QDelta = QDelta * lam * dt
 
 print(QDelta.real)
@@ -113,40 +113,40 @@ for n in range(nSweep):
 
 # Plot solution and error
 if True:
-    plt.figure('Solution (amplitude)')
+    plt.figure("Solution (amplitude)")
     for sol, lbl, sym in [
-        [uExact, 'Exact', 'o-'],
-        [uSDC, 'SDC', 's-'],
-        [uPar, 'Parareal', '>-'],
-        [uPFA, 'PFASST', 'p-'],
+        [uExact, "Exact", "o-"],
+        [uSDC, "SDC", "s-"],
+        [uPar, "Parareal", ">-"],
+        [uPFA, "PFASST", "p-"],
     ]:
         plt.plot(t.ravel(), sol.ravel().real, sym, label=lbl)
     plt.legend()
     plt.grid(True)
-    plt.xlabel('Time')
+    plt.xlabel("Time")
 
-    plt.figure('Solution (phase)')
+    plt.figure("Solution (phase)")
     for sol, lbl, sym in [
-        [uExact, 'Exact', 'o-'],
-        [uSDC, 'SDC', 's-'],
-        [uPar, 'Parareal', '>-'],
-        [uPFA, 'PFASST', 'p-'],
+        [uExact, "Exact", "o-"],
+        [uSDC, "SDC", "s-"],
+        [uPar, "Parareal", ">-"],
+        [uPFA, "PFASST", "p-"],
     ]:
         plt.plot(t.ravel(), sol.ravel().imag, sym, label=lbl)
     plt.legend()
     plt.grid(True)
-    plt.xlabel('Time')
+    plt.xlabel("Time")
 
 eSDC = np.abs(uExact.ravel() - uSDC.ravel())
 ePar = np.abs(uExact.ravel() - uPar.ravel())
 ePFA = np.abs(uExact.ravel() - uPFA.ravel())
 
-plt.figure('Error')
-plt.semilogy(t.ravel(), eSDC, 's-', label=f'SDC {nSweep} sweep')
-plt.semilogy(t.ravel(), ePar, '>-', label=f'Parareal {nSweep} iter')
-plt.semilogy(t.ravel(), ePFA, 'p-', label=f'PFASST {nSweep} iter')
+plt.figure("Error")
+plt.semilogy(t.ravel(), eSDC, "s-", label=f"SDC {nSweep} sweep")
+plt.semilogy(t.ravel(), ePar, ">-", label=f"Parareal {nSweep} iter")
+plt.semilogy(t.ravel(), ePFA, "p-", label=f"PFASST {nSweep} iter")
 plt.legend()
 plt.grid(True)
-plt.xlabel('Time')
+plt.xlabel("Time")
 
 plt.show()

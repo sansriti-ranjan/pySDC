@@ -40,7 +40,7 @@ class dump(hooks):
 
         # get real space values
         if L.prob.params.spectral:
-            if hasattr(L.prob, 'ncomp'):
+            if hasattr(L.prob, "ncomp"):
                 tmp1 = newDistArray(L.prob.fft, False)
                 tmp = np.zeros(tmp1.shape + (L.prob.ncomp,))
                 for i in range(L.prob.ncomp):
@@ -65,22 +65,22 @@ class dump(hooks):
         fh.Close()
 
         sizes = list(L.prob.params.nvars)
-        if hasattr(L.prob, 'ncomp'):
+        if hasattr(L.prob, "ncomp"):
             sizes.append(L.prob.ncomp)
 
         # write json description
         if self.rank == 0 and step.status.slot == 0:
             json_obj = dict()
-            json_obj['type'] = 'dataset'
-            json_obj['datatype'] = str(tmp.dtype)
-            json_obj['endian'] = str(tmp.dtype.byteorder)
-            json_obj['time'] = L.time
-            json_obj['space_comm_size'] = self.size
-            json_obj['time_comm_size'] = step.status.time_size
-            json_obj['shape'] = sizes
-            json_obj['elementsize'] = tmp.dtype.itemsize
+            json_obj["type"] = "dataset"
+            json_obj["datatype"] = str(tmp.dtype)
+            json_obj["endian"] = str(tmp.dtype.byteorder)
+            json_obj["time"] = L.time
+            json_obj["space_comm_size"] = self.size
+            json_obj["time_comm_size"] = step.status.time_size
+            json_obj["shape"] = sizes
+            json_obj["elementsize"] = tmp.dtype.itemsize
 
-            with open(fname + '.json', 'w') as fp:
+            with open(fname + ".json", "w") as fp:
                 json.dump(json_obj, fp)
 
         # set step count
@@ -101,7 +101,7 @@ class dump(hooks):
 
         # get real space values
         if L.prob.params.spectral:
-            if hasattr(L.prob, 'ncomp'):
+            if hasattr(L.prob, "ncomp"):
                 tmp1 = newDistArray(L.prob.fft, False)
                 tmp = np.zeros(tmp1.shape + (L.prob.ncomp,))
                 for i in range(L.prob.ncomp):
@@ -126,22 +126,22 @@ class dump(hooks):
         fh.Close()
 
         sizes = list(L.prob.params.nvars)
-        if hasattr(L.prob, 'ncomp'):
+        if hasattr(L.prob, "ncomp"):
             sizes.append(L.prob.ncomp)
 
         # write json description
         if self.rank == 0:
             json_obj = dict()
-            json_obj['type'] = 'dataset'
-            json_obj['datatype'] = str(tmp.dtype)
-            json_obj['endian'] = str(tmp.dtype.byteorder)
-            json_obj['time'] = L.time + L.dt
-            json_obj['space_comm_size'] = self.size
-            json_obj['time_comm_size'] = step.status.time_size
-            json_obj['shape'] = sizes
-            json_obj['elementsize'] = tmp.dtype.itemsize
+            json_obj["type"] = "dataset"
+            json_obj["datatype"] = str(tmp.dtype)
+            json_obj["endian"] = str(tmp.dtype.byteorder)
+            json_obj["time"] = L.time + L.dt
+            json_obj["space_comm_size"] = self.size
+            json_obj["time_comm_size"] = step.status.time_size
+            json_obj["shape"] = sizes
+            json_obj["elementsize"] = tmp.dtype.itemsize
 
-            with open(fname + '.json', 'w') as fp:
+            with open(fname + ".json", "w") as fp:
                 json.dump(json_obj, fp)
 
         # update step count

@@ -31,7 +31,7 @@ def send_stuff(th, space_rank, time_rank, time_comm):
     sbuf[0] = space_rank
     sbuf[1:4] = np.random.rand(3)
     req = isend(sbuf, time_rank + 1, time_comm)
-    th[0] = threading.Thread(target=wait, name='Wait-Thread', args=(req,))
+    th[0] = threading.Thread(target=wait, name="Wait-Thread", args=(req,))
     th[0].start()
     print(f"{time_rank}/{space_rank} - Original data: {sbuf[0:4]}")
 
@@ -44,7 +44,6 @@ def recv_stuff(space_rank, time_rank, time_comm):
 
 
 def main(nprocs_space=None):
-
     # print(MPI.Query_thread(), MPI.THREAD_MULTIPLE)
 
     # set MPI communicator
@@ -87,11 +86,16 @@ def main(nprocs_space=None):
     maxtime = space_comm.allreduce(t1 - t0, MPI.MAX)
 
     if space_rank == 0:
-        print(f'Time-Rank: {time_rank} -- Time: {maxtime}')
+        print(f"Time-Rank: {time_rank} -- Time: {maxtime}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("-n", "--nprocs_space", help='Specifies the number of processors in space', type=int)
+    parser.add_argument(
+        "-n",
+        "--nprocs_space",
+        help="Specifies the number of processors in space",
+        type=int,
+    )
     args = parser.parse_args()
     main(nprocs_space=args.nprocs_space)

@@ -57,16 +57,16 @@ class dump(hooks):
         # write json description
         if self.rank == 0 and step.status.slot == 0:
             json_obj = dict()
-            json_obj['type'] = 'dataset'
-            json_obj['datatype'] = str(L.u[0].values.dtype)
-            json_obj['endian'] = str(L.u[0].values.dtype.byteorder)
-            json_obj['time'] = L.time
-            json_obj['space_comm_size'] = self.size
-            json_obj['time_comm_size'] = step.status.time_size
-            json_obj['shape'] = L.prob.params.nvars
-            json_obj['elementsize'] = L.u[0].values.dtype.itemsize
+            json_obj["type"] = "dataset"
+            json_obj["datatype"] = str(L.u[0].values.dtype)
+            json_obj["endian"] = str(L.u[0].values.dtype.byteorder)
+            json_obj["time"] = L.time
+            json_obj["space_comm_size"] = self.size
+            json_obj["time_comm_size"] = step.status.time_size
+            json_obj["shape"] = L.prob.params.nvars
+            json_obj["elementsize"] = L.u[0].values.dtype.itemsize
 
-            with open(fname + '.json', 'w') as fp:
+            with open(fname + ".json", "w") as fp:
                 json.dump(json_obj, fp)
 
         # set step count
@@ -102,16 +102,16 @@ class dump(hooks):
         # write json description
         if self.rank == 0:
             json_obj = dict()
-            json_obj['type'] = 'dataset'
-            json_obj['datatype'] = str(L.uend.values.dtype)
-            json_obj['endian'] = str(L.uend.values.dtype.byteorder)
-            json_obj['time'] = L.time + L.dt
-            json_obj['space_comm_size'] = self.size
-            json_obj['time_comm_size'] = step.status.time_size
-            json_obj['shape'] = L.prob.params.nvars
-            json_obj['elementsize'] = L.uend.values.dtype.itemsize
+            json_obj["type"] = "dataset"
+            json_obj["datatype"] = str(L.uend.values.dtype)
+            json_obj["endian"] = str(L.uend.values.dtype.byteorder)
+            json_obj["time"] = L.time + L.dt
+            json_obj["space_comm_size"] = self.size
+            json_obj["time_comm_size"] = step.status.time_size
+            json_obj["shape"] = L.prob.params.nvars
+            json_obj["elementsize"] = L.uend.values.dtype.itemsize
 
-            with open(fname + '.json', 'w') as fp:
+            with open(fname + ".json", "w") as fp:
                 json.dump(json_obj, fp)
 
         # update step count

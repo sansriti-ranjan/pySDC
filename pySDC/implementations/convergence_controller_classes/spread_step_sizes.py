@@ -90,9 +90,14 @@ class SpreadStepSizesBlockwiseNonMPI(SpreadStepSizesBlockwise):
                 ]
             )
 
-            if new_steps[i] < (l.status.dt_new if l.status.dt_new is not None else l.params.dt) and i == 0:
+            if (
+                new_steps[i]
+                < (l.status.dt_new if l.status.dt_new is not None else l.params.dt)
+                and i == 0
+            ):
                 self.log(
-                    f"Overwriting stepsize control to reach Tend: {Tend:.2e}! New step size: {new_steps[i]:.2e}", S
+                    f"Overwriting stepsize control to reach Tend: {Tend:.2e}! New step size: {new_steps[i]:.2e}",
+                    S,
                 )
 
         # spread the step sizes to all levels
@@ -143,9 +148,14 @@ class SpreadStepSizesBlockwiseMPI(SpreadStepSizesBlockwise):
                     ]
                 )
 
-                if new_steps[i] < l.status.dt_new if l.status.dt_new is not None else l.params.dt:
+                if (
+                    new_steps[i] < l.status.dt_new
+                    if l.status.dt_new is not None
+                    else l.params.dt
+                ):
                     self.log(
-                        f"Overwriting stepsize control to reach Tend: {Tend:.2e}! New step size: {new_steps[i]:.2e}", S
+                        f"Overwriting stepsize control to reach Tend: {Tend:.2e}! New step size: {new_steps[i]:.2e}",
+                        S,
                     )
         new_steps = comm.bcast(new_steps, root=restart_at)
 

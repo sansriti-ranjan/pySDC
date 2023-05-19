@@ -34,7 +34,13 @@ class mesh(np.ndarray):
         """
         if isinstance(init, mesh):
             obj = np.ndarray.__new__(
-                cls, shape=init.shape, dtype=init.dtype, buffer=buffer, offset=offset, strides=strides, order=order
+                cls,
+                shape=init.shape,
+                dtype=init.dtype,
+                buffer=buffer,
+                offset=offset,
+                strides=strides,
+                order=order,
             )
             obj[:] = init[:]
             obj._comm = init._comm
@@ -44,7 +50,13 @@ class mesh(np.ndarray):
             and isinstance(init[2], np.dtype)
         ):
             obj = np.ndarray.__new__(
-                cls, init[0], dtype=init[2], buffer=buffer, offset=offset, strides=strides, order=order
+                cls,
+                init[0],
+                dtype=init[2],
+                buffer=buffer,
+                offset=offset,
+                strides=strides,
+                order=order,
             )
             obj.fill(val)
             obj._comm = init[1]
@@ -65,7 +77,7 @@ class mesh(np.ndarray):
         """
         if obj is None:
             return
-        self._comm = getattr(obj, '_comm', None)
+        self._comm = getattr(obj, "_comm", None)
 
     def __array_ufunc__(self, ufunc, method, *inputs, out=None, **kwargs):
         """
@@ -79,8 +91,10 @@ class mesh(np.ndarray):
                 comm = input_.comm
             else:
                 args.append(input_)
-        results = super(mesh, self).__array_ufunc__(ufunc, method, *args, **kwargs).view(mesh)
-        if not method == 'reduce':
+        results = (
+            super(mesh, self).__array_ufunc__(ufunc, method, *args, **kwargs).view(mesh)
+        )
+        if not method == "reduce":
             results._comm = comm
         return results
 
@@ -97,7 +111,9 @@ class mesh(np.ndarray):
         if self.comm is not None:
             if self.comm.Get_size() > 1:
                 global_absval = 0.0
-                global_absval = max(self.comm.allreduce(sendobj=local_absval, op=MPI.MAX), global_absval)
+                global_absval = max(
+                    self.comm.allreduce(sendobj=local_absval, op=MPI.MAX), global_absval
+                )
             else:
                 global_absval = local_absval
         else:
@@ -183,7 +199,9 @@ class imex_mesh(object):
             self.expl = mesh(init, val=val)
         # something is wrong, if none of the ones above hit
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )
 
 
 class comp2_mesh(object):
@@ -218,4 +236,6 @@ class comp2_mesh(object):
             self.comp2 = mesh(init, val=val)
         # something is wrong, if none of the ones above hit
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )

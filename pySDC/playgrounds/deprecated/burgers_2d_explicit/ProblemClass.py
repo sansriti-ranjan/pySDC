@@ -29,7 +29,7 @@ class sharpclaw(ptype):
         """
 
         # these parameters will be used later, so assert their existence
-        assert 'nvars' in cparams
+        assert "nvars" in cparams
 
         # add parameters as attributes for further reference
         for k, v in cparams.items():
@@ -38,17 +38,19 @@ class sharpclaw(ptype):
         # invoke super init, passing number of dofs, dtype_u and dtype_f
         super(sharpclaw, self).__init__(self.nvars, dtype_u, dtype_f)
 
-        riemann_solver = riemann.burgers_1D  # NOTE: This uses the FORTRAN kernels of clawpack
+        riemann_solver = (
+            riemann.burgers_1D
+        )  # NOTE: This uses the FORTRAN kernels of clawpack
         self.solver = pyclaw.SharpClawSolver1D(riemann_solver)
         self.solver.weno_order = 5
-        self.solver.time_integrator = 'Euler'  # Remove later
-        self.solver.kernel_language = 'Fortran'
+        self.solver.time_integrator = "Euler"  # Remove later
+        self.solver.kernel_language = "Fortran"
         self.solver.bc_lower[0] = pyclaw.BC.periodic
         self.solver.bc_upper[0] = pyclaw.BC.periodic
         self.solver.cfl_max = 1.0
         assert self.solver.is_valid()
 
-        x = pyclaw.Dimension(0.0, 1.0, self.nvars, name='x')
+        x = pyclaw.Dimension(0.0, 1.0, self.nvars, name="x")
         self.domain = pyclaw.Domain(x)
 
         self.state = pyclaw.State(self.domain, self.solver.num_eqn)

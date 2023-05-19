@@ -27,6 +27,6 @@ class LogStepSize(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='dt',
+            type="dt",
             value=L.dt,
         )

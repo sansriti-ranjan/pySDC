@@ -7,7 +7,6 @@ class error_output(hooks):
     """
 
     def pre_iteration(self, step, level_number):
-
         super(error_output, self).pre_iteration(step, level_number)
 
         # some abbreviations

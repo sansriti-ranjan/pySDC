@@ -30,7 +30,7 @@ class grayscott_imex_diffusion(ptype):
 
     def __init__(self, nvars, Du, Dv, A, B, spectral, L=2.0, comm=MPI.COMM_WORLD):
         if not (isinstance(nvars, tuple) and len(nvars) > 1):
-            raise ProblemError('Need at least two dimensions')
+            raise ProblemError("Need at least two dimensions")
 
         # Creating FFT structure
         self.ndim = len(nvars)
@@ -41,7 +41,7 @@ class grayscott_imex_diffusion(ptype):
             axes=axes,
             dtype=np.float64,
             collapse=True,
-            backend='fftw',
+            backend="fftw",
         )
 
         # get test data to figure out type and dimensions
@@ -54,7 +54,16 @@ class grayscott_imex_diffusion(ptype):
         # invoke super init, passing the communicator and the local dimensions as init
         super().__init__(init=(sizes, comm, tmp_u.dtype))
         self._makeAttributeAndRegister(
-            'nvars', 'Du', 'Dv', 'A', 'B', 'spectral', 'L', 'comm', localVars=locals(), readOnly=True
+            "nvars",
+            "Du",
+            "Dv",
+            "A",
+            "B",
+            "spectral",
+            "L",
+            "comm",
+            localVars=locals(),
+            readOnly=True,
         )
 
         L = np.array([self.L] * self.ndim, dtype=float)
@@ -72,7 +81,7 @@ class grayscott_imex_diffusion(ptype):
         k = [np.fft.fftfreq(n, 1.0 / n).astype(int) for n in N[:-1]]
         k.append(np.fft.rfftfreq(N[-1], 1.0 / N[-1]).astype(int))
         K = [ki[si] for ki, si in zip(k, s)]
-        Ks = np.meshgrid(*K, indexing='ij', sparse=True)
+        Ks = np.meshgrid(*K, indexing="ij", sparse=True)
         Lp = 2 * np.pi / L
         for i in range(self.ndim):
             Ks[i] = (Ks[i] * Lp[i]).astype(float)
@@ -163,20 +172,26 @@ class grayscott_imex_diffusion(ptype):
         Returns:
             dtype_u: exact solution
         """
-        assert t == 0.0, 'Exact solution only valid as initial condition'
-        assert self.ndim == 2, 'The initial conditions are 2D for now..'
+        assert t == 0.0, "Exact solution only valid as initial condition"
+        assert self.ndim == 2, "The initial conditions are 2D for now.."
 
         me = self.dtype_u(self.init, val=0.0)
 
         # This assumes that the box is [-L/2, L/2]^2
         if self.spectral:
-            tmp = 1.0 - np.exp(-80.0 * ((self.X[0] + 0.05) ** 2 + (self.X[1] + 0.02) ** 2))
+            tmp = 1.0 - np.exp(
+                -80.0 * ((self.X[0] + 0.05) ** 2 + (self.X[1] + 0.02) ** 2)
+            )
             me[..., 0] = self.fft.forward(tmp)
             tmp = np.exp(-80.0 * ((self.X[0] - 0.05) ** 2 + (self.X[1] - 0.02) ** 2))
             me[..., 1] = self.fft.forward(tmp)
         else:
-            me[..., 0] = 1.0 - np.exp(-80.0 * ((self.X[0] + 0.05) ** 2 + (self.X[1] + 0.02) ** 2))
-            me[..., 1] = np.exp(-80.0 * ((self.X[0] - 0.05) ** 2 + (self.X[1] - 0.02) ** 2))
+            me[..., 0] = 1.0 - np.exp(
+                -80.0 * ((self.X[0] + 0.05) ** 2 + (self.X[1] + 0.02) ** 2)
+            )
+            me[..., 1] = np.exp(
+                -80.0 * ((self.X[0] - 0.05) ** 2 + (self.X[1] - 0.02) ** 2)
+            )
 
         # tmpu = np.load('data/u_0001.npy')
         # tmpv = np.load('data/v_0001.npy')
@@ -235,7 +250,19 @@ class grayscott_imex_linear(grayscott_imex_diffusion):
 class grayscott_mi_diffusion(grayscott_imex_diffusion):
     dtype_f = comp2_mesh
 
-    def __init__(self, nvars, Du, Dv, A, B, spectral, newton_maxiter, newton_tol, L=2.0, comm=MPI.COMM_WORLD):
+    def __init__(
+        self,
+        nvars,
+        Du,
+        Dv,
+        A,
+        B,
+        spectral,
+        newton_maxiter,
+        newton_tol,
+        L=2.0,
+        comm=MPI.COMM_WORLD,
+    ):
         super().__init__(nvars, Du, Dv, A, B, spectral, L, comm)
         # This may not run in parallel yet..
         assert self.comm.Get_size() == 1
@@ -354,10 +381,14 @@ class grayscott_mi_diffusion(grayscott_imex_diffusion):
 
             # put into sparse matrix
             dg = sp.diags(dg00I, offsets=0) + sp.diags(dg11I, offsets=0)
-            dg += sp.diags(dg01I, offsets=1, shape=dg.shape) + sp.diags(dg10I, offsets=-1, shape=dg.shape)
+            dg += sp.diags(dg01I, offsets=1, shape=dg.shape) + sp.diags(
+                dg10I, offsets=-1, shape=dg.shape
+            )
 
             # interleave g terms to apply inverse to it
-            g = np.kron(tmpgu.flatten(), np.array([1, 0])) + np.kron(tmpgv.flatten(), np.array([0, 1]))
+            g = np.kron(tmpgu.flatten(), np.array([1, 0])) + np.kron(
+                tmpgv.flatten(), np.array([0, 1])
+            )
             # invert dg matrix
             b = sp.linalg.spsolve(dg, g)
             # update real space vectors
@@ -368,12 +399,14 @@ class grayscott_mi_diffusion(grayscott_imex_diffusion):
             n += 1
 
         if np.isnan(res) and self.stop_at_nan:
-            raise ProblemError('Newton got nan after %i iterations, aborting...' % n)
+            raise ProblemError("Newton got nan after %i iterations, aborting..." % n)
         elif np.isnan(res):
-            self.logger.warning('Newton got nan after %i iterations...' % n)
+            self.logger.warning("Newton got nan after %i iterations..." % n)
 
         if n == self.newton_maxiter:
-            self.logger.warning('Newton did not converge after %i iterations, error is %s' % (n, res))
+            self.logger.warning(
+                "Newton did not converge after %i iterations, error is %s" % (n, res)
+            )
 
         # self.newton_ncalls += 1
         # self.newton_itercount += n
@@ -390,7 +423,19 @@ class grayscott_mi_diffusion(grayscott_imex_diffusion):
 class grayscott_mi_linear(grayscott_imex_linear):
     dtype_f = comp2_mesh
 
-    def __init__(self, nvars, Du, Dv, A, B, spectral, newton_maxiter, newton_tol, L=2.0, comm=MPI.COMM_WORLD):
+    def __init__(
+        self,
+        nvars,
+        Du,
+        Dv,
+        A,
+        B,
+        spectral,
+        newton_maxiter,
+        newton_tol,
+        L=2.0,
+        comm=MPI.COMM_WORLD,
+    ):
         super().__init__(nvars, Du, Dv, A, B, spectral, L, comm)
         # This may not run in parallel yet..
         assert self.comm.Get_size() == 1
@@ -509,10 +554,14 @@ class grayscott_mi_linear(grayscott_imex_linear):
 
             # put into sparse matrix
             dg = sp.diags(dg00I, offsets=0) + sp.diags(dg11I, offsets=0)
-            dg += sp.diags(dg01I, offsets=1, shape=dg.shape) + sp.diags(dg10I, offsets=-1, shape=dg.shape)
+            dg += sp.diags(dg01I, offsets=1, shape=dg.shape) + sp.diags(
+                dg10I, offsets=-1, shape=dg.shape
+            )
 
             # interleave g terms to apply inverse to it
-            g = np.kron(tmpgu.flatten(), np.array([1, 0])) + np.kron(tmpgv.flatten(), np.array([0, 1]))
+            g = np.kron(tmpgu.flatten(), np.array([1, 0])) + np.kron(
+                tmpgv.flatten(), np.array([0, 1])
+            )
             # invert dg matrix
             b = sp.linalg.spsolve(dg, g)
             # update real-space vectors
@@ -523,12 +572,14 @@ class grayscott_mi_linear(grayscott_imex_linear):
             n += 1
 
         if np.isnan(res) and self.stop_at_nan:
-            raise ProblemError('Newton got nan after %i iterations, aborting...' % n)
+            raise ProblemError("Newton got nan after %i iterations, aborting..." % n)
         elif np.isnan(res):
-            self.logger.warning('Newton got nan after %i iterations...' % n)
+            self.logger.warning("Newton got nan after %i iterations..." % n)
 
         if n == self.newton_maxiter:
-            self.logger.warning('Newton did not converge after %i iterations, error is %s' % (n, res))
+            self.logger.warning(
+                "Newton did not converge after %i iterations, error is %s" % (n, res)
+            )
 
         # self.newton_ncalls += 1
         # self.newton_itercount += n

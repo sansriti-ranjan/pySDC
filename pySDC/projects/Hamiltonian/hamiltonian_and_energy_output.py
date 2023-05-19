@@ -42,7 +42,7 @@ class hamiltonian_and_energy_output(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='hamiltonian',
+            type="hamiltonian",
             value=H,
         )
 
@@ -52,7 +52,7 @@ class hamiltonian_and_energy_output(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='err_hamiltonian',
+            type="err_hamiltonian",
             value=abs(self.ham_init - H),
         )
 
@@ -62,7 +62,7 @@ class hamiltonian_and_energy_output(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='energy_iter',
+            type="energy_iter",
             value=E,
         )
 
@@ -90,7 +90,7 @@ class hamiltonian_and_energy_output(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='position',
+            type="position",
             value=L.uend.pos,
         )
 
@@ -100,7 +100,7 @@ class hamiltonian_and_energy_output(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='energy_step',
+            type="energy_step",
             value=E,
         )
 

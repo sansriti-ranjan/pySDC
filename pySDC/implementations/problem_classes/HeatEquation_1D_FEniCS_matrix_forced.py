@@ -4,7 +4,10 @@ import dolfin as df
 import numpy as np
 
 from pySDC.core.Problem import ptype
-from pySDC.implementations.datatype_classes.fenics_mesh import fenics_mesh, rhs_fenics_mesh
+from pySDC.implementations.datatype_classes.fenics_mesh import (
+    fenics_mesh,
+    rhs_fenics_mesh,
+)
 
 
 # noinspection PyUnusedLocal
@@ -38,13 +41,13 @@ class fenics_heat(ptype):
         #     return on_boundary
 
         # set logger level for FFC and dolfin
-        logging.getLogger('FFC').setLevel(logging.WARNING)
-        logging.getLogger('UFL').setLevel(logging.WARNING)
+        logging.getLogger("FFC").setLevel(logging.WARNING)
+        logging.getLogger("UFL").setLevel(logging.WARNING)
 
         # set solver and form parameters
         df.parameters["form_compiler"]["optimize"] = True
         df.parameters["form_compiler"]["cpp_optimize"] = True
-        df.parameters['allow_extrapolation'] = True
+        df.parameters["allow_extrapolation"] = True
 
         # set mesh and refinement (for multilevel)
         mesh = df.UnitIntervalMesh(c_nvars)
@@ -54,12 +57,19 @@ class fenics_heat(ptype):
         # define function space for future reference
         self.V = df.FunctionSpace(mesh, family, order)
         tmp = df.Function(self.V)
-        print('DoFs on this level:', len(tmp.vector()[:]))
+        print("DoFs on this level:", len(tmp.vector()[:]))
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
         super(fenics_heat, self).__init__(self.V)
         self._makeAttributeAndRegister(
-            'c_nvars', 't0', 'family', 'order', 'refinements', 'nu', localVars=locals(), readOnly=True
+            "c_nvars",
+            "t0",
+            "family",
+            "order",
+            "refinements",
+            "nu",
+            localVars=locals(),
+            readOnly=True,
         )
 
         # Stiffness term (Laplace)
@@ -75,7 +85,7 @@ class fenics_heat(ptype):
 
         # set forcing term as expression
         self.g = df.Expression(
-            '-cos(a*x[0]) * (sin(t) - b*a*a*cos(t))',
+            "-cos(a*x[0]) * (sin(t) - b*a*a*cos(t))",
             a=np.pi,
             b=self.nu,
             t=self.t0,
@@ -208,7 +218,7 @@ class fenics_heat(ptype):
             dtype_u: exact solution
         """
 
-        u0 = df.Expression('cos(a*x[0]) * cos(t)', a=np.pi, t=t, degree=self.order)
+        u0 = df.Expression("cos(a*x[0]) * cos(t)", a=np.pi, t=t, degree=self.order)
         me = self.dtype_u(df.interpolate(u0, self.V))
 
         return me

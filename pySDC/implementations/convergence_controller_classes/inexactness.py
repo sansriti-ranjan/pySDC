@@ -40,7 +40,10 @@ class NewtonInexactness(ConvergenceController):
         """
         for lvl in step.levels:
             lvl.prob.newton_tol = max(
-                [min([lvl.status.residual * self.params.ratio, self.params.max_tol]), self.params.min_tol]
+                [
+                    min([lvl.status.residual * self.params.ratio, self.params.max_tol]),
+                    self.params.min_tol,
+                ]
             )
 
-            self.log(f'Changed Newton tolerance to {lvl.prob.newton_tol:.2e}', step)
+            self.log(f"Changed Newton tolerance to {lvl.prob.newton_tol:.2e}", step)

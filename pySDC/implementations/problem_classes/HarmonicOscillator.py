@@ -19,7 +19,9 @@ class harmonic_oscillator(ptype):
         # invoke super init, passing nparts, dtype_u and dtype_f
         u0 = np.asarray(u0)
         super().__init__((1, None, np.dtype("float64")))
-        self._makeAttributeAndRegister('k', 'mu', 'u0', 'phase', 'amp', localVars=locals(), readOnly=True)
+        self._makeAttributeAndRegister(
+            "k", "mu", "u0", "phase", "amp", localVars=locals(), readOnly=True
+        )
 
     def eval_f(self, u, t):
         """
@@ -95,7 +97,9 @@ class harmonic_oscillator(ptype):
             A, B = np.linalg.solve(M, U_0)
 
             me.pos[:] = np.real(A * np.exp(lam_1 * t) + B * np.exp(lam_2 * t))
-            me.vel[:] = np.real(A * lam_1 * np.exp(lam_1 * t) + B * lam_2 * np.exp(lam_2 * t))
+            me.vel[:] = np.real(
+                A * lam_1 * np.exp(lam_1 * t) + B * lam_2 * np.exp(lam_2 * t)
+            )
 
         else:
             pass

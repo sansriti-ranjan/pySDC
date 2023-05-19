@@ -1,11 +1,20 @@
 from pySDC.core.Hooks import hooks
 from pySDC.implementations.hooks.log_solution import LogSolution
-from pySDC.implementations.hooks.log_embedded_error_estimate import LogEmbeddedErrorEstimate
-from pySDC.implementations.hooks.log_extrapolated_error_estimate import LogExtrapolationErrorEstimate
+from pySDC.implementations.hooks.log_embedded_error_estimate import (
+    LogEmbeddedErrorEstimate,
+)
+from pySDC.implementations.hooks.log_extrapolated_error_estimate import (
+    LogExtrapolationErrorEstimate,
+)
 from pySDC.implementations.hooks.log_step_size import LogStepSize
 
 
-hook_collection = [LogSolution, LogEmbeddedErrorEstimate, LogExtrapolationErrorEstimate, LogStepSize]
+hook_collection = [
+    LogSolution,
+    LogEmbeddedErrorEstimate,
+    LogExtrapolationErrorEstimate,
+    LogStepSize,
+]
 
 
 class LogData(hooks):
@@ -20,7 +29,9 @@ class LogData(hooks):
         super().pre_run(step, level_number)
 
         L = step.levels[level_number]
-        self.add_to_stats(process=0, time=0, level=0, iter=0, sweep=0, type='u0', value=L.u[0])
+        self.add_to_stats(
+            process=0, time=0, level=0, iter=0, sweep=0, type="u0", value=L.u[0]
+        )
 
     def post_step(self, step, level_number):
         """
@@ -36,8 +47,8 @@ class LogData(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='restart',
-            value=int(step.status.get('restart')),
+            type="restart",
+            value=int(step.status.get("restart")),
         )
         # add the following with two names because I use both in different projects -.-
         self.increment_stats(
@@ -46,7 +57,7 @@ class LogData(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='sweeps',
+            type="sweeps",
             value=step.status.iter,
         )
         self.increment_stats(
@@ -55,7 +66,7 @@ class LogData(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='k',
+            type="k",
             value=step.status.iter,
         )
 
@@ -75,7 +86,7 @@ class LogUold(hooks):
             level=L.level_index,
             iter=-1,
             sweep=L.status.sweep,
-            type='uold',
+            type="uold",
             value=L.uold[-1],
         )
 
@@ -97,7 +108,7 @@ class LogUAllIter(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='u',
+            type="u",
             value=L.uend,
         )
         self.add_to_stats(
@@ -106,8 +117,8 @@ class LogUAllIter(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='error_embedded_estimate',
-            value=L.status.get('error_embedded_estimate'),
+            type="error_embedded_estimate",
+            value=L.status.get("error_embedded_estimate"),
         )
         self.add_to_stats(
             process=step.status.slot,
@@ -115,6 +126,6 @@ class LogUAllIter(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='error_extrapolation_estimate',
-            value=L.status.get('error_extrapolation_estimate'),
+            type="error_extrapolation_estimate",
+            value=L.status.get("error_extrapolation_estimate"),
         )

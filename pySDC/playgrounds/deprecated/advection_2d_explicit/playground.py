@@ -9,18 +9,17 @@ from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.playgrounds.deprecated.advection_2d_explicit import plot_solution
 
 if __name__ == "__main__":
-
     # set global logger (remove this if you do not want the output at all)
-    logger = Log.setup_custom_logger('root')
+    logger = Log.setup_custom_logger("root")
 
     num_procs = 1
 
     # This comes as read-in for the level class
     lparams = {}
-    lparams['restol'] = 1e-10
+    lparams["restol"] = 1e-10
 
     sparams = {}
-    sparams['maxiter'] = 0
+    sparams["maxiter"] = 0
 
     # setup parameters "in time"
     t0 = 0
@@ -29,23 +28,23 @@ if __name__ == "__main__":
 
     # This comes as read-in for the problem class
     pparams = {}
-    pparams['nvars'] = [(1, 100, 50)]
+    pparams["nvars"] = [(1, 100, 50)]
 
     # This comes as read-in for the transfer operations
     tparams = {}
-    tparams['finter'] = True
+    tparams["finter"] = True
 
     # Fill description dictionary for easy hierarchy creation
     description = {}
-    description['problem_class'] = advection_2d_explicit
-    description['problem_params'] = pparams
-    description['dtype_u'] = mesh
-    description['dtype_f'] = rhs_imex_mesh
-    description['collocation_class'] = collclass.CollGaussLobatto
-    description['num_nodes'] = 2
-    description['sweeper_class'] = imex_1st_order
-    description['level_params'] = lparams
-    description['hook_class'] = plot_solution
+    description["problem_class"] = advection_2d_explicit
+    description["problem_params"] = pparams
+    description["dtype_u"] = mesh
+    description["dtype_f"] = rhs_imex_mesh
+    description["collocation_class"] = collclass.CollGaussLobatto
+    description["num_nodes"] = 2
+    description["sweeper_class"] = imex_1st_order
+    description["level_params"] = lparams
+    description["hook_class"] = plot_solution
     # description['transfer_class'] = mesh_to_mesh
     # description['transfer_params'] = tparams
 

@@ -20,7 +20,9 @@ def doublesine(i, v):
 def Lap_doublesine(i, v):
     r = [ii * (Li / ni) for ii, ni, Li in zip(i, v.Nmesh, v.BoxSize)]
     # xx, yy = np.meshgrid(r[0], r[1])
-    return -2.0 * (2.0 * np.pi) ** 2 * np.sin(2 * np.pi * r[0]) * np.sin(2 * np.pi * r[1])
+    return (
+        -2.0 * (2.0 * np.pi) ** 2 * np.sin(2 * np.pi * r[0]) * np.sin(2 * np.pi * r[1])
+    )
 
 
 def Laplacian(k, v):
@@ -44,13 +46,15 @@ rank = comm.Get_rank()
 size = comm.Get_size()
 
 t0 = time.perf_counter()
-pm = ParticleMesh(BoxSize=1.0, Nmesh=[nvars] * 2, dtype='f8', plan_method='measure', comm=comm)
-tmp = pm.create(type='real')
+pm = ParticleMesh(
+    BoxSize=1.0, Nmesh=[nvars] * 2, dtype="f8", plan_method="measure", comm=comm
+)
+tmp = pm.create(type="real")
 t1 = time.perf_counter()
 
 # a = pmesh_datatype((pm, (2, (4, 4))))
 
-print(f'PMESH setup time: {t1 - t0:6.4f} sec.')
+print(f"PMESH setup time: {t1 - t0:6.4f} sec.")
 
 
 dt = 0.121233
@@ -99,18 +103,18 @@ t0 = time.perf_counter()
 pmf = ParticleMesh(BoxSize=1.0, Nmesh=[nvars] * 2, comm=comm)
 pmc = ParticleMesh(BoxSize=1.0, Nmesh=[nvars // 2] * 2, comm=comm)
 
-uexf = pmf.create(type='real')
-uexf = uexf.apply(doublesine, kind='index')
+uexf = pmf.create(type="real")
+uexf = uexf.apply(doublesine, kind="index")
 
-uexc = pmc.create(type='real')
-uexc = uexc.apply(doublesine, kind='index')
+uexc = pmc.create(type="real")
+uexc = uexc.apply(doublesine, kind="index")
 
 # uc = pmc.upsample(uexf, keep_mean=True)
-uc = pmc.create(type='real')
+uc = pmc.create(type="real")
 uexf.resample(uc)
 print(uc.preview().shape, np.amax(abs(uc - uexc)))
 
-uf = pmf.create(type='real')
+uf = pmf.create(type="real")
 # uf = pmf.upsample(uexc, keep_mean=True)
 
 uexc.resample(uf)
@@ -120,20 +124,20 @@ print()
 pmf = ParticleMesh(BoxSize=1.0, Nmesh=[nvars] * 2, comm=comm)
 pmc = ParticleMesh(BoxSize=1.0, Nmesh=[nvars // 2] * 2, comm=comm)
 
-uexf = pmf.create(type='real')
-uexf = uexf.apply(doublesine, kind='index')
+uexf = pmf.create(type="real")
+uexf = uexf.apply(doublesine, kind="index")
 uexf = uexf.r2c()
 
-uexc = pmc.create(type='real')
-uexc = uexc.apply(doublesine, kind='index')
+uexc = pmc.create(type="real")
+uexc = uexc.apply(doublesine, kind="index")
 uexc = uexc.r2c()
 
 # uc = pmc.upsample(uexf, keep_mean=True)
-uc = pmc.create(type='complex')
+uc = pmc.create(type="complex")
 uexf.resample(uc)
 print(uc.value.shape, np.amax(abs(uc - uexc)))
 
-uf = pmf.create(type='complex')
+uf = pmf.create(type="complex")
 # uf = pmf.upsample(uexc, keep_mean=True)
 
 uexc.resample(uf)
@@ -141,4 +145,4 @@ print(uf.preview().shape, np.amax(abs(uf - uexf)))
 print()
 
 t1 = time.perf_counter()
-print(f'Time: {t1-t0}')
+print(f"Time: {t1-t0}")

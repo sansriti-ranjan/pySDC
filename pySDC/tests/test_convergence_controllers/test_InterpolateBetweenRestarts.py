@@ -26,7 +26,7 @@ class LogInterpolation(hooks):
                 level=L.level_index,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='u_inter',
+                type="u_inter",
                 value=L.u.copy(),
             )
             self.add_to_stats(
@@ -35,7 +35,7 @@ class LogInterpolation(hooks):
                 level=L.level_index,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='nodes_inter',
+                type="nodes_inter",
                 value=L.sweep.coll.nodes * L.params.dt,
             )
             self.log_u_now = False
@@ -53,7 +53,7 @@ class LogInterpolation(hooks):
                 level=L.level_index,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='u_before_interpolation',
+                type="u_before_interpolation",
                 value=L.u.copy(),
             )
             self.add_to_stats(
@@ -62,7 +62,7 @@ class LogInterpolation(hooks):
                 level=L.level_index,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='nodes',
+                type="nodes",
                 value=L.sweep.coll.nodes * L.params.dt,
             )
 
@@ -76,8 +76,11 @@ class LogInterpolation(hooks):
                 level=L.level_index,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='u_inter_double_check',
-                value=(interpolator.getInterpolationMatrix(np.append(0, nodes_new)) @ L.u[:])[:],
+                type="u_inter_double_check",
+                value=(
+                    interpolator.getInterpolationMatrix(np.append(0, nodes_new))
+                    @ L.u[:]
+                )[:],
             )
 
 
@@ -130,66 +133,72 @@ class CheckInterpolationOrder(hooks):
 
 
 def run_vdp(hook, adaptivity=True):
-    from pySDC.implementations.convergence_controller_classes.adaptivity import Adaptivity
+    from pySDC.implementations.convergence_controller_classes.adaptivity import (
+        Adaptivity,
+    )
     from pySDC.implementations.convergence_controller_classes.interpolate_between_restarts import (
         InterpolateBetweenRestarts,
     )
     import numpy as np
     from pySDC.implementations.problem_classes.Van_der_Pol_implicit import vanderpol
     from pySDC.implementations.sweeper_classes.generic_implicit import generic_implicit
-    from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
+    from pySDC.implementations.controller_classes.controller_nonMPI import (
+        controller_nonMPI,
+    )
 
     # initialize level parameters
     level_params = dict()
-    level_params['dt'] = 1e-2
+    level_params["dt"] = 1e-2
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
-    sweeper_params['QI'] = 'IE'
-    sweeper_params['initial_guess'] = 'spread'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
+    sweeper_params["QI"] = "IE"
+    sweeper_params["initial_guess"] = "spread"
 
     problem_params = {
-        'mu': 5.0,
-        'newton_tol': 1e-9,
-        'newton_maxiter': 99,
-        'u0': np.array([2.0, 0.0]),
-        'crash_at_maxiter': False,
+        "mu": 5.0,
+        "newton_tol": 1e-9,
+        "newton_maxiter": 99,
+        "u0": np.array([2.0, 0.0]),
+        "crash_at_maxiter": False,
     }
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 4
+    step_params["maxiter"] = 4
 
     # convergence controllers
     convergence_controllers = {
         InterpolateBetweenRestarts: {},
     }
     if adaptivity:
-        convergence_controllers[Adaptivity] = {'e_tol': 1e-7}
+        convergence_controllers[Adaptivity] = {"e_tol": 1e-7}
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30
-    controller_params['hook_class'] = hook
-    controller_params['mssdc_jac'] = False
+    controller_params["logger_level"] = 30
+    controller_params["hook_class"] = hook
+    controller_params["mssdc_jac"] = False
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = vanderpol
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = generic_implicit
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
-    description['step_params'] = step_params
-    description['convergence_controllers'] = convergence_controllers
+    description["problem_class"] = vanderpol
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = generic_implicit
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
+    description["step_params"] = step_params
+    description["convergence_controllers"] = convergence_controllers
 
     # set time parameters
     t0 = 0.0
 
     # instantiate controller
-    controller = controller_nonMPI(num_procs=1, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=1, controller_params=controller_params, description=description
+    )
 
     # get initial values on finest level
     P = controller.MS[0].levels[0].prob
@@ -210,18 +219,18 @@ def test_InterpolateBetweenRestarts(plotting=False):
     stats = run_vdp(LogInterpolation)
 
     u = {
-        'before': get_sorted(stats, type='u_before_interpolation'),
-        'after': get_sorted(stats, type='u_inter'),
-        'double_check': get_sorted(stats, type='u_inter_double_check'),
+        "before": get_sorted(stats, type="u_before_interpolation"),
+        "after": get_sorted(stats, type="u_inter"),
+        "double_check": get_sorted(stats, type="u_inter_double_check"),
     }
 
     nodes = {
-        'before': get_sorted(stats, type='nodes'),
-        'after': get_sorted(stats, type='nodes_inter'),
-        'double_check': get_sorted(stats, type='nodes_inter'),
+        "before": get_sorted(stats, type="nodes"),
+        "after": get_sorted(stats, type="nodes_inter"),
+        "double_check": get_sorted(stats, type="nodes_inter"),
     }
 
-    residual = get_sorted(stats, type='residual_post_step')
+    residual = get_sorted(stats, type="residual_post_step")
     for t in np.unique([me[0] for me in residual]):
         _res = np.array([me[1] for me in residual if me[0] == t])
         if len(_res) > 1:
@@ -230,14 +239,16 @@ def test_InterpolateBetweenRestarts(plotting=False):
                 contraction < 6e-3
             ), f"Residual was not decreased as much as expected! Got {max(contraction):.2e}. Without interpolation we expect about 0.15, but with interpolation we want about 6e-3!"
 
-    for i in range(len(u['before'])):
+    for i in range(len(u["before"])):
         # check the nodes
-        assert nodes['after'][i][1][-1] < nodes['before'][i][1][-1], "Step size was not reduced!"
+        assert (
+            nodes["after"][i][1][-1] < nodes["before"][i][1][-1]
+        ), "Step size was not reduced!"
 
         # check the solution
-        for j in range(len(u['before'][i][1])):
+        for j in range(len(u["before"][i][1])):
             assert (
-                abs(u['double_check'][i][1][j] - u['after'][i][1][j]) < 1e-12
+                abs(u["double_check"][i][1][j] - u["after"][i][1][j]) < 1e-12
             ), f"The interpolated solution from the convergence controller is not right! Expected {u['double_check'][i][1][j]}, got {u['after'][i][1][j]}"
 
     if plotting:
@@ -246,23 +257,29 @@ def test_InterpolateBetweenRestarts(plotting=False):
         fig, axs = plt.subplots(2, 1, sharex=True)
 
         colors = {
-            'before': 'teal',
-            'after': 'violet',
-            'double_check': 'black',
+            "before": "teal",
+            "after": "violet",
+            "double_check": "black",
         }
 
-        ls = {'before': '-', 'after': '--', 'double_check': '-.'}
+        ls = {"before": "-", "after": "--", "double_check": "-."}
         for i in [0, 1]:
             for key in nodes.keys():
                 axs[0].plot(
-                    np.append([0], nodes[key][i][1]), [me[1] for me in u[key][i][1]], color=colors[key], ls=ls[key]
+                    np.append([0], nodes[key][i][1]),
+                    [me[1] for me in u[key][i][1]],
+                    color=colors[key],
+                    ls=ls[key],
                 )
                 axs[1].plot(
-                    np.append([0], nodes[key][i][1]), [me[0] for me in u[key][i][1]], color=colors[key], ls=ls[key]
+                    np.append([0], nodes[key][i][1]),
+                    [me[0] for me in u[key][i][1]],
+                    color=colors[key],
+                    ls=ls[key],
                 )
-        axs[1].set_xlabel('$t$')
-        axs[0].set_ylabel('$u_t$')
-        axs[1].set_ylabel('$u$')
+        axs[1].set_xlabel("$t$")
+        axs[0].set_ylabel("$u_t$")
+        axs[1].set_ylabel("$u$")
         plt.show()
 
 

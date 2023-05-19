@@ -25,9 +25,9 @@ x = np.linspace(X1, X2, N + 2)[1:-1]
 dx = x[1] - x[0]
 t = np.linspace(T1, T2, L + 1)[1:]
 
-print(f'CFL: {c*dt/dx}')
+print(f"CFL: {c*dt/dx}")
 
-print('solving on [{}, {}] x [{}, {}]'.format(T1, T2, X1, X2))
+print("solving on [{}, {}] x [{}, {}]".format(T1, T2, X1, X2))
 
 # functions
 A = 1 / (1 * dx) * (-np.eye(k=-1, N=N) + np.eye(k=0, N=N))
@@ -55,7 +55,7 @@ for l in range(L):
     us = us + dt * f_exp(t[l] - dt, x, us)
 
 err_euler = np.linalg.norm((us - u_exact(T2, x)).flatten(), np.inf)
-print('seq err = ', err_euler)
+print("seq err = ", err_euler)
 
 Ea = np.eye(k=-1, N=L)  # + alpha * np.eye(k=-1, N=L)
 Ea[0, -1] = alpha
@@ -80,7 +80,7 @@ rhs = np.empty(N * L, dtype=complex)
 d, S = np.linalg.eig(Ea)
 Sinv = np.linalg.inv(S)  # S @ d @ Sinv = Ea
 
-print(f'Diagonalization error: {np.linalg.norm(S @ np.diag(d) @ Sinv - Ea, np.inf)}')
+print(f"Diagonalization error: {np.linalg.norm(S @ np.diag(d) @ Sinv - Ea, np.inf)}")
 # exit()
 err = np.linalg.norm(u[-N:] - u_exact(T2, x), np.inf)
 print(err, 0)
@@ -88,7 +88,10 @@ print(err, 0)
 for k in range(K):
     rhs[:N] = u0 - alpha * u[-N:] + dt * f_exp(t[0] - dt, x, u[:N])
     for l in range(1, L, 1):
-        rhs[l * N : (l + 1) * N] = dt * f_exp(t[l] - dt, x, u[(l - 1) * N : l * N]) - alpha * u[(l - 1) * N : l * N]
+        rhs[l * N : (l + 1) * N] = (
+            dt * f_exp(t[l] - dt, x, u[(l - 1) * N : l * N])
+            - alpha * u[(l - 1) * N : l * N]
+        )
 
     # u = np.kron(Sinv, np.eye(N)) @ rhs
     for i in range(L):
@@ -116,6 +119,6 @@ for k in range(K):
 
 
 err = np.linalg.norm((us - u[-N:]).flatten(), np.inf)
-print('error between seq and paralpha = ', err)
+print("error between seq and paralpha = ", err)
 
 # gc. collect()

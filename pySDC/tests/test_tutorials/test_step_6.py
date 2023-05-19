@@ -6,8 +6,8 @@ import pytest
 def test_A():
     from pySDC.tutorial.step_6.A_run_non_MPI_controller import main as main_A
 
-    main_A(num_proc_list=[1], fname='step_6_A_sl_out.txt', multi_level=False)
-    main_A(num_proc_list=[1, 2, 4, 8], fname='step_6_A_ml_out.txt', multi_level=True)
+    main_A(num_proc_list=[1], fname="step_6_A_sl_out.txt", multi_level=False)
+    main_A(num_proc_list=[1, 2, 4, 8], fname="step_6_A_ml_out.txt", multi_level=True)
 
 
 @pytest.mark.mpi4py
@@ -25,25 +25,27 @@ def test_C():
     flat_installed_packages = [package.project_name for package in installed_packages]
 
     if "mpi4py" in flat_installed_packages:
-        cwd = 'pySDC/tutorial/step_6'
+        cwd = "pySDC/tutorial/step_6"
         main_C(cwd)
 
-        with open('data/step_6_C1_out.txt', 'r') as file1:
-            with open('data/step_6_A_ml_out.txt', 'r') as file2:
+        with open("data/step_6_C1_out.txt", "r") as file1:
+            with open("data/step_6_A_ml_out.txt", "r") as file2:
                 diff = set(file1).difference(file2)
-        diff.discard('\n')
+        diff.discard("\n")
         for line in diff:
-            assert 'iterations' not in line, (
-                'ERROR: iteration counts differ between MPI and nonMPI for even ' 'distribution of time-steps'
+            assert "iterations" not in line, (
+                "ERROR: iteration counts differ between MPI and nonMPI for even "
+                "distribution of time-steps"
             )
 
-        with open('data/step_6_C2_out.txt', 'r') as file1:
-            with open('data/step_6_B_out.txt', 'r') as file2:
+        with open("data/step_6_C2_out.txt", "r") as file1:
+            with open("data/step_6_B_out.txt", "r") as file2:
                 diff = set(file1).difference(file2)
-        diff.discard('\n')
+        diff.discard("\n")
         for line in diff:
-            assert 'iterations' not in line, (
-                'ERROR: iteration counts differ between MPI and nonMPI for odd distribution ' 'of time-steps'
+            assert "iterations" not in line, (
+                "ERROR: iteration counts differ between MPI and nonMPI for odd distribution "
+                "of time-steps"
             )
 
         diff_MPI = []
@@ -59,13 +61,14 @@ def test_C():
                     diff_nonMPI.append(float(line.split()[1]))
 
         assert len(diff_MPI) == len(diff_nonMPI), (
-            'ERROR: got different number of results form MPI and nonMPI for even ' 'distribution of time-steps'
+            "ERROR: got different number of results form MPI and nonMPI for even "
+            "distribution of time-steps"
         )
 
         for i, j in zip(diff_MPI, diff_nonMPI):
             assert abs(i - j) < 6e-11, (
-                'ERROR: difference between MPI and nonMPI results is too large for even '
-                'distributions of time-steps, got %s' % abs(i - j)
+                "ERROR: difference between MPI and nonMPI results is too large for even "
+                "distributions of time-steps, got %s" % abs(i - j)
             )
 
         diff_MPI = []
@@ -81,11 +84,12 @@ def test_C():
                     diff_nonMPI.append(float(line.split()[1]))
 
         assert len(diff_MPI) == len(diff_nonMPI), (
-            'ERROR: got different number of results form MPI and nonMPI for odd ' 'distribution of time-steps'
+            "ERROR: got different number of results form MPI and nonMPI for odd "
+            "distribution of time-steps"
         )
 
         for i, j in zip(diff_MPI, diff_nonMPI):
             assert abs(i - j) < 6e-11, (
-                'ERROR: difference between MPI and nonMPI results is too large for odd '
-                'distributions of time-steps, got %s' % abs(i - j)
+                "ERROR: difference between MPI and nonMPI results is too large for odd "
+                "distributions of time-steps, got %s" % abs(i - j)
             )

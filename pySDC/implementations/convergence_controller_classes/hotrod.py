@@ -35,7 +35,10 @@ class HotRod(ConvergenceController):
             "control_order": -40,
             "no_storage": False,
         }
-        return {**default_params, **super().setup(controller, params, description, **kwargs)}
+        return {
+            **default_params,
+            **super().setup(controller, params, description, **kwargs),
+        }
 
     def dependencies(self, controller, description, **kwargs):
         """
@@ -48,18 +51,26 @@ class HotRod(ConvergenceController):
         Returns:
             None
         """
-        from pySDC.implementations.convergence_controller_classes.estimate_embedded_error import EstimateEmbeddedError
+        from pySDC.implementations.convergence_controller_classes.estimate_embedded_error import (
+            EstimateEmbeddedError,
+        )
 
         controller.add_convergence_controller(
-            EstimateEmbeddedError.get_implementation(flavor='linearized', useMPI=self.params.useMPI),
+            EstimateEmbeddedError.get_implementation(
+                flavor="linearized", useMPI=self.params.useMPI
+            ),
             description=description,
         )
         if not self.params.useMPI:
             controller.add_convergence_controller(
-                EstimateExtrapolationErrorNonMPI, description=description, params={'no_storage': self.params.no_storage}
+                EstimateExtrapolationErrorNonMPI,
+                description=description,
+                params={"no_storage": self.params.no_storage},
             )
         else:
-            raise NotImplementedError("Don't know how to estimate extrapolated error with MPI")
+            raise NotImplementedError(
+                "Don't know how to estimate extrapolated error with MPI"
+            )
 
     def check_parameters(self, controller, params, description, **kwargs):
         """
@@ -115,7 +126,10 @@ smaller than 0!",
                 L.status.error_extrapolation_estimate,
                 L.status.error_embedded_estimate,
             ]:
-                diff = abs(L.status.error_extrapolation_estimate - L.status.error_embedded_estimate)
+                diff = abs(
+                    L.status.error_extrapolation_estimate
+                    - L.status.error_embedded_estimate
+                )
                 if diff > self.params.HotRod_tol:
                     S.status.restart = True
                     self.log(

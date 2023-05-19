@@ -23,16 +23,22 @@ class monitor(hooks):
         super(monitor, self).pre_run(step, level_number)
         L = step.levels[0]
 
-        c = np.count_nonzero(L.u[0].values['g'] > 0.0)
+        c = np.count_nonzero(L.u[0].values["g"] > 0.0)
         radius = np.sqrt(c / np.pi) * L.prob.dx
 
         radius1 = 0
-        rows, cols = np.where(L.u[0].values['g'] > 0.0)
+        rows, cols = np.where(L.u[0].values["g"] > 0.0)
         for r in rows:
             radius1 = max(radius1, abs(L.prob.x[r]))
 
-        rows1 = np.where(L.u[0].values['g'][int((L.prob.nvars[0]) / 2), : int((L.prob.nvars[0]) / 2)] > -0.99)
-        rows2 = np.where(L.u[0].values['g'][int((L.prob.nvars[0]) / 2), : int((L.prob.nvars[0]) / 2)] < 0.99)
+        rows1 = np.where(
+            L.u[0].values["g"][int((L.prob.nvars[0]) / 2), : int((L.prob.nvars[0]) / 2)]
+            > -0.99
+        )
+        rows2 = np.where(
+            L.u[0].values["g"][int((L.prob.nvars[0]) / 2), : int((L.prob.nvars[0]) / 2)]
+            < 0.99
+        )
         interface_width = (rows2[0][-1] - rows1[0][0]) * L.prob.dx / L.prob.params.eps
 
         self.init_radius = L.prob.params.radius
@@ -46,7 +52,7 @@ class monitor(hooks):
                 level=-1,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='computed_radius',
+                type="computed_radius",
                 value=radius,
             )
             self.add_to_stats(
@@ -55,7 +61,7 @@ class monitor(hooks):
                 level=-1,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='exact_radius',
+                type="exact_radius",
                 value=self.init_radius,
             )
             self.add_to_stats(
@@ -64,7 +70,7 @@ class monitor(hooks):
                 level=-1,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='interface_width',
+                type="interface_width",
                 value=interface_width,
             )
 
@@ -81,12 +87,18 @@ class monitor(hooks):
         # some abbreviations
         L = step.levels[0]
 
-        c = np.count_nonzero(L.uend.values['g'] >= 0.0)
+        c = np.count_nonzero(L.uend.values["g"] >= 0.0)
         radius = np.sqrt(c / np.pi) * L.prob.dx
 
         exact_radius = np.sqrt(max(self.init_radius**2 - 2.0 * (L.time + L.dt), 0))
-        rows1 = np.where(L.uend.values['g'][int((L.prob.nvars[0]) / 2), : int((L.prob.nvars[0]) / 2)] > -0.99)
-        rows2 = np.where(L.uend.values['g'][int((L.prob.nvars[0]) / 2), : int((L.prob.nvars[0]) / 2)] < 0.99)
+        rows1 = np.where(
+            L.uend.values["g"][int((L.prob.nvars[0]) / 2), : int((L.prob.nvars[0]) / 2)]
+            > -0.99
+        )
+        rows2 = np.where(
+            L.uend.values["g"][int((L.prob.nvars[0]) / 2), : int((L.prob.nvars[0]) / 2)]
+            < 0.99
+        )
         interface_width = (rows2[0][-1] - rows1[0][0]) * L.prob.dx / L.prob.params.eps
 
         print(radius, exact_radius)
@@ -97,7 +109,7 @@ class monitor(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='computed_radius',
+            type="computed_radius",
             value=radius,
         )
         self.add_to_stats(
@@ -106,7 +118,7 @@ class monitor(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='exact_radius',
+            type="exact_radius",
             value=exact_radius,
         )
         self.add_to_stats(
@@ -115,6 +127,6 @@ class monitor(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='interface_width',
+            type="interface_width",
             value=interface_width,
         )

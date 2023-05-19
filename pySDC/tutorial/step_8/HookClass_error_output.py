@@ -26,16 +26,20 @@ class error_output(hooks):
         # This is a bit black magic: we are going to run pySDC within the hook to check the error against the "exact"
         # solution of the collocation problem
         description = step.params.description
-        description['level_params']['restol'] = 1e-14
+        description["level_params"]["restol"] = 1e-14
         if type(L.prob) != auzinger:
-            description['problem_params']['solver_type'] = 'direct'
+            description["problem_params"]["solver_type"] = "direct"
 
         controller_params = step.params.controller_params
-        del controller_params['hook_class']  # get rid of the hook, otherwise this will be an endless recursion..
-        controller_params['logger_level'] = 90
-        controller_params['convergence_controllers'] = {}
+        del controller_params[
+            "hook_class"
+        ]  # get rid of the hook, otherwise this will be an endless recursion..
+        controller_params["logger_level"] = 90
+        controller_params["convergence_controllers"] = {}
 
-        controller = controller_nonMPI(num_procs=1, description=description, controller_params=controller_params)
+        controller = controller_nonMPI(
+            num_procs=1, description=description, controller_params=controller_params
+        )
         self.uex, _ = controller.run(u0=L.u[0], t0=L.time, Tend=L.time + L.dt)
 
     def post_step(self, step, level_number):
@@ -65,7 +69,7 @@ class error_output(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='PDE_error_after_step',
+            type="PDE_error_after_step",
             value=pde_err,
         )
         self.add_to_stats(
@@ -74,6 +78,6 @@ class error_output(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='coll_error_after_step',
+            type="coll_error_after_step",
             value=coll_err,
         )

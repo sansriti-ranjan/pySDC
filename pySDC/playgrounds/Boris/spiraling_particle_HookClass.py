@@ -54,7 +54,7 @@ class particles_output(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='energy',
+            type="energy",
             value=H,
         )
 
@@ -64,7 +64,7 @@ class particles_output(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='position',
+            type="position",
             value=L.uend.pos,
         )
 

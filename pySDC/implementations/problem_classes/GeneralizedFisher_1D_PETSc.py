@@ -2,7 +2,11 @@ import numpy as np
 from petsc4py import PETSc
 
 from pySDC.core.Problem import ptype
-from pySDC.implementations.datatype_classes.petsc_vec import petsc_vec, petsc_vec_imex, petsc_vec_comp2
+from pySDC.implementations.datatype_classes.petsc_vec import (
+    petsc_vec,
+    petsc_vec_imex,
+    petsc_vec_comp2,
+)
 
 
 class Fisher_full(object):
@@ -57,7 +61,9 @@ class Fisher_full(object):
                 u_e = x[i + 1]  # east
                 u_w = x[i - 1]  # west
                 u_xx = (u_e - 2 * u + u_w) / self.dx**2
-                f[i] = x[i] - self.factor * (u_xx + self.prob.lambda0**2 * x[i] * (1 - x[i] ** self.prob.nu))
+                f[i] = x[i] - self.factor * (
+                    u_xx + self.prob.lambda0**2 * x[i] * (1 - x[i] ** self.prob.nu)
+                )
 
     def formJacobian(self, snes, X, J, P):
         """
@@ -83,7 +89,9 @@ class Fisher_full(object):
                 P.setValueStencil(self.row, self.row, 1.0)
             else:
                 diag = 1.0 - self.factor * (
-                    -2.0 / self.dx**2 + self.prob.lambda0**2 * (1.0 - (self.prob.nu + 1) * x[i] ** self.prob.nu)
+                    -2.0 / self.dx**2
+                    + self.prob.lambda0**2
+                    * (1.0 - (self.prob.nu + 1) * x[i] ** self.prob.nu)
                 )
                 for index, value in [
                     (i - 1, -self.factor / self.dx**2),
@@ -143,7 +151,9 @@ class Fisher_reaction(object):
             if i == 0 or i == mx - 1:
                 f[i] = x[i]
             else:
-                f[i] = x[i] - self.factor * self.prob.lambda0**2 * x[i] * (1 - x[i] ** self.prob.nu)
+                f[i] = x[i] - self.factor * self.prob.lambda0**2 * x[i] * (
+                    1 - x[i] ** self.prob.nu
+                )
 
     def formJacobian(self, snes, X, J, P):
         """
@@ -170,7 +180,9 @@ class Fisher_reaction(object):
             if i == 0 or i == mx - 1:
                 P.setValueStencil(row, row, 1.0)
             else:
-                diag = 1.0 - self.factor * self.prob.lambda0**2 * (1.0 - (self.prob.nu + 1) * x[i] ** self.prob.nu)
+                diag = 1.0 - self.factor * self.prob.lambda0**2 * (
+                    1.0 - (self.prob.nu + 1) * x[i] ** self.prob.nu
+                )
                 P.setValueStencil(row, row, diag)
         P.assemble()
         if J != P:
@@ -209,15 +221,15 @@ class petsc_fisher_multiimplicit(ptype):
         # invoke super init, passing number of dofs, dtype_u and dtype_f
         super().__init__(init=da)
         self._makeAttributeAndRegister(
-            'nvars',
-            'lambda0',
-            'nu',
-            'interval',
-            'comm',
-            'lsol_tol',
-            'nlsol_tol',
-            'lsol_maxiter',
-            'nlsol_maxiter',
+            "nvars",
+            "lambda0",
+            "nu",
+            "interval",
+            "comm",
+            "lsol_tol",
+            "nlsol_tol",
+            "lsol_maxiter",
+            "nlsol_maxiter",
             localVars=locals(),
             readOnly=True,
         )
@@ -233,12 +245,14 @@ class petsc_fisher_multiimplicit(ptype):
         # setup linear solver
         self.ksp = PETSc.KSP()
         self.ksp.create(comm=self.comm)
-        self.ksp.setType('cg')
+        self.ksp.setType("cg")
         pc = self.ksp.getPC()
-        pc.setType('ilu')
+        pc.setType("ilu")
         self.ksp.setInitialGuessNonzero(True)
         self.ksp.setFromOptions()
-        self.ksp.setTolerances(rtol=self.lsol_tol, atol=self.lsol_tol, max_it=self.lsol_maxiter)
+        self.ksp.setTolerances(
+            rtol=self.lsol_tol, atol=self.lsol_tol, max_it=self.lsol_maxiter
+        )
         self.ksp_itercount = 0
         self.ksp_ncalls = 0
 
@@ -246,10 +260,10 @@ class petsc_fisher_multiimplicit(ptype):
         self.snes = PETSc.SNES()
         self.snes.create(comm=self.comm)
         if self.nlsol_maxiter <= 1:
-            self.snes.setType('ksponly')
-        self.snes.getKSP().setType('cg')
+            self.snes.setType("ksponly")
+        self.snes.getKSP().setType("cg")
         pc = self.snes.getKSP().getPC()
-        pc.setType('ilu')
+        pc.setType("ilu")
         # self.snes.setType('ngmres')
         self.snes.setFromOptions()
         self.snes.setTolerances(
@@ -272,7 +286,7 @@ class petsc_fisher_multiimplicit(ptype):
         """
         # create matrix and set basic options
         A = self.init.createMatrix()
-        A.setType('aij')  # sparse
+        A.setType("aij")  # sparse
         A.setFromOptions()
         A.setPreallocationNNZ((3, 3))
         A.setUp()
@@ -311,7 +325,7 @@ class petsc_fisher_multiimplicit(ptype):
 
         # create matrix and set basic options
         A = self.init.createMatrix()
-        A.setType('aij')  # sparse
+        A.setType("aij")  # sparse
         A.setFromOptions()
         A.setPreallocationNNZ((3, 3))
         A.setUp()
@@ -432,7 +446,11 @@ class petsc_fisher_multiimplicit(ptype):
             dtype_u: exact solution
         """
 
-        lam1 = self.lambda0 / 2.0 * ((self.nu / 2.0 + 1) ** 0.5 + (self.nu / 2.0 + 1) ** (-0.5))
+        lam1 = (
+            self.lambda0
+            / 2.0
+            * ((self.nu / 2.0 + 1) ** 0.5 + (self.nu / 2.0 + 1) ** (-0.5))
+        )
         sig1 = lam1 - np.sqrt(lam1**2 - self.lambda0**2)
         me = self.dtype_u(self.init)
         xa = self.init.getVecArray(me)
@@ -440,7 +458,12 @@ class petsc_fisher_multiimplicit(ptype):
             xa[i] = (
                 1
                 + (2 ** (self.nu / 2.0) - 1)
-                * np.exp(-self.nu / 2.0 * sig1 * (self.interval[0] + (i + 1) * self.dx + 2 * lam1 * t))
+                * np.exp(
+                    -self.nu
+                    / 2.0
+                    * sig1
+                    * (self.interval[0] + (i + 1) * self.dx + 2 * lam1 * t)
+                )
             ) ** (-2.0 / self.nu)
 
         return me

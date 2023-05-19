@@ -2,7 +2,6 @@ from petsc4py import PETSc
 
 
 def main():
-
     n = 4
 
     v = PETSc.Vec()
@@ -25,10 +24,10 @@ def main():
     for i in range(xs, xe):
         for j in range(ys, ye):
             xa[i, j] = j * n + i
-    print('x=', rank, x.getArray(), xs, xe, ys, ye)
+    print("x=", rank, x.getArray(), xs, xe, ys, ye)
 
     A = da.createMatrix()
-    A.setType('aij')  # sparse
+    A.setType("aij")  # sparse
     A.setFromOptions()
 
     Istart, Iend = A.getOwnershipRange()

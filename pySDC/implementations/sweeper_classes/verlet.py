@@ -24,10 +24,10 @@ class verlet(sweeper):
             params: parameters for the sweeper
         """
 
-        if 'QI' not in params:
-            params['QI'] = 'IE'
-        if 'QE' not in params:
-            params['QE'] = 'EE'
+        if "QI" not in params:
+            params["QI"] = "IE"
+        if "QE" not in params:
+            params["QE"] = "EE"
 
         # call parent's initialization routine
         super(verlet, self).__init__(params)
@@ -63,7 +63,7 @@ class verlet(sweeper):
 
         # if we have Gauss-Lobatto nodes, we can do a magic trick from the Book
         # this takes Gauss-Lobatto IIIB and create IIIA out of this
-        if self.coll.node_type == 'LEGENDRE' and self.coll.quad_type == 'LOBATTO':
+        if self.coll.node_type == "LEGENDRE" and self.coll.quad_type == "LOBATTO":
             for m in range(self.coll.num_nodes):
                 for n in range(self.coll.num_nodes):
                     QQ[m + 1, n + 1] = self.coll.weights[n] * (
@@ -166,7 +166,10 @@ class verlet(sweeper):
 
             # integrate RHS over all collocation nodes, RHS is here only f(x)!
             for j in range(1, self.coll.num_nodes + 1):
-                p[-1].pos += L.dt * (L.dt * self.QQ[m, j] * L.f[j]) + L.dt * self.coll.Qmat[m, j] * L.u[0].vel
+                p[-1].pos += (
+                    L.dt * (L.dt * self.QQ[m, j] * L.f[j])
+                    + L.dt * self.coll.Qmat[m, j] * L.u[0].vel
+                )
                 p[-1].vel += L.dt * self.coll.Qmat[m, j] * L.f[j]
                 # we need to set mass and charge here, too, since the code uses the integral to create new particles
                 p[-1].m = L.u[0].m
@@ -195,7 +198,10 @@ class verlet(sweeper):
         else:
             L.uend = P.dtype_u(L.u[0])
             for m in range(self.coll.num_nodes):
-                L.uend.pos += L.dt * (L.dt * self.qQ[m] * L.f[m + 1]) + L.dt * self.coll.weights[m] * L.u[0].vel
+                L.uend.pos += (
+                    L.dt * (L.dt * self.qQ[m] * L.f[m + 1])
+                    + L.dt * self.coll.weights[m] * L.u[0].vel
+                )
                 L.uend.vel += L.dt * self.coll.weights[m] * L.f[m + 1]
                 # remember to set mass and charge here, too
                 L.uend.m = L.u[0].m

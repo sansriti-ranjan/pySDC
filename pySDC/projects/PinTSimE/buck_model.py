@@ -18,58 +18,70 @@ def main():
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-12
-    level_params['dt'] = 1e-5
+    level_params["restol"] = 1e-12
+    level_params["dt"] = 1e-5
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['collocation_class'] = Collocation
-    sweeper_params['quad_type'] = 'LOBATTO'
-    sweeper_params['num_nodes'] = 5
-    sweeper_params['QI'] = 'LU'  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
+    sweeper_params["collocation_class"] = Collocation
+    sweeper_params["quad_type"] = "LOBATTO"
+    sweeper_params["num_nodes"] = 5
+    sweeper_params[
+        "QI"
+    ] = "LU"  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['duty'] = 0.5  # duty cycle
-    problem_params['fsw'] = 1e3  # switching freqency
-    problem_params['Vs'] = 10.0
-    problem_params['Rs'] = 0.5
-    problem_params['C1'] = 1e-3
-    problem_params['Rp'] = 0.01
-    problem_params['L1'] = 1e-3
-    problem_params['C2'] = 1e-3
-    problem_params['Rl'] = 10
+    problem_params["duty"] = 0.5  # duty cycle
+    problem_params["fsw"] = 1e3  # switching freqency
+    problem_params["Vs"] = 10.0
+    problem_params["Rs"] = 0.5
+    problem_params["C1"] = 1e-3
+    problem_params["Rp"] = 0.01
+    problem_params["L1"] = 1e-3
+    problem_params["C2"] = 1e-3
+    problem_params["Rl"] = 10
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 20
+    step_params["maxiter"] = 20
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 20
-    controller_params['hook_class'] = log_data
+    controller_params["logger_level"] = 20
+    controller_params["hook_class"] = log_data
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = buck_converter  # pass problem class
-    description['problem_params'] = problem_params  # pass problem parameters
-    description['sweeper_class'] = imex_1st_order  # pass sweeper
-    description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    description['level_params'] = level_params  # pass level parameters
-    description['step_params'] = step_params
+    description["problem_class"] = buck_converter  # pass problem class
+    description["problem_params"] = problem_params  # pass problem parameters
+    description["sweeper_class"] = imex_1st_order  # pass sweeper
+    description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    description["level_params"] = level_params  # pass level parameters
+    description["step_params"] = step_params
 
-    assert 'errtol' not in description['step_params'].keys(), 'No exact solution known to compute error'
-    assert 'duty' in description['problem_params'].keys(), 'Please supply "duty" in the problem parameters'
-    assert 'fsw' in description['problem_params'].keys(), 'Please supply "fsw" in the problem parameters'
+    assert (
+        "errtol" not in description["step_params"].keys()
+    ), "No exact solution known to compute error"
+    assert (
+        "duty" in description["problem_params"].keys()
+    ), 'Please supply "duty" in the problem parameters'
+    assert (
+        "fsw" in description["problem_params"].keys()
+    ), 'Please supply "fsw" in the problem parameters'
 
-    assert 0 <= problem_params['duty'] <= 1, 'Please set "duty" greater than or equal to 0 and less than or equal to 1'
+    assert (
+        0 <= problem_params["duty"] <= 1
+    ), 'Please set "duty" greater than or equal to 0 and less than or equal to 1'
 
     # set time parameters
     t0 = 0.0
     Tend = 2e-2
 
     # instantiate controller
-    controller = controller_nonMPI(num_procs=1, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=1, controller_params=controller_params, description=description
+    )
 
     # get initial values on finest level
     P = controller.MS[0].levels[0].prob
@@ -79,59 +91,61 @@ def main():
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 
     Path("data").mkdir(parents=True, exist_ok=True)
-    fname = 'data/buck.dat'
-    f = open(fname, 'wb')
+    fname = "data/buck.dat"
+    f = open(fname, "wb")
     dill.dump(stats, f)
     f.close()
 
     # filter statistics by number of iterations
-    iter_counts = get_sorted(stats, type='niter', sortby='time')
+    iter_counts = get_sorted(stats, type="niter", sortby="time")
 
     # compute and print statistics
     min_iter = 20
     max_iter = 0
 
-    f = open('data/buck_out.txt', 'w')
+    f = open("data/buck_out.txt", "w")
     niters = np.array([item[1] for item in iter_counts])
-    out = '   Mean number of iterations: %4.2f' % np.mean(niters)
-    f.write(out + '\n')
+    out = "   Mean number of iterations: %4.2f" % np.mean(niters)
+    f.write(out + "\n")
     print(out)
     for item in iter_counts:
-        out = 'Number of iterations for time %4.2f: %1i' % item
-        f.write(out + '\n')
+        out = "Number of iterations for time %4.2f: %1i" % item
+        f.write(out + "\n")
         print(out)
         min_iter = min(min_iter, item[1])
         max_iter = max(max_iter, item[1])
 
-    assert np.mean(niters) <= 8, "Mean number of iterations is too high, got %s" % np.mean(niters)
+    assert (
+        np.mean(niters) <= 8
+    ), "Mean number of iterations is too high, got %s" % np.mean(niters)
     f.close()
 
     plot_voltages()
 
 
-def plot_voltages(cwd='./'):
-    f = open(cwd + 'data/buck.dat', 'rb')
+def plot_voltages(cwd="./"):
+    f = open(cwd + "data/buck.dat", "rb")
     stats = dill.load(f)
     f.close()
 
     # convert filtered statistics to list of iterations count, sorted by process
-    v1 = get_sorted(stats, type='v1', sortby='time')
-    v2 = get_sorted(stats, type='v2', sortby='time')
-    p3 = get_sorted(stats, type='p3', sortby='time')
+    v1 = get_sorted(stats, type="v1", sortby="time")
+    v2 = get_sorted(stats, type="v2", sortby="time")
+    p3 = get_sorted(stats, type="p3", sortby="time")
 
     times = [v[0] for v in v1]
 
     setup_mpl()
     fig, ax = plt_helper.plt.subplots(1, 1, figsize=(4.5, 3))
-    ax.plot(times, [v[1] for v in v1], linewidth=1, label=r'$v_{C_1}$')
-    ax.plot(times, [v[1] for v in v2], linewidth=1, label=r'$v_{C_2}$')
-    ax.plot(times, [v[1] for v in p3], linewidth=1, label=r'$i_{L_\pi}$')
-    ax.legend(frameon=False, fontsize=12, loc='upper right')
+    ax.plot(times, [v[1] for v in v1], linewidth=1, label=r"$v_{C_1}$")
+    ax.plot(times, [v[1] for v in v2], linewidth=1, label=r"$v_{C_2}$")
+    ax.plot(times, [v[1] for v in p3], linewidth=1, label=r"$i_{L_\pi}$")
+    ax.legend(frameon=False, fontsize=12, loc="upper right")
 
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Energy')
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Energy")
 
-    fig.savefig('data/buck_model_solution.png', dpi=300, bbox_inches='tight')
+    fig.savefig("data/buck_model_solution.png", dpi=300, bbox_inches="tight")
     plt_helper.plt.close(fig)
 
 

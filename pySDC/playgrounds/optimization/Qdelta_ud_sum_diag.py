@@ -12,11 +12,11 @@ def evaluate(solution):
 
     Qd = np.array(
         [
-            [x['x11'], x['x12'], x['x13'], x['x14'], x['x15']],
-            [0.0, x['x22'], x['x23'], x['x24'], x['x25']],
-            [0.0, 0.0, x['x33'], x['x34'], x['x35']],
-            [0.0, 0.0, 0.0, x['x44'], x['x45']],
-            [0.0, 0.0, 0.0, 0.0, x['x55']],
+            [x["x11"], x["x12"], x["x13"], x["x14"], x["x15"]],
+            [0.0, x["x22"], x["x23"], x["x24"], x["x25"]],
+            [0.0, 0.0, x["x33"], x["x34"], x["x35"]],
+            [0.0, 0.0, 0.0, x["x44"], x["x45"]],
+            [0.0, 0.0, 0.0, 0.0, x["x55"]],
         ]
     )
 
@@ -39,9 +39,11 @@ def evaluate(solution):
         for l in range(-8, 8):
             k += 1
             lamdt = -(10**i) + 1j * 10**l
-            R = np.linalg.inv(np.eye(nsteps * m) - lamdt * np.kron(np.eye(nsteps), Qd) - np.kron(Ea, N)).dot(
-                lamdt * np.kron(np.eye(nsteps), Q - Qd) + np.kron(E - Ea, N)
-            )
+            R = np.linalg.inv(
+                np.eye(nsteps * m)
+                - lamdt * np.kron(np.eye(nsteps), Qd)
+                - np.kron(Ea, N)
+            ).dot(lamdt * np.kron(np.eye(nsteps), Q - Qd) + np.kron(E - Ea, N))
             rhoR = max(abs(np.linalg.eigvals(R)))
             obj_val += rhoR
 
@@ -58,26 +60,116 @@ y = [0.0, 0.0, 0.0, 0.0, 0.0]
 ymax = 20.0
 ymin = -20.0
 params = dict()
-params['x11'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[0]}
-params['x12'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x13'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[1]}
-params['x14'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x15'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x22'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[2]}
-params['x23'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x24'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x25'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x33'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[3]}
-params['x34'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x35'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x44'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x45'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x55'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[4]}
+params["x11"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[0],
+}
+params["x12"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x13"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[1],
+}
+params["x14"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x15"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x22"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[2],
+}
+params["x23"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x24"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x25"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x33"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[3],
+}
+params["x34"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x35"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x44"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x45"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x55"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[4],
+}
 
 problem = {
-    'problem_name': 'Qdelta_ud_sum_diag',
-    'parameters': params,
-    'metrics': {'rho': {'type': 'objective', 'goal': 'minimize'}},
+    "problem_name": "Qdelta_ud_sum_diag",
+    "parameters": params,
+    "metrics": {"rho": {"type": "objective", "goal": "minimize"}},
 }
 
 worker = indiesolver.indiesolver()

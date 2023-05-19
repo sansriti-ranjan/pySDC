@@ -32,68 +32,76 @@ def run_simulation(spectral=None, splitting_type=None, ml=None, num_procs=None):
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-12
-    level_params['dt'] = 8e-00
-    level_params['nsweeps'] = [1]
-    level_params['residual_type'] = 'last_abs'
+    level_params["restol"] = 1e-12
+    level_params["dt"] = 8e-00
+    level_params["nsweeps"] = [1]
+    level_params["residual_type"] = "last_abs"
 
     # initialize sweeper parameters
     sweeper_params = dict()
     # sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['quad_type'] = 'LOBATTO'
-    sweeper_params['num_nodes'] = [5]
-    sweeper_params['QI'] = ['LU']  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
-    sweeper_params['Q1'] = ['LU']  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
-    sweeper_params['Q2'] = ['LU']  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
-    sweeper_params['QE'] = ['EE']  # You can try PIC here, but PFASST doesn't like this..
-    sweeper_params['initial_guess'] = 'spread'
+    sweeper_params["quad_type"] = "LOBATTO"
+    sweeper_params["num_nodes"] = [5]
+    sweeper_params["QI"] = [
+        "LU"
+    ]  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
+    sweeper_params["Q1"] = [
+        "LU"
+    ]  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
+    sweeper_params["Q2"] = [
+        "LU"
+    ]  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
+    sweeper_params["QE"] = [
+        "EE"
+    ]  # You can try PIC here, but PFASST doesn't like this..
+    sweeper_params["initial_guess"] = "spread"
 
     # initialize problem parameters
     problem_params = dict()
     if ml:
-        problem_params['nvars'] = [(128, 128), (32, 32)]
+        problem_params["nvars"] = [(128, 128), (32, 32)]
     else:
-        problem_params['nvars'] = [(128, 128)]
-    problem_params['spectral'] = spectral
-    problem_params['comm'] = comm
-    problem_params['Du'] = 0.00002
-    problem_params['Dv'] = 0.00001
-    problem_params['A'] = 0.04
-    problem_params['B'] = 0.1
-    problem_params['newton_maxiter'] = 50
-    problem_params['newton_tol'] = 1e-11
+        problem_params["nvars"] = [(128, 128)]
+    problem_params["spectral"] = spectral
+    problem_params["comm"] = comm
+    problem_params["Du"] = 0.00002
+    problem_params["Dv"] = 0.00001
+    problem_params["A"] = 0.04
+    problem_params["B"] = 0.1
+    problem_params["newton_maxiter"] = 50
+    problem_params["newton_tol"] = 1e-11
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 100
-    step_params['errtol'] = 1e-09
+    step_params["maxiter"] = 100
+    step_params["errtol"] = 1e-09
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 20 if rank == 0 else 99
+    controller_params["logger_level"] = 20 if rank == 0 else 99
     # controller_params['predict_type'] = 'fine_only'
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_params'] = problem_params  # pass problem parameters
-    if splitting_type == 'diffusion':
-        description['problem_class'] = grayscott_imex_diffusion
-    elif splitting_type == 'linear':
-        description['problem_class'] = grayscott_imex_linear
-    elif splitting_type == 'mi_diffusion':
-        description['problem_class'] = grayscott_mi_diffusion
-    elif splitting_type == 'mi_linear':
-        description['problem_class'] = grayscott_mi_linear
+    description["problem_params"] = problem_params  # pass problem parameters
+    if splitting_type == "diffusion":
+        description["problem_class"] = grayscott_imex_diffusion
+    elif splitting_type == "linear":
+        description["problem_class"] = grayscott_imex_linear
+    elif splitting_type == "mi_diffusion":
+        description["problem_class"] = grayscott_mi_diffusion
+    elif splitting_type == "mi_linear":
+        description["problem_class"] = grayscott_mi_linear
     else:
-        raise NotImplementedError(f'splitting_type = {splitting_type} not implemented')
-    if splitting_type == 'mi_diffusion' or splitting_type == 'mi_linear':
-        description['sweeper_class'] = multi_implicit
+        raise NotImplementedError(f"splitting_type = {splitting_type} not implemented")
+    if splitting_type == "mi_diffusion" or splitting_type == "mi_linear":
+        description["sweeper_class"] = multi_implicit
     else:
-        description['sweeper_class'] = imex_1st_order
-    description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    description['level_params'] = level_params  # pass level parameters
-    description['step_params'] = step_params  # pass step parameters
-    description['space_transfer_class'] = fft_to_fft
+        description["sweeper_class"] = imex_1st_order
+    description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    description["level_params"] = level_params  # pass level parameters
+    description["step_params"] = step_params  # pass step parameters
+    description["space_transfer_class"] = fft_to_fft
 
     # set time parameters
     t0 = 0.0
@@ -101,13 +109,17 @@ def run_simulation(spectral=None, splitting_type=None, ml=None, num_procs=None):
 
     f = None
     if rank == 0:
-        f = open('GS_out.txt', 'a')
-        out = f'Running with ml = {ml} and num_procs = {num_procs}...'
-        f.write(out + '\n')
+        f = open("GS_out.txt", "a")
+        out = f"Running with ml = {ml} and num_procs = {num_procs}..."
+        f.write(out + "\n")
         print(out)
 
     # instantiate controller
-    controller = controller_nonMPI(num_procs=num_procs, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=num_procs,
+        controller_params=controller_params,
+        description=description,
+    )
 
     # get initial values on finest level
     P = controller.MS[0].levels[0].prob
@@ -148,34 +160,37 @@ def run_simulation(spectral=None, splitting_type=None, ml=None, num_procs=None):
 
     if rank == 0:
         # filter statistics by type (number of iterations)
-        iter_counts = get_sorted(stats, type='niter', sortby='time')
+        iter_counts = get_sorted(stats, type="niter", sortby="time")
 
         niters = np.array([item[1] for item in iter_counts])
         out = (
-            f'   Min/Mean/Max number of iterations: '
-            f'{np.min(niters):4.2f} / {np.mean(niters):4.2f} / {np.max(niters):4.2f}'
+            f"   Min/Mean/Max number of iterations: "
+            f"{np.min(niters):4.2f} / {np.mean(niters):4.2f} / {np.max(niters):4.2f}"
         )
-        f.write(out + '\n')
+        f.write(out + "\n")
         print(out)
-        out = '   Range of values for number of iterations: %2i ' % np.ptp(niters)
-        f.write(out + '\n')
+        out = "   Range of values for number of iterations: %2i " % np.ptp(niters)
+        f.write(out + "\n")
         print(out)
-        out = '   Position of max/min number of iterations: %2i -- %2i' % (
+        out = "   Position of max/min number of iterations: %2i -- %2i" % (
             int(np.argmax(niters)),
             int(np.argmin(niters)),
         )
-        f.write(out + '\n')
+        f.write(out + "\n")
         print(out)
-        out = '   Std and var for number of iterations: %4.2f -- %4.2f' % (float(np.std(niters)), float(np.var(niters)))
-        f.write(out + '\n')
-        print(out)
-
-        timing = get_sorted(stats, type='timing_run', sortby='time')
-        out = f'Time to solution: {timing[0][1]:6.4f} sec.'
-        f.write(out + '\n')
+        out = "   Std and var for number of iterations: %4.2f -- %4.2f" % (
+            float(np.std(niters)),
+            float(np.var(niters)),
+        )
+        f.write(out + "\n")
         print(out)
 
-        f.write('\n')
+        timing = get_sorted(stats, type="timing_run", sortby="time")
+        out = f"Time to solution: {timing[0][1]:6.4f} sec."
+        f.write(out + "\n")
+        print(out)
+
+        f.write("\n")
         print()
         f.close()
 
@@ -195,7 +210,7 @@ def main():
     # run_simulation(spectral=True, splitting_type='diffusion', ml=True, num_procs=10)
 
     # run_simulation(spectral=False, splitting_type='mi_diffusion', ml=False, num_procs=1)
-    run_simulation(spectral=True, splitting_type='mi_diffusion', ml=False, num_procs=1)
+    run_simulation(spectral=True, splitting_type="mi_diffusion", ml=False, num_procs=1)
     # run_simulation(spectral=False, splitting_type='mi_linear', ml=False, num_procs=1)
     # run_simulation(spectral=True, splitting_type='mi_linear', ml=False, num_procs=1)
 

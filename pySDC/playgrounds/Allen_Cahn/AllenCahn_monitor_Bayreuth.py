@@ -33,7 +33,7 @@ class monitor(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='exact_volume',
+            type="exact_volume",
             value=self.init_volume,
         )
 
@@ -56,7 +56,12 @@ class monitor(hooks):
 
         exact_volume = L.prob.dx * sum(uex)
 
-        print(exact_volume, computed_volume, abs(exact_volume - computed_volume), abs(L.uend - uex))
+        print(
+            exact_volume,
+            computed_volume,
+            abs(exact_volume - computed_volume),
+            abs(L.uend - uex),
+        )
 
         self.add_to_stats(
             process=step.status.slot,
@@ -64,7 +69,7 @@ class monitor(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='exact_volume',
+            type="exact_volume",
             value=exact_volume,
         )
         self.add_to_stats(
@@ -73,6 +78,6 @@ class monitor(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='computed_volume',
+            type="computed_volume",
             value=computed_volume,
         )

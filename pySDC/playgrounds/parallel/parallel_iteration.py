@@ -36,7 +36,6 @@ def get_transfer_matrix_Q(f_nodes, c_nodes):
 
 
 def SDC():
-
     M = 9
     Mc = int((M + 1) / 2)
     # Mc = 1
@@ -263,11 +262,11 @@ def Jacobi():
     nu = 1.0
     K = 20
     stencil = [-1, 2, -1]
-    A = sp.sparse.diags(stencil, [-1, 0, 1], shape=(N, N), format='csc')
+    A = sp.sparse.diags(stencil, [-1, 0, 1], shape=(N, N), format="csc")
     A *= nu / (dx**2)
 
-    D = sp.sparse.diags(2.0 * A.diagonal(), 0, shape=(N, N), format='csc')
-    Dinv = sp.sparse.diags(0.5 * 1.0 / A.diagonal(), 0, shape=(N, N), format='csc')
+    D = sp.sparse.diags(2.0 * A.diagonal(), 0, shape=(N, N), format="csc")
+    Dinv = sp.sparse.diags(0.5 * 1.0 / A.diagonal(), 0, shape=(N, N), format="csc")
 
     f = np.ones(N)
     f = np.zeros(N)
@@ -286,15 +285,19 @@ def Jacobi():
     Nc = int((N + 1) / 2 - 1)
     dxc = 1.0 / (Nc + 1)
 
-    Ac = sp.sparse.diags(stencil, [-1, 0, 1], shape=(Nc, Nc), format='csc')
+    Ac = sp.sparse.diags(stencil, [-1, 0, 1], shape=(Nc, Nc), format="csc")
     Ac *= nu / (dxc**2)
 
-    Dc = sp.sparse.diags(2.0 * Ac.diagonal(), 0, shape=(Nc, Nc), format='csc')
-    Dcinv = sp.sparse.diags(0.5 * 1.0 / Ac.diagonal(), 0, shape=(Nc, Nc), format='csc')
+    Dc = sp.sparse.diags(2.0 * Ac.diagonal(), 0, shape=(Nc, Nc), format="csc")
+    Dcinv = sp.sparse.diags(0.5 * 1.0 / Ac.diagonal(), 0, shape=(Nc, Nc), format="csc")
 
     fine_grid = np.array([(i + 1) * dx for i in range(N)])
     coarse_grid = np.array([(i + 1) * dxc for i in range(Nc)])
-    I = sp.sparse.csc_matrix(interpolation_matrix_1d(fine_grid, coarse_grid, k=6, periodic=False, equidist_nested=True))
+    I = sp.sparse.csc_matrix(
+        interpolation_matrix_1d(
+            fine_grid, coarse_grid, k=6, periodic=False, equidist_nested=True
+        )
+    )
     R = sp.sparse.csc_matrix(I.T)
 
     T = sp.sparse.csc_matrix(sp.sparse.eye(N) - Dinv.dot(A))
@@ -302,13 +305,15 @@ def Jacobi():
 
     fvec = np.kron(np.ones(K), Dinv.dot(f))
     u = np.zeros(N * K)
-    u = np.kron(np.ones(K), np.sin([int(3.0 * N / 4.0) * np.pi * (i + 1) * dx for i in range(N)]))
+    u = np.kron(
+        np.ones(K),
+        np.sin([int(3.0 * N / 4.0) * np.pi * (i + 1) * dx for i in range(N)]),
+    )
     # u[0: N] = np.sin([int(3.0 * N / 4.0) * np.pi * (i + 1) * dx for i in range(N)])
     res = f - A.dot(u[0:N])
     uold = u.copy()
     l = 0
     while np.linalg.norm(res, np.inf) > tol and l < K:
-
         for k in range(1, K):
             u[k * N : (k + 1) * N] = (
                 T.dot(uold[(k - 1) * N : k * N])
@@ -339,7 +344,10 @@ def Jacobi():
     Scdiaginv = sp.sparse.kron(sp.sparse.eye(K), Dcinv)
     u = np.zeros(N * K)
     # u[0: N] = np.sin([int(3.0 * N / 4.0) * np.pi * (i + 1) * dx for i in range(N)])
-    u = np.kron(np.ones(K), np.sin([int(3.0 * N / 4.0) * np.pi * (i + 1) * dx for i in range(N)]))
+    u = np.kron(
+        np.ones(K),
+        np.sin([int(3.0 * N / 4.0) * np.pi * (i + 1) * dx for i in range(N)]),
+    )
     l = 0
     fvec = np.kron(np.ones(K), f)
     res = f - A.dot(u[0:N])

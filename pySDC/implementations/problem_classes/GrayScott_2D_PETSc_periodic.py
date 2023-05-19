@@ -2,7 +2,11 @@ import numpy as np
 from petsc4py import PETSc
 
 from pySDC.core.Problem import ptype
-from pySDC.implementations.datatype_classes.petsc_vec import petsc_vec, petsc_vec_imex, petsc_vec_comp2
+from pySDC.implementations.datatype_classes.petsc_vec import (
+    petsc_vec,
+    petsc_vec_imex,
+    petsc_vec_comp2,
+)
 
 
 class GS_full(object):
@@ -101,7 +105,9 @@ class GS_full(object):
                 row.field = 0
                 col.field = 0
                 val = 1.0 - self.factor * (
-                    self.prob.Du * (-2.0 / self.dx**2 - 2.0 / self.dy**2) - x[i, j, 1] ** 2 - self.prob.A
+                    self.prob.Du * (-2.0 / self.dx**2 - 2.0 / self.dy**2)
+                    - x[i, j, 1] ** 2
+                    - self.prob.A
                 )
                 P.setValueStencil(row, col, val)
                 row.field = 0
@@ -198,9 +204,13 @@ class GS_reaction(object):
         for j in range(ys, ye):
             for i in range(xs, xe):
                 f[i, j, 0] = x[i, j, 0] - (
-                    self.factor * (-x[i, j, 0] * x[i, j, 1] ** 2 + self.prob.A * (1 - x[i, j, 0]))
+                    self.factor
+                    * (-x[i, j, 0] * x[i, j, 1] ** 2 + self.prob.A * (1 - x[i, j, 0]))
                 )
-                f[i, j, 1] = x[i, j, 1] - (self.factor * (x[i, j, 0] * x[i, j, 1] ** 2 - self.prob.B * x[i, j, 1]))
+                f[i, j, 1] = x[i, j, 1] - (
+                    self.factor
+                    * (x[i, j, 0] * x[i, j, 1] ** 2 - self.prob.B * x[i, j, 1])
+                )
 
     def formJacobian(self, snes, X, J, P):
         """
@@ -227,13 +237,19 @@ class GS_reaction(object):
                 col.index = (i, j)
                 row.field = 0
                 col.field = 0
-                P.setValueStencil(row, col, 1.0 - self.factor * (-x[i, j, 1] ** 2 - self.prob.A))
+                P.setValueStencil(
+                    row, col, 1.0 - self.factor * (-x[i, j, 1] ** 2 - self.prob.A)
+                )
                 row.field = 0
                 col.field = 1
                 P.setValueStencil(row, col, self.factor * 2.0 * x[i, j, 0] * x[i, j, 1])
                 row.field = 1
                 col.field = 1
-                P.setValueStencil(row, col, 1.0 - self.factor * (2.0 * x[i, j, 0] * x[i, j, 1] - self.prob.B))
+                P.setValueStencil(
+                    row,
+                    col,
+                    1.0 - self.factor * (2.0 * x[i, j, 0] * x[i, j, 1] - self.prob.B),
+                )
                 row.field = 1
                 col.field = 0
                 P.setValueStencil(row, col, -self.factor * x[i, j, 1] ** 2)
@@ -285,16 +301,16 @@ class petsc_grayscott_multiimplicit(ptype):
         # invoke super init, passing number of dofs, dtype_u and dtype_f
         super().__init__(init=da)
         self._makeAttributeAndRegister(
-            'nvars',
-            'Du',
-            'Dv',
-            'A',
-            'B',
-            'comm',
-            'lsol_tol',
-            'lsol_maxiter',
-            'nlsol_tol',
-            'nlsol_maxiter',
+            "nvars",
+            "Du",
+            "Dv",
+            "A",
+            "B",
+            "comm",
+            "lsol_tol",
+            "lsol_maxiter",
+            "nlsol_tol",
+            "nlsol_maxiter",
             localVars=locals(),
             readOnly=True,
         )
@@ -312,12 +328,14 @@ class petsc_grayscott_multiimplicit(ptype):
         # setup linear solver
         self.ksp = PETSc.KSP()
         self.ksp.create(comm=self.comm)
-        self.ksp.setType('cg')
+        self.ksp.setType("cg")
         pc = self.ksp.getPC()
-        pc.setType('none')
+        pc.setType("none")
         self.ksp.setInitialGuessNonzero(True)
         self.ksp.setFromOptions()
-        self.ksp.setTolerances(rtol=self.lsol_tol, atol=self.lsol_tol, max_it=self.lsol_maxiter)
+        self.ksp.setTolerances(
+            rtol=self.lsol_tol, atol=self.lsol_tol, max_it=self.lsol_maxiter
+        )
         self.ksp_itercount = 0
         self.ksp_ncalls = 0
 
@@ -344,7 +362,7 @@ class petsc_grayscott_multiimplicit(ptype):
             PETSc matrix object
         """
         A = self.init.createMatrix()
-        A.setType('aij')  # sparse
+        A.setType("aij")  # sparse
         A.setFromOptions()
         A.setPreallocationNNZ((5, 5))
         A.setUp()
@@ -358,9 +376,13 @@ class petsc_grayscott_multiimplicit(ptype):
             for i in range(xs, xe):
                 row.index = (i, j)
                 row.field = 0
-                A.setValueStencil(row, row, self.Du * (-2.0 / self.dx**2 - 2.0 / self.dy**2))
+                A.setValueStencil(
+                    row, row, self.Du * (-2.0 / self.dx**2 - 2.0 / self.dy**2)
+                )
                 row.field = 1
-                A.setValueStencil(row, row, self.Dv * (-2.0 / self.dx**2 - 2.0 / self.dy**2))
+                A.setValueStencil(
+                    row, row, self.Dv * (-2.0 / self.dx**2 - 2.0 / self.dy**2)
+                )
                 # if j > 0:
                 col.index = (i, j - 1)
                 col.field = 0
@@ -406,7 +428,7 @@ class petsc_grayscott_multiimplicit(ptype):
         """
 
         Id = self.init.createMatrix()
-        Id.setType('aij')  # sparse
+        Id.setType("aij")  # sparse
         Id.setFromOptions()
         Id.setPreallocationNNZ((1, 1))
         Id.setUp()
@@ -445,7 +467,9 @@ class petsc_grayscott_multiimplicit(ptype):
         xa = self.init.getVecArray(u)
         for i in range(self.xs, self.xe):
             for j in range(self.ys, self.ye):
-                fa[i, j, 0] = -xa[i, j, 0] * xa[i, j, 1] ** 2 + self.A * (1 - xa[i, j, 0])
+                fa[i, j, 0] = -xa[i, j, 0] * xa[i, j, 1] ** 2 + self.A * (
+                    1 - xa[i, j, 0]
+                )
                 fa[i, j, 1] = xa[i, j, 0] * xa[i, j, 1] ** 2 - self.B * xa[i, j, 1]
 
         return f
@@ -513,17 +537,21 @@ class petsc_grayscott_multiimplicit(ptype):
             dtype_u: exact solution
         """
 
-        assert t == 0, 'ERROR: u_exact is only valid for the initial solution'
+        assert t == 0, "ERROR: u_exact is only valid for the initial solution"
 
         me = self.dtype_u(self.init)
         xa = self.init.getVecArray(me)
         for i in range(self.xs, self.xe):
             for j in range(self.ys, self.ye):
                 xa[i, j, 0] = 1.0 - 0.5 * np.power(
-                    np.sin(np.pi * i * self.dx / 100) * np.sin(np.pi * j * self.dy / 100), 100
+                    np.sin(np.pi * i * self.dx / 100)
+                    * np.sin(np.pi * j * self.dy / 100),
+                    100,
                 )
                 xa[i, j, 1] = 0.25 * np.power(
-                    np.sin(np.pi * i * self.dx / 100) * np.sin(np.pi * j * self.dy / 100), 100
+                    np.sin(np.pi * i * self.dx / 100)
+                    * np.sin(np.pi * j * self.dy / 100),
+                    100,
                 )
 
         return me
@@ -555,7 +583,9 @@ class petsc_grayscott_fullyimplicit(petsc_grayscott_multiimplicit):
         xa = self.init.getVecArray(u)
         for i in range(self.xs, self.xe):
             for j in range(self.ys, self.ye):
-                fa[i, j, 0] += -xa[i, j, 0] * xa[i, j, 1] ** 2 + self.A * (1 - xa[i, j, 0])
+                fa[i, j, 0] += -xa[i, j, 0] * xa[i, j, 1] ** 2 + self.A * (
+                    1 - xa[i, j, 0]
+                )
                 fa[i, j, 1] += xa[i, j, 0] * xa[i, j, 1] ** 2 - self.B * xa[i, j, 1]
 
         return f
@@ -617,7 +647,9 @@ class petsc_grayscott_semiimplicit(petsc_grayscott_multiimplicit):
         xa = self.init.getVecArray(u)
         for i in range(self.xs, self.xe):
             for j in range(self.ys, self.ye):
-                fa[i, j, 0] = -xa[i, j, 0] * xa[i, j, 1] ** 2 + self.A * (1 - xa[i, j, 0])
+                fa[i, j, 0] = -xa[i, j, 0] * xa[i, j, 1] ** 2 + self.A * (
+                    1 - xa[i, j, 0]
+                )
                 fa[i, j, 1] = xa[i, j, 0] * xa[i, j, 1] ** 2 - self.B * xa[i, j, 1]
 
         return f

@@ -41,7 +41,9 @@ class imex_1st_order_mass(imex_1st_order):
         for m in range(M):
             # subtract QIFI(u^k)_m + QEFE(u^k)_m
             for j in range(M + 1):
-                integral[m] -= L.dt * (self.QI[m + 1, j] * L.f[j].impl + self.QE[m + 1, j] * L.f[j].expl)
+                integral[m] -= L.dt * (
+                    self.QI[m + 1, j] * L.f[j].impl + self.QE[m + 1, j] * L.f[j].expl
+                )
             # add initial value
             integral[m] += u0
             # add tau if associated
@@ -53,11 +55,16 @@ class imex_1st_order_mass(imex_1st_order):
             # build rhs, consisting of the known values from above and new values from previous nodes (at k+1)
             rhs = P.dtype_u(integral[m])
             for j in range(m + 1):
-                rhs += L.dt * (self.QI[m + 1, j] * L.f[j].impl + self.QE[m + 1, j] * L.f[j].expl)
+                rhs += L.dt * (
+                    self.QI[m + 1, j] * L.f[j].impl + self.QE[m + 1, j] * L.f[j].expl
+                )
 
             # implicit solve with prefactor stemming from QI
             L.u[m + 1] = P.solve_system(
-                rhs, L.dt * self.QI[m + 1, m + 1], L.u[m + 1], L.time + L.dt * self.coll.nodes[m]
+                rhs,
+                L.dt * self.QI[m + 1, m + 1],
+                L.u[m + 1],
+                L.time + L.dt * self.coll.nodes[m],
             )
             # update function values
             L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
@@ -86,7 +93,7 @@ class imex_1st_order_mass(imex_1st_order):
             # a copy is sufficient
             L.uend = P.dtype_u(L.u[-1])
         else:
-            raise NotImplementedError('Mass matrix sweeper expect u_M = u_end')
+            raise NotImplementedError("Mass matrix sweeper expect u_M = u_end")
 
         return None
 

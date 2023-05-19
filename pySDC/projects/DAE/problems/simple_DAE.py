@@ -37,7 +37,13 @@ class pendulum_2d(ptype_dae):
         # The last element of u is a Lagrange multiplier. Not sure if this needs to be time dependent, but must model the
         # weight somehow
         f = self.dtype_f(self.init)
-        f[:] = (du[0] - u[2], du[1] - u[3], du[2] + u[4] * u[0], du[3] + u[4] * u[1] + g, u[0] ** 2 + u[1] ** 2 - 1)
+        f[:] = (
+            du[0] - u[2],
+            du[1] - u[3],
+            du[2] + u[4] * u[0],
+            du[3] + u[4] * u[1] + g,
+            u[0] ** 2 + u[1] ** 2 - 1,
+        )
         return f
 
     def u_exact(self, t):
@@ -54,7 +60,9 @@ class pendulum_2d(ptype_dae):
         elif t < self.t_end:
             me[:] = self.u_ref(t)
         else:
-            warnings.warn("Requested time exceeds domain of the reference solution. Returning zero.")
+            warnings.warn(
+                "Requested time exceeds domain of the reference solution. Returning zero."
+            )
             me[:] = (0, 0, 0, 0, 0)
         return me
 
@@ -79,7 +87,10 @@ class simple_dae_1(ptype_dae):
         a = 10.0
         f = self.dtype_f(self.init)
         f[:] = (
-            -du[0] + (a - 1 / (2 - t)) * u[0] + (2 - t) * a * u[2] + np.exp(t) * (3 - t) / (2 - t),
+            -du[0]
+            + (a - 1 / (2 - t)) * u[0]
+            + (2 - t) * a * u[2]
+            + np.exp(t) * (3 - t) / (2 - t),
             -du[1] + (1 - a) / (t - 2) * u[0] - u[1] + (a - 1) * u[2] + 2 * np.exp(t),
             (t + 2) * u[0] + (t**2 - 4) * u[1] - (t**2 + t - 2) * np.exp(t),
         )
@@ -110,7 +121,7 @@ class problematic_f(ptype_dae):
         Initialization routine for the problem class
         """
         super().__init__(nvars, newton_tol)
-        self._makeAttributeAndRegister('eta', localVars=locals())
+        self._makeAttributeAndRegister("eta", localVars=locals())
 
     def eval_f(self, u, du, t):
         """

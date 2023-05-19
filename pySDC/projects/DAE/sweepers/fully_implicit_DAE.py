@@ -25,8 +25,8 @@ class fully_implicit_DAE(sweeper):
             params: parameters for the sweeper
         """
 
-        if 'QI' not in params:
-            params['QI'] = 'IE'
+        if "QI" not in params:
+            params["QI"] = "IE"
 
         # call parent's initialization routine
         super(fully_implicit_DAE, self).__init__(params)
@@ -109,7 +109,9 @@ class fully_implicit_DAE(sweeper):
                 # note that derivatives of algebraic variables are taken into account here too
                 # these do not directly affect the output of eval_f but rather indirectly via QI
                 local_u_approx += L.dt * self.QI[m, m] * params_mesh
-                return P.eval_f(local_u_approx, params_mesh, L.time + L.dt * self.coll.nodes[m - 1])
+                return P.eval_f(
+                    local_u_approx, params_mesh, L.time + L.dt * self.coll.nodes[m - 1]
+                )
 
             # get U_k+1
             # note: not using solve_system here because this solve step is the same for any problem
@@ -120,7 +122,7 @@ class fully_implicit_DAE(sweeper):
             opt = optimize.root(
                 impl_fn,
                 L.f[m],
-                method='hybr',
+                method="hybr",
                 tol=P.newton_tol
                 # callback= lambda x, f: print("solution:", x, " residual: ", f)
             )
@@ -151,19 +153,21 @@ class fully_implicit_DAE(sweeper):
         L.f[0] = P.dtype_f(init=P.init, val=0.0)
         for m in range(1, self.coll.num_nodes + 1):
             # copy u[0] to all collocation nodes and set f (the gradient) to zero
-            if self.params.initial_guess == 'spread':
+            if self.params.initial_guess == "spread":
                 L.u[m] = P.dtype_u(L.u[0])
                 L.f[m] = P.dtype_f(init=P.init, val=0.0)
             # start with zero everywhere
-            elif self.params.initial_guess == 'zero':
+            elif self.params.initial_guess == "zero":
                 L.u[m] = P.dtype_u(init=P.init, val=0.0)
                 L.f[m] = P.dtype_f(init=P.init, val=0.0)
             # start with random initial guess
-            elif self.params.initial_guess == 'random':
+            elif self.params.initial_guess == "random":
                 L.u[m] = P.dtype_u(init=P.init, val=np.random.rand(1)[0])
                 L.f[m] = P.dtype_f(init=P.init, val=np.random.rand(1)[0])
             else:
-                raise ParameterError(f'initial_guess option {self.params.initial_guess} not implemented')
+                raise ParameterError(
+                    f"initial_guess option {self.params.initial_guess} not implemented"
+                )
 
         # indicate that this level is now ready for sweeps
         L.status.unlocked = True
@@ -199,21 +203,25 @@ class fully_implicit_DAE(sweeper):
         res_norm = []
         for m in range(self.coll.num_nodes):
             # use abs function from data type here
-            res_norm.append(abs(P.eval_f(L.u[m + 1], L.f[m + 1], L.time + L.dt * self.coll.nodes[m])))
+            res_norm.append(
+                abs(
+                    P.eval_f(L.u[m + 1], L.f[m + 1], L.time + L.dt * self.coll.nodes[m])
+                )
+            )
 
         # find maximal residual over the nodes
-        if L.params.residual_type == 'full_abs':
+        if L.params.residual_type == "full_abs":
             L.status.residual = max(res_norm)
-        elif L.params.residual_type == 'last_abs':
+        elif L.params.residual_type == "last_abs":
             L.status.residual = res_norm[-1]
-        elif L.params.residual_type == 'full_rel':
+        elif L.params.residual_type == "full_rel":
             L.status.residual = max(res_norm) / abs(L.u[0])
-        elif L.params.residual_type == 'last_rel':
+        elif L.params.residual_type == "last_rel":
             L.status.residual = res_norm[-1] / abs(L.u[0])
         else:
             raise ParameterError(
-                f'residual_type = {L.params.residual_type} not implemented, choose '
-                f'full_abs, last_abs, full_rel or last_rel instead'
+                f"residual_type = {L.params.residual_type} not implemented, choose "
+                f"full_abs, last_abs, full_rel or last_rel instead"
             )
 
         # indicate that the residual has seen the new values

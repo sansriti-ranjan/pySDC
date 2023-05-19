@@ -19,7 +19,9 @@ def main():
     num_proc = 8
 
     # instantiate controller
-    controller = controller_nonMPI(num_procs=num_proc, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=num_proc, controller_params=controller_params, description=description
+    )
 
     # get initial values on finest level
     P = controller.MS[0].levels[0].prob
@@ -33,16 +35,16 @@ def main():
     err = abs(uex - uend)
 
     # filter statistics by type (number of iterations)
-    iter_counts = get_sorted(stats, type='niter', sortby='time')
+    iter_counts = get_sorted(stats, type="niter", sortby="time")
 
     # compute and print statistics
     min_iter = 99
     max_iter = 0
     Path("data").mkdir(parents=True, exist_ok=True)
-    f = open('data/step_8_A_out.txt', 'w')
+    f = open("data/step_8_A_out.txt", "w")
     for item in iter_counts:
-        out = 'Number of iterations for time %4.2f: %1i' % item
-        f.write(out + '\n')
+        out = "Number of iterations for time %4.2f: %1i" % item
+        f.write(out + "\n")
         print(out)
         min_iter = min(min_iter, item[1])
         max_iter = max(max_iter, item[1])
@@ -50,12 +52,14 @@ def main():
 
     # call helper routine to produce residual plot
 
-    fname = 'data/step_8_residuals.png'
+    fname = "data/step_8_residuals.png"
     show_residual_across_simulation(stats=stats, fname=fname)
 
-    assert err < 6.1555e-05, 'ERROR: error is too large, got %s' % err
-    assert os.path.isfile(fname), 'ERROR: residual plot has not been created'
-    assert min_iter == 7 and max_iter == 7, "ERROR: number of iterations not as expected, got %s and %s" % (
+    assert err < 6.1555e-05, "ERROR: error is too large, got %s" % err
+    assert os.path.isfile(fname), "ERROR: residual plot has not been created"
+    assert (
+        min_iter == 7 and max_iter == 7
+    ), "ERROR: number of iterations not as expected, got %s and %s" % (
         min_iter,
         max_iter,
     )

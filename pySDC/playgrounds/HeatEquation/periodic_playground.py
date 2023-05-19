@@ -18,56 +18,62 @@ def main():
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-08
-    level_params['dt'] = 1.0 / num_proc
-    level_params['nsweeps'] = [1]
+    level_params["restol"] = 1e-08
+    level_params["dt"] = 1.0 / num_proc
+    level_params["nsweeps"] = [1]
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = [3]
-    sweeper_params['QI'] = ['LU']  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = [3]
+    sweeper_params["QI"] = [
+        "LU"
+    ]  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
     # sweeper_params['initial_guess'] = 'zero'
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['nu'] = 0.1  # diffusion coefficient
-    problem_params['freq'] = 4  # frequency for the test value
-    problem_params['nvars'] = [128, 64]  # number of degrees of freedom for each level
-    problem_params['bc'] = 'periodic'  # BCs
+    problem_params["nu"] = 0.1  # diffusion coefficient
+    problem_params["freq"] = 4  # frequency for the test value
+    problem_params["nvars"] = [128, 64]  # number of degrees of freedom for each level
+    problem_params["bc"] = "periodic"  # BCs
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize space transfer parameters
     space_transfer_params = dict()
-    space_transfer_params['rorder'] = 0
-    space_transfer_params['iorder'] = 2
-    space_transfer_params['periodic'] = True
+    space_transfer_params["rorder"] = 0
+    space_transfer_params["iorder"] = 2
+    space_transfer_params["periodic"] = True
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30
+    controller_params["logger_level"] = 30
     # controller_params['hook_class'] = error_output
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = heatNd_unforced  # pass problem class
-    description['problem_params'] = problem_params  # pass problem parameters
-    description['sweeper_class'] = generic_implicit  # pass sweeper (see part B)
-    description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    description['level_params'] = level_params  # pass level parameters
-    description['step_params'] = step_params  # pass step parameters
-    description['space_transfer_class'] = mesh_to_mesh  # pass spatial transfer class
-    description['space_transfer_params'] = space_transfer_params  # pass paramters for spatial transfer
+    description["problem_class"] = heatNd_unforced  # pass problem class
+    description["problem_params"] = problem_params  # pass problem parameters
+    description["sweeper_class"] = generic_implicit  # pass sweeper (see part B)
+    description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    description["level_params"] = level_params  # pass level parameters
+    description["step_params"] = step_params  # pass step parameters
+    description["space_transfer_class"] = mesh_to_mesh  # pass spatial transfer class
+    description[
+        "space_transfer_params"
+    ] = space_transfer_params  # pass paramters for spatial transfer
 
     # set time parameters
     t0 = 0.0
     Tend = 1.0
 
     # instantiate controller
-    controller = controller_nonMPI(num_procs=num_proc, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=num_proc, controller_params=controller_params, description=description
+    )
 
     # get initial values on finest level
     P = controller.MS[0].levels[0].prob
@@ -81,25 +87,38 @@ def main():
     err = abs(uex - uend)
 
     # filter statistics by type (number of iterations)
-    iter_counts = get_sorted(stats, type='niter', sortby='time')
+    iter_counts = get_sorted(stats, type="niter", sortby="time")
 
     # compute and print statistics
     for item in iter_counts:
-        out = 'Number of iterations for time %4.2f: %2i' % item
+        out = "Number of iterations for time %4.2f: %2i" % item
         print(out)
 
     niters = np.array([item[1] for item in iter_counts])
-    out = '   Mean number of iterations: %4.2f' % np.mean(niters)
+    out = "   Mean number of iterations: %4.2f" % np.mean(niters)
     print(out)
-    out = '   Range of values for number of iterations: %2i ' % np.ptp(niters)
+    out = "   Range of values for number of iterations: %2i " % np.ptp(niters)
     print(out)
-    out = '   Position of max/min number of iterations: %2i -- %2i' % (int(np.argmax(niters)), int(np.argmin(niters)))
+    out = "   Position of max/min number of iterations: %2i -- %2i" % (
+        int(np.argmax(niters)),
+        int(np.argmin(niters)),
+    )
     print(out)
-    out = '   Std and var for number of iterations: %4.2f -- %4.2f' % (float(np.std(niters)), float(np.var(niters)))
+    out = "   Std and var for number of iterations: %4.2f -- %4.2f" % (
+        float(np.std(niters)),
+        float(np.var(niters)),
+    )
     print(out)
 
-    print('CFL number: %4.2f' % (level_params['dt'] * problem_params['nu'] / (1.0 / problem_params['nvars'][0]) ** 2))
-    print('Error: %8.4e' % err)
+    print(
+        "CFL number: %4.2f"
+        % (
+            level_params["dt"]
+            * problem_params["nu"]
+            / (1.0 / problem_params["nvars"][0]) ** 2
+        )
+    )
+    print("Error: %8.4e" % err)
 
 
 if __name__ == "__main__":

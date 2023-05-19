@@ -15,7 +15,7 @@ class generic_LU(generic_implicit):
             params: parameters for the sweeper
         """
 
-        params['QI'] = 'LU'
+        params["QI"] = "LU"
 
         # call parent's initialization routine
         super(generic_LU, self).__init__(params)

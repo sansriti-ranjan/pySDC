@@ -1,6 +1,6 @@
 import matplotlib
 
-matplotlib.use('Agg')
+matplotlib.use("Agg")
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -10,9 +10,16 @@ from pySDC.projects.FastWaveSlowWave.HookClass_acoustic import dump_energy
 
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
-from pySDC.implementations.problem_classes.acoustic_helpers.standard_integrators import bdf2, dirk, trapezoidal, rk_imex
+from pySDC.implementations.problem_classes.acoustic_helpers.standard_integrators import (
+    bdf2,
+    dirk,
+    trapezoidal,
+    rk_imex,
+)
 
-from pySDC.projects.FastWaveSlowWave.AcousticAdvection_1D_FD_imex_multiscale import acoustic_1d_imex_multiscale
+from pySDC.projects.FastWaveSlowWave.AcousticAdvection_1D_FD_imex_multiscale import (
+    acoustic_1d_imex_multiscale,
+)
 
 
 def compute_and_plot_solutions():
@@ -29,42 +36,46 @@ def compute_and_plot_solutions():
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-10
-    level_params['dt'] = dt
+    level_params["restol"] = 1e-10
+    level_params["dt"] = dt
 
     # This comes as read-in for the step class
     step_params = dict()
-    step_params['maxiter'] = 2
+    step_params["maxiter"] = 2
 
     # This comes as read-in for the problem class
     problem_params = dict()
-    problem_params['cadv'] = 0.05
-    problem_params['cs'] = 1.0
-    problem_params['nvars'] = [(2, 512)]
-    problem_params['order_adv'] = 5
-    problem_params['waveno'] = 5
+    problem_params["cadv"] = 0.05
+    problem_params["cs"] = 1.0
+    problem_params["nvars"] = [(2, 512)]
+    problem_params["order_adv"] = 5
+    problem_params["waveno"] = 5
 
     # This comes as read-in for the sweeper class
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 2
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 2
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30
-    controller_params['hook_class'] = dump_energy
+    controller_params["logger_level"] = 30
+    controller_params["hook_class"] = dump_energy
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = acoustic_1d_imex_multiscale
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = imex_1st_order
-    description['sweeper_params'] = sweeper_params
-    description['step_params'] = step_params
-    description['level_params'] = level_params
+    description["problem_class"] = acoustic_1d_imex_multiscale
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = imex_1st_order
+    description["sweeper_params"] = sweeper_params
+    description["step_params"] = step_params
+    description["level_params"] = level_params
 
     # instantiate the controller
-    controller = controller_nonMPI(num_procs=num_procs, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=num_procs,
+        controller_params=controller_params,
+        description=description,
+    )
 
     # get initial values on finest level
     P = controller.MS[0].levels[0].prob
@@ -74,15 +85,17 @@ def compute_and_plot_solutions():
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 
     # instantiate standard integrators to be run for comparison
-    trap = trapezoidal((P.A + P.Dx).astype('complex'), 0.5)
+    trap = trapezoidal((P.A + P.Dx).astype("complex"), 0.5)
     bdf2_m = bdf2(P.A + P.Dx)
-    dirk_m = dirk((P.A + P.Dx).astype('complex'), step_params['maxiter'])
-    rkimex = rk_imex(P.A.astype('complex'), P.Dx.astype('complex'), step_params['maxiter'])
+    dirk_m = dirk((P.A + P.Dx).astype("complex"), step_params["maxiter"])
+    rkimex = rk_imex(
+        P.A.astype("complex"), P.Dx.astype("complex"), step_params["maxiter"]
+    )
 
     y0_tp = np.concatenate((uinit[0, :], uinit[1, :]))
     y0_bdf = y0_tp
-    y0_dirk = y0_tp.astype('complex')
-    y0_imex = y0_tp.astype('complex')
+    y0_dirk = y0_tp.astype("complex")
+    y0_imex = y0_tp.astype("complex")
 
     # Perform time steps with standard integrators
     for i in range(0, nsteps):
@@ -116,7 +129,7 @@ def compute_and_plot_solutions():
 
     fs = 8
 
-    rcParams['figure.figsize'] = 2.5, 2.5
+    rcParams["figure.figsize"] = 2.5, 2.5
     # rcParams['pgf.rcfonts'] = False
     fig = plt.figure()
 
@@ -129,30 +142,66 @@ def compute_and_plot_solutions():
     assert np.isclose(np.linalg.norm(pnew_dirk, np.inf), 1.003e00, 1e-03)
     assert np.isclose(np.linalg.norm(pnew_imex, np.inf), 2.762e21, 1e-03)
 
-    print('Maximum pressure in SDC: %5.3e' % np.linalg.norm(uend[1, :], np.inf))
-    print('Maximum pressure in DIRK: %5.3e' % np.linalg.norm(pnew_dirk, np.inf))
-    print('Maximum pressure in RK-IMEX: %5.3e' % np.linalg.norm(pnew_imex, np.inf))
+    print("Maximum pressure in SDC: %5.3e" % np.linalg.norm(uend[1, :], np.inf))
+    print("Maximum pressure in DIRK: %5.3e" % np.linalg.norm(pnew_dirk, np.inf))
+    print("Maximum pressure in RK-IMEX: %5.3e" % np.linalg.norm(pnew_imex, np.inf))
 
     if dirk_m.order == 2:
-        plt.plot(P.mesh, pnew_bdf, 'd-', color='c', label='BDF-2', markevery=(50, 75))
-    p_slow = np.exp(-np.square(np.mod(P.mesh - problem_params['cadv'] * Tend, 1.0) - x_0) / (sigma_0 * sigma_0))
-    plt.plot(P.mesh, p_slow, '--', color='k', markersize=fs - 2, label='Slow mode', dashes=(10, 2))
+        plt.plot(P.mesh, pnew_bdf, "d-", color="c", label="BDF-2", markevery=(50, 75))
+    p_slow = np.exp(
+        -np.square(np.mod(P.mesh - problem_params["cadv"] * Tend, 1.0) - x_0)
+        / (sigma_0 * sigma_0)
+    )
+    plt.plot(
+        P.mesh,
+        p_slow,
+        "--",
+        color="k",
+        markersize=fs - 2,
+        label="Slow mode",
+        dashes=(10, 2),
+    )
     if np.linalg.norm(pnew_imex, np.inf) <= 2:
         plt.plot(
-            P.mesh, pnew_imex, '+-', color='r', label='IMEX(' + str(rkimex.order) + ')', markevery=(1, 75), mew=1.0
+            P.mesh,
+            pnew_imex,
+            "+-",
+            color="r",
+            label="IMEX(" + str(rkimex.order) + ")",
+            markevery=(1, 75),
+            mew=1.0,
         )
-    plt.plot(P.mesh, uend[1, :], 'o-', color='b', label='SDC(' + str(step_params['maxiter']) + ')', markevery=(25, 75))
-    plt.plot(P.mesh, np.real(pnew_dirk), '-', color='g', label='DIRK(' + str(dirk_m.order) + ')')
+    plt.plot(
+        P.mesh,
+        uend[1, :],
+        "o-",
+        color="b",
+        label="SDC(" + str(step_params["maxiter"]) + ")",
+        markevery=(25, 75),
+    )
+    plt.plot(
+        P.mesh,
+        np.real(pnew_dirk),
+        "-",
+        color="g",
+        label="DIRK(" + str(dirk_m.order) + ")",
+    )
 
-    plt.xlabel('x', fontsize=fs, labelpad=0)
-    plt.ylabel('Pressure', fontsize=fs, labelpad=0)
+    plt.xlabel("x", fontsize=fs, labelpad=0)
+    plt.ylabel("Pressure", fontsize=fs, labelpad=0)
     fig.gca().set_xlim([0, 1.0])
     fig.gca().set_ylim([-0.5, 1.1])
-    fig.gca().tick_params(axis='both', labelsize=fs)
-    plt.legend(loc='upper left', fontsize=fs, prop={'size': fs}, handlelength=3)
+    fig.gca().tick_params(axis="both", labelsize=fs)
+    plt.legend(loc="upper left", fontsize=fs, prop={"size": fs}, handlelength=3)
     fig.gca().grid()
-    filename = 'data/multiscale-K' + str(step_params['maxiter']) + '-M' + str(sweeper_params['num_nodes']) + '.png'
-    plt.gcf().savefig(filename, bbox_inches='tight')
+    filename = (
+        "data/multiscale-K"
+        + str(step_params["maxiter"])
+        + "-M"
+        + str(sweeper_params["num_nodes"])
+        + ".png"
+    )
+    plt.gcf().savefig(filename, bbox_inches="tight")
 
 
 if __name__ == "__main__":

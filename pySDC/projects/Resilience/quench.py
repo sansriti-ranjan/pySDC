@@ -34,7 +34,7 @@ class live_plot(hooks):  # pragma: no cover
             ax.cla()
         # [self.axs[0].plot(L.prob.xv, L.u[i], label=f"node {i}") for i in range(len(L.u))]
         self.axs[0].plot(L.prob.xv, L.u[-1])
-        self.axs[0].axhline(L.prob.u_thresh, color='black')
+        self.axs[0].axhline(L.prob.u_thresh, color="black")
         self.axs[1].plot(L.prob.xv, L.prob.eval_f_non_linear(L.u[-1], L.time))
         self.axs[0].set_ylim(0, 0.025)
         self.fig.suptitle(f"t={L.time:.2e}, k={step.status.iter}")
@@ -103,40 +103,42 @@ def run_quench(
 
     # initialize level parameters
     level_params = {}
-    level_params['dt'] = 10.0
+    level_params["dt"] = 10.0
 
     # initialize sweeper parameters
     sweeper_params = {}
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
-    sweeper_params['QI'] = 'IE'
-    sweeper_params['QE'] = 'PIC'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
+    sweeper_params["QI"] = "IE"
+    sweeper_params["QE"] = "PIC"
 
     problem_params = {
-        'newton_tol': 1e-9,
+        "newton_tol": 1e-9,
     }
 
     # initialize step parameters
     step_params = {}
-    step_params['maxiter'] = 5
+    step_params["maxiter"] = 5
 
     # initialize controller parameters
     controller_params = {}
-    controller_params['logger_level'] = 30
-    controller_params['hook_class'] = hook_collection + (hook_class if type(hook_class) == list else [hook_class])
-    controller_params['mssdc_jac'] = False
+    controller_params["logger_level"] = 30
+    controller_params["hook_class"] = hook_collection + (
+        hook_class if type(hook_class) == list else [hook_class]
+    )
+    controller_params["mssdc_jac"] = False
 
     if custom_controller_params is not None:
         controller_params = {**controller_params, **custom_controller_params}
 
     # fill description dictionary for easy step instantiation
     description = {}
-    description['problem_class'] = QuenchIMEX if imex else Quench
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = imex_1st_order if imex else generic_implicit
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
-    description['step_params'] = step_params
+    description["problem_class"] = QuenchIMEX if imex else Quench
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = imex_1st_order if imex else generic_implicit
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
+    description["step_params"] = step_params
 
     if custom_description is not None:
         description = merge_descriptions(description, custom_description)
@@ -146,14 +148,16 @@ def run_quench(
 
     # instantiate controller
     controller_args = {
-        'controller_params': controller_params,
-        'description': description,
+        "controller_params": controller_params,
+        "description": description,
     }
     if use_MPI:
         from mpi4py import MPI
-        from pySDC.implementations.controller_classes.controller_MPI import controller_MPI
+        from pySDC.implementations.controller_classes.controller_MPI import (
+            controller_MPI,
+        )
 
-        comm = kwargs.get('comm', MPI.COMM_WORLD)
+        comm = kwargs.get("comm", MPI.COMM_WORLD)
         controller = controller_MPI(**controller_args, comm=comm)
         P = controller.S.levels[0].prob
     else:
@@ -164,69 +168,86 @@ def run_quench(
 
     # insert faults
     if fault_stuff is not None:
-        from pySDC.projects.Resilience.fault_injection import prepare_controller_for_faults
+        from pySDC.projects.Resilience.fault_injection import (
+            prepare_controller_for_faults,
+        )
 
-        rnd_args = {'iteration': 1, 'min_node': 1}
-        args = {'time': 31.0, 'target': 0}
+        rnd_args = {"iteration": 1, "min_node": 1}
+        args = {"time": 31.0, "target": 0}
         prepare_controller_for_faults(controller, fault_stuff, rnd_args, args)
 
     # call main function to get things done...
     try:
         uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
     except ConvergenceError:
-        print('Warning: Premature termination!')
+        print("Warning: Premature termination!")
         stats = controller.return_stats()
     return stats, controller, Tend
 
 
 def faults(seed=0):  # pragma: no cover
     import matplotlib.pyplot as plt
-    from pySDC.implementations.convergence_controller_classes.adaptivity import Adaptivity
+    from pySDC.implementations.convergence_controller_classes.adaptivity import (
+        Adaptivity,
+    )
 
     fig, ax = plt.subplots(1, 1)
 
     rng = np.random.RandomState(seed)
-    fault_stuff = {'rng': rng, 'args': {}, 'rnd_args': {}}
+    fault_stuff = {"rng": rng, "args": {}, "rnd_args": {}}
 
-    controller_params = {'logger_level': 30}
-    description = {'level_params': {'dt': 1e1}, 'step_params': {'maxiter': 5}}
-    stats, controller, _ = run_quench(custom_controller_params=controller_params, custom_description=description)
-    plot_solution_faults(stats, controller, ax, plot_lines=True, label='ref')
+    controller_params = {"logger_level": 30}
+    description = {"level_params": {"dt": 1e1}, "step_params": {"maxiter": 5}}
+    stats, controller, _ = run_quench(
+        custom_controller_params=controller_params, custom_description=description
+    )
+    plot_solution_faults(stats, controller, ax, plot_lines=True, label="ref")
 
     stats, controller, _ = run_quench(
         fault_stuff=fault_stuff,
         custom_controller_params=controller_params,
     )
-    plot_solution_faults(stats, controller, ax, label='fixed')
+    plot_solution_faults(stats, controller, ax, label="fixed")
 
-    description['convergence_controllers'] = {Adaptivity: {'e_tol': 1e-7, 'dt_max': 1e2, 'dt_min': 1e-3}}
+    description["convergence_controllers"] = {
+        Adaptivity: {"e_tol": 1e-7, "dt_max": 1e2, "dt_min": 1e-3}
+    }
     stats, controller, _ = run_quench(
-        fault_stuff=fault_stuff, custom_controller_params=controller_params, custom_description=description
+        fault_stuff=fault_stuff,
+        custom_controller_params=controller_params,
+        custom_description=description,
     )
 
-    plot_solution_faults(stats, controller, ax, label='adaptivity', ls='--')
+    plot_solution_faults(stats, controller, ax, label="adaptivity", ls="--")
     plt.show()
 
 
-def plot_solution_faults(stats, controller, ax, plot_lines=False, **kwargs):  # pragma: no cover
+def plot_solution_faults(
+    stats, controller, ax, plot_lines=False, **kwargs
+):  # pragma: no cover
     u_ax = ax
 
-    u = get_sorted(stats, type='u', recomputed=False)
+    u = get_sorted(stats, type="u", recomputed=False)
     u_ax.plot([me[0] for me in u], [np.mean(me[1]) for me in u], **kwargs)
 
     if plot_lines:
         P = controller.MS[0].levels[0].prob
-        u_ax.axhline(P.u_thresh, color='grey', ls='-.', label=r'$T_\mathrm{thresh}$')
-        u_ax.axhline(P.u_max, color='grey', ls=':', label=r'$T_\mathrm{max}$')
+        u_ax.axhline(P.u_thresh, color="grey", ls="-.", label=r"$T_\mathrm{thresh}$")
+        u_ax.axhline(P.u_max, color="grey", ls=":", label=r"$T_\mathrm{max}$")
 
-    [ax.axvline(me[0], color='grey', label=f'fault at t={me[0]:.2f}') for me in get_sorted(stats, type='bitflip')]
+    [
+        ax.axvline(me[0], color="grey", label=f"fault at t={me[0]:.2f}")
+        for me in get_sorted(stats, type="bitflip")
+    ]
 
     u_ax.legend()
-    u_ax.set_xlabel(r'$t$')
-    u_ax.set_ylabel(r'$T$')
+    u_ax.set_xlabel(r"$t$")
+    u_ax.set_ylabel(r"$T$")
 
 
-def get_crossing_time(stats, controller, num_points=5, inter_points=50, temperature_error_thresh=1e-5):
+def get_crossing_time(
+    stats, controller, num_points=5, inter_points=50, temperature_error_thresh=1e-5
+):
     """
     Compute the time when the temperature threshold is crossed based on interpolation.
 
@@ -246,7 +267,7 @@ def get_crossing_time(stats, controller, num_points=5, inter_points=50, temperat
     P = controller.MS[0].levels[0].prob
     u_thresh = P.u_thresh
 
-    u = get_sorted(stats, type='u', recomputed=False)
+    u = get_sorted(stats, type="u", recomputed=False)
     temp = np.array([np.mean(me[1]) for me in u])
     t = np.array([me[0] for me in u])
 
@@ -265,10 +286,18 @@ def get_crossing_time(stats, controller, num_points=5, inter_points=50, temperat
 
     temperature_error = abs(u_inter[crossing_inter] - u_thresh)
 
-    assert temperature_error < temp[crossing_index], "Temperature error is rising due to interpolation!"
+    assert (
+        temperature_error < temp[crossing_index]
+    ), "Temperature error is rising due to interpolation!"
 
     if temperature_error > temperature_error_thresh and inter_points < 300:
-        return get_crossing_time(stats, controller, num_points + 4, inter_points + 15, temperature_error_thresh)
+        return get_crossing_time(
+            stats,
+            controller,
+            num_points + 4,
+            inter_points + 15,
+            temperature_error_thresh,
+        )
 
     return t_inter[crossing_inter]
 
@@ -280,36 +309,41 @@ def plot_solution(stats, controller):  # pragma: no cover
     u_ax = ax
     dt_ax = u_ax.twinx()
 
-    u = get_sorted(stats, type='u', recomputed=False)
-    u_ax.plot([me[0] for me in u], [np.mean(me[1]) for me in u], label=r'$T$')
+    u = get_sorted(stats, type="u", recomputed=False)
+    u_ax.plot([me[0] for me in u], [np.mean(me[1]) for me in u], label=r"$T$")
 
-    dt = get_sorted(stats, type='dt', recomputed=False)
-    dt_ax.plot([me[0] for me in dt], [me[1] for me in dt], color='black', ls='--')
-    u_ax.plot([None], [None], color='black', ls='--', label=r'$\Delta t$')
+    dt = get_sorted(stats, type="dt", recomputed=False)
+    dt_ax.plot([me[0] for me in dt], [me[1] for me in dt], color="black", ls="--")
+    u_ax.plot([None], [None], color="black", ls="--", label=r"$\Delta t$")
 
     if controller.useMPI:
         P = controller.S.levels[0].prob
     else:
         P = controller.MS[0].levels[0].prob
-    u_ax.axhline(P.u_thresh, color='grey', ls='-.', label=r'$T_\mathrm{thresh}$')
-    u_ax.axhline(P.u_max, color='grey', ls=':', label=r'$T_\mathrm{max}$')
+    u_ax.axhline(P.u_thresh, color="grey", ls="-.", label=r"$T_\mathrm{thresh}$")
+    u_ax.axhline(P.u_max, color="grey", ls=":", label=r"$T_\mathrm{max}$")
 
-    [ax.axvline(me[0], color='grey', label=f'fault at t={me[0]:.2f}') for me in get_sorted(stats, type='bitflip')]
+    [
+        ax.axvline(me[0], color="grey", label=f"fault at t={me[0]:.2f}")
+        for me in get_sorted(stats, type="bitflip")
+    ]
 
     u_ax.legend()
-    u_ax.set_xlabel(r'$t$')
-    u_ax.set_ylabel(r'$T$')
-    dt_ax.set_ylabel(r'$\Delta t$')
+    u_ax.set_xlabel(r"$t$")
+    u_ax.set_ylabel(r"$T$")
+    dt_ax.set_ylabel(r"$\Delta t$")
 
 
-def compare_imex_full(plotting=False, leak_type='linear'):
+def compare_imex_full(plotting=False, leak_type="linear"):
     """
     Compare the results of IMEX and fully implicit runs. For IMEX we need to limit the step size in order to achieve convergence, but for fully implicit, adaptivity can handle itself better.
 
     Args:
         plotting (bool): Plot the solution or not
     """
-    from pySDC.implementations.convergence_controller_classes.adaptivity import Adaptivity
+    from pySDC.implementations.convergence_controller_classes.adaptivity import (
+        Adaptivity,
+    )
     from pySDC.implementations.hooks.log_work import LogWork
     from pySDC.implementations.hooks.log_errors import LogGlobalErrorPostRun
 
@@ -322,19 +356,19 @@ def compare_imex_full(plotting=False, leak_type='linear'):
     error = {}
 
     custom_description = {}
-    custom_description['problem_params'] = {
-        'newton_tol': 1e-10,
-        'newton_iter': newton_iter_max,
-        'nvars': 2**9,
-        'leak_type': leak_type,
+    custom_description["problem_params"] = {
+        "newton_tol": 1e-10,
+        "newton_iter": newton_iter_max,
+        "nvars": 2**9,
+        "leak_type": leak_type,
     }
-    custom_description['step_params'] = {'maxiter': maxiter}
-    custom_description['sweeper_params'] = {'num_nodes': num_nodes}
-    custom_description['convergence_controllers'] = {
-        Adaptivity: {'e_tol': 1e-6, 'dt_max': 50},
+    custom_description["step_params"] = {"maxiter": maxiter}
+    custom_description["sweeper_params"] = {"num_nodes": num_nodes}
+    custom_description["convergence_controllers"] = {
+        Adaptivity: {"e_tol": 1e-6, "dt_max": 50},
     }
 
-    custom_controller_params = {'logger_level': 30}
+    custom_controller_params = {"logger_level": 30}
     for imex in [False, True]:
         stats, controller, _ = run_quench(
             custom_description=custom_description,
@@ -345,13 +379,15 @@ def compare_imex_full(plotting=False, leak_type='linear'):
             hook_class=[LogWork, LogGlobalErrorPostRun],
         )
 
-        res[imex] = get_sorted(stats, type='u')[-1][1]
-        newton_iter = [me[1] for me in get_sorted(stats, type='work_newton')]
-        rhs[imex] = np.mean([me[1] for me in get_sorted(stats, type='work_rhs')]) // 1
-        error[imex] = get_sorted(stats, type='e_global_post_run')[-1][1]
+        res[imex] = get_sorted(stats, type="u")[-1][1]
+        newton_iter = [me[1] for me in get_sorted(stats, type="work_newton")]
+        rhs[imex] = np.mean([me[1] for me in get_sorted(stats, type="work_rhs")]) // 1
+        error[imex] = get_sorted(stats, type="e_global_post_run")[-1][1]
 
         if imex:
-            assert all(me == 0 for me in newton_iter), "IMEX is not supposed to do Newton iterations!"
+            assert all(
+                me == 0 for me in newton_iter
+            ), "IMEX is not supposed to do Newton iterations!"
         else:
             assert (
                 max(newton_iter) / num_nodes / maxiter <= newton_iter_max
@@ -373,47 +409,60 @@ def compare_imex_full(plotting=False, leak_type='linear'):
         rhs[True] == rhs[False]
     ), f"Expected IMEX and fully implicit schemes to take the same number of right hand side evaluations per step, but got {rhs[True]} and {rhs[False]}!"
 
-    assert error[True] < 1e-4, f'Expected error of IMEX version to be less than 1e-4, but got e={error[True]:.2e}!'
+    assert (
+        error[True] < 1e-4
+    ), f"Expected error of IMEX version to be less than 1e-4, but got e={error[True]:.2e}!"
     assert (
         error[False] < 7.7e-5
-    ), f'Expected error of fully implicit version to be less than 7.7e-5, but got e={error[False]:.2e}!'
+    ), f"Expected error of fully implicit version to be less than 7.7e-5, but got e={error[False]:.2e}!"
 
 
 def compare_reference_solutions_single():
-    from pySDC.implementations.hooks.log_errors import LogGlobalErrorPostStep, LogLocalErrorPostStep
+    from pySDC.implementations.hooks.log_errors import (
+        LogGlobalErrorPostStep,
+        LogLocalErrorPostStep,
+    )
     from pySDC.implementations.hooks.log_solution import LogSolution
 
-    types = ['DIRK', 'SDC', 'scipy']
-    types = ['scipy']
+    types = ["DIRK", "SDC", "scipy"]
+    types = ["scipy"]
     fig, ax = plt.subplots()
     error_ax = ax.twinx()
     Tend = 500
 
-    colors = ['black', 'teal', 'magenta']
+    colors = ["black", "teal", "magenta"]
 
-    from pySDC.projects.Resilience.strategies import AdaptivityStrategy, merge_descriptions, DoubleAdaptivityStrategy
-    from pySDC.implementations.convergence_controller_classes.adaptivity import Adaptivity
+    from pySDC.projects.Resilience.strategies import (
+        AdaptivityStrategy,
+        merge_descriptions,
+        DoubleAdaptivityStrategy,
+    )
+    from pySDC.implementations.convergence_controller_classes.adaptivity import (
+        Adaptivity,
+    )
 
     strategy = DoubleAdaptivityStrategy()
 
-    controller_params = {'logger_level': 15}
+    controller_params = {"logger_level": 15}
 
     for j in range(len(types)):
         description = {}
-        description['level_params'] = {'dt': 5.0, 'restol': 1e-10}
-        description['sweeper_params'] = {'QI': 'IE', 'num_nodes': 3}
-        description['problem_params'] = {
-            'leak_type': 'linear',
-            'leak_transition': 'step',
-            'nvars': 2**10,
-            'reference_sol_type': types[j],
-            'newton_tol': 1e-12,
+        description["level_params"] = {"dt": 5.0, "restol": 1e-10}
+        description["sweeper_params"] = {"QI": "IE", "num_nodes": 3}
+        description["problem_params"] = {
+            "leak_type": "linear",
+            "leak_transition": "step",
+            "nvars": 2**10,
+            "reference_sol_type": types[j],
+            "newton_tol": 1e-12,
         }
 
-        description['level_params'] = {'dt': 5.0, 'restol': -1}
-        description = merge_descriptions(description, strategy.get_custom_description(run_quench, 1))
-        description['step_params'] = {'maxiter': 5}
-        description['convergence_controllers'][Adaptivity]['e_tol'] = 1e-4
+        description["level_params"] = {"dt": 5.0, "restol": -1}
+        description = merge_descriptions(
+            description, strategy.get_custom_description(run_quench, 1)
+        )
+        description["step_params"] = {"maxiter": 5}
+        description["convergence_controllers"][Adaptivity]["e_tol"] = 1e-4
 
         stats, controller, _ = run_quench(
             custom_description=description,
@@ -422,34 +471,46 @@ def compare_reference_solutions_single():
             imex=False,
             custom_controller_params=controller_params,
         )
-        e_glob = get_sorted(stats, type='e_global_post_step', recomputed=False)
-        e_loc = get_sorted(stats, type='e_local_post_step', recomputed=False)
-        u = get_sorted(stats, type='u', recomputed=False)
+        e_glob = get_sorted(stats, type="e_global_post_step", recomputed=False)
+        e_loc = get_sorted(stats, type="e_local_post_step", recomputed=False)
+        u = get_sorted(stats, type="u", recomputed=False)
 
-        ax.plot([me[0] for me in u], [max(me[1]) for me in u], color=colors[j], label=f'{types[j]} reference')
+        ax.plot(
+            [me[0] for me in u],
+            [max(me[1]) for me in u],
+            color=colors[j],
+            label=f"{types[j]} reference",
+        )
 
-        error_ax.plot([me[0] for me in e_glob], [me[1] for me in e_glob], color=colors[j], ls='--')
-        error_ax.plot([me[0] for me in e_loc], [me[1] for me in e_loc], color=colors[j], ls=':')
+        error_ax.plot(
+            [me[0] for me in e_glob], [me[1] for me in e_glob], color=colors[j], ls="--"
+        )
+        error_ax.plot(
+            [me[0] for me in e_loc], [me[1] for me in e_loc], color=colors[j], ls=":"
+        )
 
     prob = controller.MS[0].levels[0].prob
-    ax.axhline(prob.u_thresh, ls='-.', color='grey')
-    ax.axhline(prob.u_max, ls='-.', color='grey')
-    ax.plot([None], [None], ls='--', label=r'$e_\mathrm{global}$', color='grey')
-    ax.plot([None], [None], ls=':', label=r'$e_\mathrm{local}$', color='grey')
-    error_ax.set_yscale('log')
+    ax.axhline(prob.u_thresh, ls="-.", color="grey")
+    ax.axhline(prob.u_max, ls="-.", color="grey")
+    ax.plot([None], [None], ls="--", label=r"$e_\mathrm{global}$", color="grey")
+    ax.plot([None], [None], ls=":", label=r"$e_\mathrm{local}$", color="grey")
+    error_ax.set_yscale("log")
     ax.legend(frameon=False)
-    ax.set_xlabel(r'$t$')
-    ax.set_ylabel('solution')
-    error_ax.set_ylabel('error')
-    ax.set_title('Fully implicit quench problem')
+    ax.set_xlabel(r"$t$")
+    ax.set_ylabel("solution")
+    error_ax.set_ylabel("error")
+    ax.set_title("Fully implicit quench problem")
     fig.tight_layout()
-    fig.savefig('data/quench_refs_single.pdf', bbox_inches='tight')
+    fig.savefig("data/quench_refs_single.pdf", bbox_inches="tight")
 
 
 def compare_reference_solutions():
-    from pySDC.implementations.hooks.log_errors import LogGlobalErrorPostRun, LogLocalErrorPostStep
+    from pySDC.implementations.hooks.log_errors import (
+        LogGlobalErrorPostRun,
+        LogLocalErrorPostStep,
+    )
 
-    types = ['DIRK', 'SDC', 'scipy']
+    types = ["DIRK", "SDC", "scipy"]
     fig, ax = plt.subplots()
     Tend = 500
     dt_list = [Tend / 2.0**me for me in [2, 3, 4, 5, 6, 7, 8, 9, 10]]
@@ -459,13 +520,13 @@ def compare_reference_solutions():
         errors = [None] * len(dt_list)
         for i in range(len(dt_list)):
             description = {}
-            description['level_params'] = {'dt': dt_list[i], 'restol': 1e-10}
-            description['sweeper_params'] = {'QI': 'IE', 'num_nodes': 3}
-            description['problem_params'] = {
-                'leak_type': 'linear',
-                'leak_transition': 'step',
-                'nvars': 2**10,
-                'reference_sol_type': types[j],
+            description["level_params"] = {"dt": dt_list[i], "restol": 1e-10}
+            description["sweeper_params"] = {"QI": "IE", "num_nodes": 3}
+            description["problem_params"] = {
+                "leak_type": "linear",
+                "leak_transition": "step",
+                "nvars": 2**10,
+                "reference_sol_type": types[j],
             }
 
             stats, controller, _ = run_quench(
@@ -475,21 +536,30 @@ def compare_reference_solutions():
                 imex=False,
             )
             # errors[i] = get_sorted(stats, type='e_global_post_run')[-1][1]
-            errors[i] = max([me[1] for me in get_sorted(stats, type='e_local_post_step', recomputed=False)])
+            errors[i] = max(
+                [
+                    me[1]
+                    for me in get_sorted(
+                        stats, type="e_local_post_step", recomputed=False
+                    )
+                ]
+            )
             print(errors)
-        ax.loglog(dt_list, errors, label=f'{types[j]} reference')
+        ax.loglog(dt_list, errors, label=f"{types[j]} reference")
 
     ax.legend(frameon=False)
-    ax.set_xlabel(r'$\Delta t$')
-    ax.set_ylabel('global error')
-    ax.set_title('Fully implicit quench problem')
+    ax.set_xlabel(r"$\Delta t$")
+    ax.set_ylabel("global error")
+    ax.set_title("Fully implicit quench problem")
     fig.tight_layout()
-    fig.savefig('data/quench_refs.pdf', bbox_inches='tight')
+    fig.savefig("data/quench_refs.pdf", bbox_inches="tight")
 
 
-def check_order(reference_sol_type='scipy'):
+def check_order(reference_sol_type="scipy"):
     from pySDC.implementations.hooks.log_errors import LogGlobalErrorPostRun
-    from pySDC.implementations.convergence_controller_classes.estimate_embedded_error import EstimateEmbeddedError
+    from pySDC.implementations.convergence_controller_classes.estimate_embedded_error import (
+        EstimateEmbeddedError,
+    )
 
     Tend = 500
     maxiter_list = [1, 2, 3, 4, 5]
@@ -500,36 +570,44 @@ def check_order(reference_sol_type='scipy'):
 
     from pySDC.implementations.sweeper_classes.Runge_Kutta import DIRK34
 
-    colors = ['black', 'teal', 'magenta', 'orange', 'red']
+    colors = ["black", "teal", "magenta", "orange", "red"]
     for j in range(len(maxiter_list)):
         errors = [None] * len(dt_list)
 
         for i in range(len(dt_list)):
             description = {}
-            description['level_params'] = {'dt': dt_list[i]}
-            description['step_params'] = {'maxiter': maxiter_list[j]}
-            description['sweeper_params'] = {'QI': 'IE', 'num_nodes': 3}
-            description['problem_params'] = {
-                'leak_type': 'linear',
-                'leak_transition': 'step',
-                'nvars': 2**10,
-                'reference_sol_type': reference_sol_type,
+            description["level_params"] = {"dt": dt_list[i]}
+            description["step_params"] = {"maxiter": maxiter_list[j]}
+            description["sweeper_params"] = {"QI": "IE", "num_nodes": 3}
+            description["problem_params"] = {
+                "leak_type": "linear",
+                "leak_transition": "step",
+                "nvars": 2**10,
+                "reference_sol_type": reference_sol_type,
             }
-            description['convergence_controllers'] = {EstimateEmbeddedError: {}}
+            description["convergence_controllers"] = {EstimateEmbeddedError: {}}
 
             # if maxiter_list[j] == 5:
             #    description['sweeper_class'] = DIRK34
             #    description['sweeper_params'] = {'maxiter': 1}
 
             stats, controller, _ = run_quench(
-                custom_description=description, hook_class=[LogGlobalErrorPostRun], Tend=Tend, imex=False
+                custom_description=description,
+                hook_class=[LogGlobalErrorPostRun],
+                Tend=Tend,
+                imex=False,
             )
             # errors[i] = max([me[1] for me in get_sorted(stats, type='error_embedded_estimate')])
-            errors[i] = get_sorted(stats, type='e_global_post_run')[-1][1]
+            errors[i] = get_sorted(stats, type="e_global_post_run")[-1][1]
             print(errors)
-        ax.loglog(dt_list, errors, color=colors[j], label=f'{maxiter_list[j]} iterations')
         ax.loglog(
-            dt_list, [errors[0] * (me / dt_list[0]) ** maxiter_list[j] for me in dt_list], color=colors[j], ls='--'
+            dt_list, errors, color=colors[j], label=f"{maxiter_list[j]} iterations"
+        )
+        ax.loglog(
+            dt_list,
+            [errors[0] * (me / dt_list[0]) ** maxiter_list[j] for me in dt_list],
+            color=colors[j],
+            ls="--",
         )
 
     dt_list = np.array(dt_list)
@@ -539,15 +617,15 @@ def check_order(reference_sol_type='scipy'):
 
     # ax.loglog(dt_list, local_errors)
     ax.legend(frameon=False)
-    ax.set_xlabel(r'$\Delta t$')
-    ax.set_ylabel('global error')
+    ax.set_xlabel(r"$\Delta t$")
+    ax.set_ylabel("global error")
     # ax.set_ylabel('max. local error')
-    ax.set_title('Fully implicit quench problem')
+    ax.set_title("Fully implicit quench problem")
     fig.tight_layout()
-    fig.savefig(f'data/order_quench_{reference_sol_type}.pdf', bbox_inches='tight')
+    fig.savefig(f"data/order_quench_{reference_sol_type}.pdf", bbox_inches="tight")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     compare_reference_solutions_single()
     # for reference_sol_type in ['DIRK', 'SDC', 'scipy']:
     #    check_order(reference_sol_type=reference_sol_type)

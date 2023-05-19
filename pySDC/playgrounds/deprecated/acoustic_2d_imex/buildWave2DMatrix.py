@@ -4,7 +4,6 @@ from build2DFDMatrix import get2DMatrix, getBCHorizontal, get2DUpwindMatrix
 
 
 def getWave2DUpwindMatrix(N, dx):
-
     Dx = get2DUpwindMatrix(N, dx)
 
     Zero = np.zeros((N[0] * N[1], N[0] * N[1]))
@@ -35,7 +34,6 @@ def getWave2DMatrix(N, h, bc_hor, bc_ver):
 
 
 def getWaveBCHorizontal(value, N, dx, bc_hor):
-
     bu_left, bu_right = getBCHorizontal(value[0], N, dx, bc_hor[0])
     bw_left, bw_right = getBCHorizontal(value[1], N, dx, bc_hor[1])
     bp_left, bp_right = getBCHorizontal(value[2], N, dx, bc_hor[2])

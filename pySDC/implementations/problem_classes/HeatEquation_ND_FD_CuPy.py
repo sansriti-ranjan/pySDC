@@ -23,15 +23,24 @@ class heatNd_forced(ptype):  # pragma: no cover
     dtype_f = imex_cupy_mesh
 
     def __init__(
-        self, nvars, nu, freq, bc, order=2, stencil_type='center', lintol=1e-12, liniter=10000, solver_type='direct'
+        self,
+        nvars,
+        nu,
+        freq,
+        bc,
+        order=2,
+        stencil_type="center",
+        lintol=1e-12,
+        liniter=10000,
+        solver_type="direct",
     ):
         """Initialization routine"""
 
         # make sure parameters have the correct types
         if not type(nvars) in [int, tuple]:
-            raise ProblemError('nvars should be either tuple or int')
+            raise ProblemError("nvars should be either tuple or int")
         if not type(freq) in [int, tuple]:
-            raise ProblemError('freq should be either tuple or int')
+            raise ProblemError("freq should be either tuple or int")
 
         # transforms nvars into a tuple
         if type(nvars) is int:
@@ -40,55 +49,59 @@ class heatNd_forced(ptype):  # pragma: no cover
         # automatically determine ndim from nvars
         ndim = len(nvars)
         if ndim > 3:
-            raise ProblemError(f'can work with up to three dimensions, got {ndim}')
+            raise ProblemError(f"can work with up to three dimensions, got {ndim}")
 
         # eventually extend freq to other dimension
         if type(freq) is int:
             freq = (freq,) * ndim
         if len(freq) != ndim:
-            raise ProblemError(f'len(freq)={len(freq)}, different to ndim={ndim}')
+            raise ProblemError(f"len(freq)={len(freq)}, different to ndim={ndim}")
 
         # check values for freq and nvars
         for f in freq:
             if ndim == 1 and f == -1:
                 # use Gaussian initial solution in 1D
-                bc = 'periodic'
+                bc = "periodic"
                 break
-            if f % 2 != 0 and bc == 'periodic':
-                raise ProblemError('need even number of frequencies due to periodic BCs')
+            if f % 2 != 0 and bc == "periodic":
+                raise ProblemError(
+                    "need even number of frequencies due to periodic BCs"
+                )
         for nvar in nvars:
-            if nvar % 2 != 0 and bc == 'periodic':
-                raise ProblemError('the setup requires nvars = 2^p per dimension')
-            if (nvar + 1) % 2 != 0 and bc == 'dirichlet-zero':
-                raise ProblemError('setup requires nvars = 2^p - 1')
+            if nvar % 2 != 0 and bc == "periodic":
+                raise ProblemError("the setup requires nvars = 2^p per dimension")
+            if (nvar + 1) % 2 != 0 and bc == "dirichlet-zero":
+                raise ProblemError("setup requires nvars = 2^p - 1")
         if ndim > 1 and nvars[1:] != nvars[:-1]:
-            raise ProblemError('need a square domain, got %s' % nvars)
+            raise ProblemError("need a square domain, got %s" % nvars)
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
-        super().__init__(init=(nvars[0] if ndim == 1 else nvars, None, cp.dtype('float64')))
+        super().__init__(
+            init=(nvars[0] if ndim == 1 else nvars, None, cp.dtype("float64"))
+        )
         self._makeAttributeAndRegister(
-            'nvars',
-            'nu',
-            'freq',
-            'bc',
-            'order',
-            'stencil_type',
-            'lintol',
-            'liniter',
-            'solver_type',
+            "nvars",
+            "nu",
+            "freq",
+            "bc",
+            "order",
+            "stencil_type",
+            "lintol",
+            "liniter",
+            "solver_type",
             localVars=locals(),
             readOnly=True,
         )
 
         # compute dx (equal in both dimensions) and get discretization matrix A
-        if self.bc == 'periodic':
+        if self.bc == "periodic":
             self.dx = 1.0 / self.nvars[0]
             xvalues = cp.array([i * self.dx for i in range(self.nvars[0])])
-        elif self.bc == 'dirichlet-zero':
+        elif self.bc == "dirichlet-zero":
             self.dx = 1.0 / (self.nvars[0] + 1)
             xvalues = cp.array([(i + 1) * self.dx for i in range(self.nvars[0])])
         else:
-            raise ProblemError(f'Boundary conditions {self.bc} not implemented.')
+            raise ProblemError(f"Boundary conditions {self.bc} not implemented.")
 
         self.A = problem_helper.get_finite_difference_matrix(
             derivative=2,
@@ -103,7 +116,7 @@ class heatNd_forced(ptype):  # pragma: no cover
         self.A *= self.nu
 
         self.xv = cp.meshgrid(*[xvalues for _ in range(self.ndim)])
-        self.Id = csp.eye(np.prod(self.nvars), format='csc')
+        self.Id = csp.eye(np.prod(self.nvars), format="csc")
 
     @property
     def ndim(self):
@@ -126,20 +139,36 @@ class heatNd_forced(ptype):  # pragma: no cover
         f.impl[:] = self.A.dot(u.flatten()).reshape(self.nvars)
         if self.ndim == 1:
             f.expl[:] = cp.sin(np.pi * self.freq[0] * self.xv[0]) * (
-                self.nu * np.pi**2 * sum([freq**2 for freq in self.freq]) * cp.cos(t) - cp.sin(t)
+                self.nu
+                * np.pi**2
+                * sum([freq**2 for freq in self.freq])
+                * cp.cos(t)
+                - cp.sin(t)
             )
         elif self.ndim == 2:
             f.expl[:] = (
                 cp.sin(np.pi * self.freq[0] * self.xv[0])
                 * cp.sin(np.pi * self.freq[1] * self.xv[1])
-                * (self.nu * np.pi**2 * sum([freq**2 for freq in self.freq]) * cp.cos(t) - cp.sin(t))
+                * (
+                    self.nu
+                    * np.pi**2
+                    * sum([freq**2 for freq in self.freq])
+                    * cp.cos(t)
+                    - cp.sin(t)
+                )
             )
         elif self.ndim == 3:
             f.expl[:] = (
                 cp.sin(np.pi * self.freq[0] * self.xv[0])
                 * cp.sin(np.pi * self.freq[1] * self.xv[1])
                 * cp.sin(np.pi * self.freq[2] * self.xv[2])
-                * (self.nu * np.pi**2 * sum([freq**2 for freq in self.freq]) * cp.cos(t) - cp.sin(t))
+                * (
+                    self.nu
+                    * np.pi**2
+                    * sum([freq**2 for freq in self.freq])
+                    * cp.cos(t)
+                    - cp.sin(t)
+                )
             )
 
         return f
@@ -160,9 +189,11 @@ class heatNd_forced(ptype):  # pragma: no cover
 
         me = self.dtype_u(self.init)
 
-        if self.solver_type == 'direct':
-            me[:] = spsolve(self.Id - factor * self.A, rhs.flatten()).reshape(self.nvars)
-        elif self.solver_type == 'CG':
+        if self.solver_type == "direct":
+            me[:] = spsolve(self.Id - factor * self.A, rhs.flatten()).reshape(
+                self.nvars
+            )
+        elif self.solver_type == "CG":
             me[:] = cg(
                 self.Id - factor * self.A,
                 rhs.flatten(),
@@ -172,7 +203,9 @@ class heatNd_forced(ptype):  # pragma: no cover
                 atol=0,
             )[0].reshape(self.nvars)
         else:
-            raise NotImplementedError(f'Solver {self.solver_type} not implemented in GPU heat equation!')
+            raise NotImplementedError(
+                f"Solver {self.solver_type} not implemented in GPU heat equation!"
+            )
         return me
 
     def u_exact(self, t):
@@ -191,7 +224,11 @@ class heatNd_forced(ptype):  # pragma: no cover
         if self.ndim == 1:
             me[:] = cp.sin(np.pi * self.freq[0] * self.xv[0]) * cp.cos(t)
         elif self.ndim == 2:
-            me[:] = cp.sin(np.pi * self.freq[0] * self.xv[0]) * cp.sin(np.pi * self.freq[1] * self.xv[1]) * cp.cos(t)
+            me[:] = (
+                cp.sin(np.pi * self.freq[0] * self.xv[0])
+                * cp.sin(np.pi * self.freq[1] * self.xv[1])
+                * cp.cos(t)
+            )
         elif self.ndim == 3:
             me[:] = (
                 cp.sin(np.pi * self.freq[0] * self.xv[0])
@@ -237,9 +274,13 @@ class heatNd_unforced(heatNd_forced):
 
         if self.ndim == 1:
             rho = (2.0 - 2.0 * cp.cos(np.pi * self.freq[0] * self.dx)) / self.dx**2
-            me[:] = cp.sin(np.pi * self.freq[0] * self.xv[0]) * cp.exp(-t * self.nu * rho)
+            me[:] = cp.sin(np.pi * self.freq[0] * self.xv[0]) * cp.exp(
+                -t * self.nu * rho
+            )
         elif self.ndim == 2:
-            rho = (2.0 - 2.0 * cp.cos(np.pi * self.freq[0] * self.dx)) / self.dx**2 + (
+            rho = (
+                2.0 - 2.0 * cp.cos(np.pi * self.freq[0] * self.dx)
+            ) / self.dx**2 + (
                 2.0 - 2.0 * cp.cos(np.pi * self.freq[1] * self.dx)
             ) / self.dx**2
 

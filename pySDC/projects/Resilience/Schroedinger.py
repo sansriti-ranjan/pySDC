@@ -5,7 +5,9 @@ from pySDC.helpers.stats_helper import get_sorted
 
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
-from pySDC.implementations.problem_classes.NonlinearSchroedinger_MPIFFT import nonlinearschroedinger_imex
+from pySDC.implementations.problem_classes.NonlinearSchroedinger_MPIFFT import (
+    nonlinearschroedinger_imex,
+)
 from pySDC.implementations.transfer_classes.TransferMesh_MPIFFT import fft_to_fft
 from pySDC.projects.Resilience.hook import LogData, hook_collection
 from pySDC.projects.Resilience.strategies import merge_descriptions
@@ -19,12 +21,14 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 class live_plotting_with_error(hooks):  # pragma: no cover
     def __init__(self):
         super().__init__()
-        self.fig, self.axs = plt.subplots(1, 2, sharex=True, sharey=True, figsize=(12, 7))
+        self.fig, self.axs = plt.subplots(
+            1, 2, sharex=True, sharey=True, figsize=(12, 7)
+        )
 
         divider = make_axes_locatable(self.axs[1])
-        self.cax_right = divider.append_axes('right', size='5%', pad=0.05)
+        self.cax_right = divider.append_axes("right", size="5%", pad=0.05)
         divider = make_axes_locatable(self.axs[0])
-        self.cax_left = divider.append_axes('right', size='5%', pad=0.05)
+        self.cax_left = divider.append_axes("right", size="5%", pad=0.05)
 
     def post_step(self, step, level_number):
         lvl = step.levels[level_number]
@@ -38,9 +42,9 @@ class live_plotting_with_error(hooks):  # pragma: no cover
         im = self.axs[1].imshow(np.abs(lvl.prob.u_exact(lvl.time + lvl.dt) - lvl.uend))
         self.fig.colorbar(im, cax=self.cax_right)
 
-        self.fig.suptitle(f't={lvl.time:.2f}')
-        self.axs[0].set_title('solution')
-        self.axs[1].set_title('error')
+        self.fig.suptitle(f"t={lvl.time:.2f}")
+        self.axs[0].set_title("solution")
+        self.axs[1].set_title("error")
         plt.pause(1e-9)
 
 
@@ -49,7 +53,7 @@ class live_plotting(hooks):  # pragma: no cover
         super().__init__()
         self.fig, self.ax = plt.subplots()
         divider = make_axes_locatable(self.ax)
-        self.cax = divider.append_axes('right', size='5%', pad=0.05)
+        self.cax = divider.append_axes("right", size="5%", pad=0.05)
 
     def post_step(self, step, level_number):
         lvl = step.levels[level_number]
@@ -57,7 +61,7 @@ class live_plotting(hooks):  # pragma: no cover
 
         self.ax.cla()
         im = self.ax.imshow(np.abs(lvl.uend), vmin=0.2, vmax=1.8)
-        self.ax.set_title(f't={lvl.time + lvl.dt:.2f}')
+        self.ax.set_title(f"t={lvl.time + lvl.dt:.2f}")
         self.fig.colorbar(im, cax=self.cax)
         plt.pause(1e-9)
 
@@ -97,45 +101,47 @@ def run_Schroedinger(
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-8
-    level_params['dt'] = 1e-01 / 2
-    level_params['nsweeps'] = 1
+    level_params["restol"] = 1e-8
+    level_params["dt"] = 1e-01 / 2
+    level_params["nsweeps"] = 1
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
-    sweeper_params['QI'] = 'IE'
-    sweeper_params['initial_guess'] = 'spread'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
+    sweeper_params["QI"] = "IE"
+    sweeper_params["initial_guess"] = "spread"
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['nvars'] = (128, 128)
-    problem_params['spectral'] = False
-    problem_params['c'] = 1.0
-    problem_params['comm'] = space_comm
+    problem_params["nvars"] = (128, 128)
+    problem_params["spectral"] = False
+    problem_params["c"] = 1.0
+    problem_params["comm"] = space_comm
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30 if rank == 0 else 99
-    controller_params['hook_class'] = hook_collection + (hook_class if type(hook_class) == list else [hook_class])
-    controller_params['mssdc_jac'] = False
+    controller_params["logger_level"] = 30 if rank == 0 else 99
+    controller_params["hook_class"] = hook_collection + (
+        hook_class if type(hook_class) == list else [hook_class]
+    )
+    controller_params["mssdc_jac"] = False
 
     # fill description dictionary for easy step instantiation
     if custom_controller_params is not None:
         controller_params = {**controller_params, **custom_controller_params}
 
     description = dict()
-    description['problem_params'] = problem_params
-    description['problem_class'] = nonlinearschroedinger_imex
-    description['sweeper_class'] = imex_1st_order
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
-    description['step_params'] = step_params
+    description["problem_params"] = problem_params
+    description["problem_class"] = nonlinearschroedinger_imex
+    description["sweeper_class"] = imex_1st_order
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
+    description["step_params"] = step_params
 
     if custom_description is not None:
         description = merge_descriptions(description, custom_description)
@@ -145,13 +151,15 @@ def run_Schroedinger(
 
     # instantiate controller
     controller_args = {
-        'controller_params': controller_params,
-        'description': description,
+        "controller_params": controller_params,
+        "description": description,
     }
     if use_MPI:
-        from pySDC.implementations.controller_classes.controller_MPI import controller_MPI
+        from pySDC.implementations.controller_classes.controller_MPI import (
+            controller_MPI,
+        )
 
-        comm = kwargs.get('comm', MPI.COMM_WORLD)
+        comm = kwargs.get("comm", MPI.COMM_WORLD)
         controller = controller_MPI(**controller_args, comm=comm)
         P = controller.S.levels[0].prob
     else:
@@ -162,13 +170,15 @@ def run_Schroedinger(
 
     # insert faults
     if fault_stuff is not None:
-        from pySDC.projects.Resilience.fault_injection import prepare_controller_for_faults
+        from pySDC.projects.Resilience.fault_injection import (
+            prepare_controller_for_faults,
+        )
 
-        nvars = [me / 2 for me in problem_params['nvars']]
+        nvars = [me / 2 for me in problem_params["nvars"]]
         nvars[0] += 1
 
-        rnd_args = {'iteration': 5, 'problem_pos': nvars, 'min_node': 1}
-        args = {'time': 0.3, 'target': 0}
+        rnd_args = {"iteration": 5, "problem_pos": nvars, "min_node": 1}
+        args = {"time": 0.3, "target": 0}
         prepare_controller_for_faults(controller, fault_stuff, rnd_args, args)
 
     # call main function to get things done...

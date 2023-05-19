@@ -5,7 +5,10 @@ import numpy as np
 
 from pySDC.core.Errors import ParameterError
 from pySDC.core.Problem import ptype
-from pySDC.implementations.datatype_classes.fenics_mesh import fenics_mesh, rhs_fenics_mesh
+from pySDC.implementations.datatype_classes.fenics_mesh import (
+    fenics_mesh,
+    rhs_fenics_mesh,
+)
 
 
 # noinspection PyUnusedLocal
@@ -36,7 +39,12 @@ class fenics_vortex_2d(ptype):
                 # return True if on left or bottom boundary AND NOT on one of the two corners (0, 1) and (1, 0)
                 return bool(
                     (df.near(x[0], 0) or df.near(x[1], 0))
-                    and (not ((df.near(x[0], 0) and df.near(x[1], 1)) or (df.near(x[0], 1) and df.near(x[1], 0))))
+                    and (
+                        not (
+                            (df.near(x[0], 0) and df.near(x[1], 1))
+                            or (df.near(x[0], 1) and df.near(x[1], 0))
+                        )
+                    )
                     and on_boundary
                 )
 
@@ -52,33 +60,49 @@ class fenics_vortex_2d(ptype):
                     y[1] = x[1] - 1.0
 
         # these parameters will be used later, so assert their existence
-        essential_keys = ['c_nvars', 'family', 'order', 'refinements', 'nu', 'rho', 'delta']
+        essential_keys = [
+            "c_nvars",
+            "family",
+            "order",
+            "refinements",
+            "nu",
+            "rho",
+            "delta",
+        ]
         for key in essential_keys:
             if key not in problem_params:
-                msg = 'need %s to instantiate problem, only got %s' % (key, str(problem_params.keys()))
+                msg = "need %s to instantiate problem, only got %s" % (
+                    key,
+                    str(problem_params.keys()),
+                )
                 raise ParameterError(msg)
 
         # set logger level for FFC and dolfin
         df.set_log_level(df.WARNING)
-        logging.getLogger('FFC').setLevel(logging.WARNING)
+        logging.getLogger("FFC").setLevel(logging.WARNING)
 
         # set solver and form parameters
         df.parameters["form_compiler"]["optimize"] = True
         df.parameters["form_compiler"]["cpp_optimize"] = True
 
         # set mesh and refinement (for multilevel)
-        mesh = df.UnitSquareMesh(problem_params['c_nvars'][0], problem_params['c_nvars'][1])
-        for _ in range(problem_params['refinements']):
+        mesh = df.UnitSquareMesh(
+            problem_params["c_nvars"][0], problem_params["c_nvars"][1]
+        )
+        for _ in range(problem_params["refinements"]):
             mesh = df.refine(mesh)
 
         self.mesh = df.Mesh(mesh)
 
         # define function space for future reference
         self.V = df.FunctionSpace(
-            mesh, problem_params['family'], problem_params['order'], constrained_domain=PeriodicBoundary()
+            mesh,
+            problem_params["family"],
+            problem_params["order"],
+            constrained_domain=PeriodicBoundary(),
         )
         tmp = df.Function(self.V)
-        print('DoFs on this level:', len(tmp.vector().vector()[:]))
+        print("DoFs on this level:", len(tmp.vector().vector()[:]))
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
         super(fenics_vortex_2d, self).__init__(self.V, dtype_u, dtype_f, problem_params)
@@ -136,7 +160,9 @@ class fenics_vortex_2d(ptype):
 
         fexpl = self.dtype_u(self.V)
         fexpl.values = df.project(
-            df.Dx(psi.values, 1) * df.Dx(u.values, 0) - df.Dx(psi.values, 0) * df.Dx(u.values, 1), self.V
+            df.Dx(psi.values, 1) * df.Dx(u.values, 0)
+            - df.Dx(psi.values, 0) * df.Dx(u.values, 1),
+            self.V,
         )
 
         return fexpl
@@ -154,7 +180,9 @@ class fenics_vortex_2d(ptype):
         """
 
         tmp = self.dtype_u(self.V)
-        tmp.values = df.Function(self.V, -1.0 * self.params.nu * self.K * u.values.vector())
+        tmp.values = df.Function(
+            self.V, -1.0 * self.params.nu * self.K * u.values.vector()
+        )
         fimpl = self.__invert_mass_matrix(tmp)
 
         return fimpl
@@ -222,10 +250,10 @@ class fenics_vortex_2d(ptype):
         Returns:
             dtype_u: exact solution
         """
-        assert t == 0, 'ERROR: u_exact only valid for t=0'
+        assert t == 0, "ERROR: u_exact only valid for t=0"
 
         w = df.Expression(
-            'r*(1-pow(tanh(r*((0.75-4) - x[1])),2)) + r*(1-pow(tanh(r*(x[1] - (0.25-4))),2)) - \
+            "r*(1-pow(tanh(r*((0.75-4) - x[1])),2)) + r*(1-pow(tanh(r*(x[1] - (0.25-4))),2)) - \
                            r*(1-pow(tanh(r*((0.75-3) - x[1])),2)) + r*(1-pow(tanh(r*(x[1] - (0.25-3))),2)) - \
                            r*(1-pow(tanh(r*((0.75-2) - x[1])),2)) + r*(1-pow(tanh(r*(x[1] - (0.25-2))),2)) - \
                            r*(1-pow(tanh(r*((0.75-1) - x[1])),2)) + r*(1-pow(tanh(r*(x[1] - (0.25-1))),2)) - \
@@ -234,7 +262,7 @@ class fenics_vortex_2d(ptype):
                            r*(1-pow(tanh(r*((0.75+2) - x[1])),2)) + r*(1-pow(tanh(r*(x[1] - (0.25+2))),2)) - \
                            r*(1-pow(tanh(r*((0.75+3) - x[1])),2)) + r*(1-pow(tanh(r*(x[1] - (0.25+3))),2)) - \
                            r*(1-pow(tanh(r*((0.75+4) - x[1])),2)) + r*(1-pow(tanh(r*(x[1] - (0.25+4))),2)) - \
-                           d*2*a*cos(2*a*(x[0]+0.25))',
+                           d*2*a*cos(2*a*(x[0]+0.25))",
             d=self.params.delta,
             r=self.params.rho,
             a=np.pi,

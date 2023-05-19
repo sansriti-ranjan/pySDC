@@ -22,7 +22,7 @@ class libpfasst_output(hooks):
 
         if step.status.slot == 0:
             print()
-            print('--- BEGIN RUN OUTPUT')
+            print("--- BEGIN RUN OUTPUT")
 
     def post_sweep(self, step, level_number):
         """
@@ -41,10 +41,15 @@ class libpfasst_output(hooks):
         uex = L.prob.u_exact(L.time + L.dt)
         err = abs(uex - L.uend)
 
-        out = 'error: step: ' + str(step.status.slot + self.step_counter).zfill(3)
-        out += ' iter:  ' + str(step.status.iter).zfill(3) + ' level: ' + str(level_number + 1).zfill(2)
-        out += ' error: % 10.7e' % err
-        out += ' res: %12.10e' % L.status.residual
+        out = "error: step: " + str(step.status.slot + self.step_counter).zfill(3)
+        out += (
+            " iter:  "
+            + str(step.status.iter).zfill(3)
+            + " level: "
+            + str(level_number + 1).zfill(2)
+        )
+        out += " error: % 10.7e" % err
+        out += " res: %12.10e" % L.status.residual
 
         print(out)
 
@@ -66,10 +71,15 @@ class libpfasst_output(hooks):
         uex = L.prob.u_exact(L.time + L.dt)
         err = abs(uex - L.uend)
 
-        out = 'error: step: ' + str(step.status.slot + self.step_counter).zfill(3)
-        out += ' iter:  ' + str(step.status.iter).zfill(3) + ' level: ' + str(level_number + 1).zfill(2)
-        out += ' error: % 10.7e' % err
-        out += ' res: %12.10e' % L.status.residual
+        out = "error: step: " + str(step.status.slot + self.step_counter).zfill(3)
+        out += (
+            " iter:  "
+            + str(step.status.iter).zfill(3)
+            + " level: "
+            + str(level_number + 1).zfill(2)
+        )
+        out += " error: % 10.7e" % err
+        out += " res: %12.10e" % L.status.residual
 
         print(out)
 
@@ -96,5 +106,5 @@ class libpfasst_output(hooks):
         super(libpfasst_output, self).post_run(step, level_number)
 
         if step.status.slot == 0:
-            print('--- END RUN OUTPUT')
+            print("--- END RUN OUTPUT")
             print()

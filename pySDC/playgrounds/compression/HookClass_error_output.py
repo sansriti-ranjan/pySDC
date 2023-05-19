@@ -45,15 +45,17 @@ class error_output(hooks):
         L = step.levels[level_number]
 
         description = step.params.description
-        description['level_params']['restol'] = 1e-14
-        description['problem_params']['solver_type'] = 'direct'
-        description['convergence_controllers'] = {}
+        description["level_params"]["restol"] = 1e-14
+        description["problem_params"]["solver_type"] = "direct"
+        description["convergence_controllers"] = {}
 
         controller_params = step.params.controller_params
-        del controller_params['hook_class']
-        controller_params['logger_level'] = 90
+        del controller_params["hook_class"]
+        controller_params["logger_level"] = 90
 
-        controller = controller_nonMPI(num_procs=1, description=description, controller_params=controller_params)
+        controller = controller_nonMPI(
+            num_procs=1, description=description, controller_params=controller_params
+        )
         self.uex, _ = controller.run(u0=L.u[0], t0=L.time, Tend=L.time + L.dt)
 
     def post_step(self, step, level_number):
@@ -82,7 +84,7 @@ class error_output(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='PDE_error_after_step',
+            type="PDE_error_after_step",
             value=pde_err,
         )
         self.add_to_stats(
@@ -91,6 +93,6 @@ class error_output(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='coll_error_after_step',
+            type="coll_error_after_step",
             value=coll_err,
         )

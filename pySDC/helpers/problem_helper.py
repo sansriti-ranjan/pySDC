@@ -16,20 +16,20 @@ def get_steps(derivative, order, stencil_type):
         int: The number of elements in the stencil
         numpy.ndarray: The offsets for the stencil
     """
-    if stencil_type == 'center':
+    if stencil_type == "center":
         n = order + derivative - (derivative + 1) % 2 // 1
         steps = np.arange(n) - n // 2
-    elif stencil_type == 'forward':
+    elif stencil_type == "forward":
         n = order + derivative
         steps = np.arange(n)
-    elif stencil_type == 'backward':
+    elif stencil_type == "backward":
         n = order + derivative
         steps = -np.arange(n)
-    elif stencil_type == 'upwind':
+    elif stencil_type == "upwind":
         n = order + derivative
 
         if n <= 3:
-            n, steps = get_steps(derivative, order, 'backward')
+            n, steps = get_steps(derivative, order, "backward")
         else:
             steps = np.append(-np.arange(n - 1)[::-1], [1])
     else:
@@ -77,7 +77,15 @@ def get_finite_difference_stencil(derivative, order, stencil_type=None, steps=No
 
 
 def get_finite_difference_matrix(
-    derivative, order, stencil_type=None, steps=None, dx=None, size=None, dim=None, bc=None, cupy=False
+    derivative,
+    order,
+    stencil_type=None,
+    steps=None,
+    dx=None,
+    size=None,
+    dim=None,
+    bc=None,
+    cupy=False,
 ):
     """
     Build FD matrix from stencils, with boundary conditions
@@ -87,24 +95,26 @@ def get_finite_difference_matrix(
     else:
         import scipy.sparse as sp
 
-    if order > 2 and bc != 'periodic':
-        raise NotImplementedError('Higher order allowed only for periodic boundary conditions')
+    if order > 2 and bc != "periodic":
+        raise NotImplementedError(
+            "Higher order allowed only for periodic boundary conditions"
+        )
 
     # get stencil
     coeff, steps = get_finite_difference_stencil(
         derivative=derivative, order=order, stencil_type=stencil_type, steps=steps
     )
 
-    if bc == 'dirichlet-zero':
-        A_1d = sp.diags(coeff, steps, shape=(size, size), format='csc')
-    elif bc == 'neumann-zero':
-        A_1d = sp.diags(coeff, steps, shape=(size, size), format='csc')
+    if bc == "dirichlet-zero":
+        A_1d = sp.diags(coeff, steps, shape=(size, size), format="csc")
+    elif bc == "neumann-zero":
+        A_1d = sp.diags(coeff, steps, shape=(size, size), format="csc")
         A_1d[0, 0] = -(dx ** (derivative - 1))
         A_1d[0, 1] = +(dx ** (derivative - 1))
         A_1d[-1, -1] = -(dx ** (derivative - 1))
         A_1d[-1, -2] = +(dx ** (derivative - 1))
-    elif bc == 'periodic':
-        A_1d = 0 * sp.eye(size, format='csc')
+    elif bc == "periodic":
+        A_1d = 0 * sp.eye(size, format="csc")
         for i in steps:
             A_1d += coeff[i] * sp.eye(size, k=steps[i])
             if steps[i] > 0:
@@ -112,7 +122,7 @@ def get_finite_difference_matrix(
             if steps[i] < 0:
                 A_1d += coeff[i] * sp.eye(size, k=size + steps[i])
     else:
-        raise NotImplementedError(f'Boundary conditions {bc} not implemented.')
+        raise NotImplementedError(f"Boundary conditions {bc} not implemented.")
 
     if dim == 1:
         A = A_1d
@@ -125,7 +135,7 @@ def get_finite_difference_matrix(
             + sp.kron(sp.kron(sp.eye(size), A_1d), sp.eye(size))
         )
     else:
-        raise NotImplementedError(f'Dimension {dim} not implemented.')
+        raise NotImplementedError(f"Dimension {dim} not implemented.")
 
     A /= dx**derivative
 

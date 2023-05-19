@@ -51,13 +51,15 @@ class RegisterParams(metaclass=_MetaRegisterParams):
             Wether or not store the parameters as read-only attributes
         """
         if len(names) > 1 and localVars is None:
-            raise ValueError("a dictionary must be provided in localVars with parameters values")
+            raise ValueError(
+                "a dictionary must be provided in localVars with parameters values"
+            )
         # Set parameters as attributes
         for name in names:
             try:
                 super().__setattr__(name, localVars[name])
             except KeyError:  # pragma: no cover
-                raise ValueError(f'value for {name} not given in localVars')
+                raise ValueError(f"value for {name} not given in localVars")
         # Register as class parameter
         if readOnly:
             self._parNamesReadOnly = self._parNamesReadOnly.union(names)
@@ -67,7 +69,10 @@ class RegisterParams(metaclass=_MetaRegisterParams):
     @property
     def params(self):
         """Dictionary containing names and values of registered parameters"""
-        return {name: getattr(self, name) for name in self._parNamesReadOnly.union(self._parNames)}
+        return {
+            name: getattr(self, name)
+            for name in self._parNamesReadOnly.union(self._parNames)
+        }
 
     def __setattr__(self, name, value):
         if name in self._parNamesReadOnly:

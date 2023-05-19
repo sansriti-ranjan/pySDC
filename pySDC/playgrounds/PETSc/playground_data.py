@@ -25,8 +25,10 @@ def main():
     for i in range(xs, xe):
         for j in range(ys, ye):
             xa[i, j, 0] = np.sin(2 * np.pi * (i) * dx) * np.sin(2 * np.pi * (j) * dy)
-            xa[i, j, 1] = 0.1 * np.sin(2 * np.pi * (i) * dx) * np.sin(2 * np.pi * (j) * dy)
-    print('x=', rank, x.getArray())
+            xa[i, j, 1] = (
+                0.1 * np.sin(2 * np.pi * (i) * dx) * np.sin(2 * np.pi * (j) * dy)
+            )
+    print("x=", rank, x.getArray())
     # print('x:', x.getSizes(), da.getRanges())
     # print()
 
@@ -35,8 +37,18 @@ def main():
     (xs, xe), (ys, ye) = da.getRanges()
     for i in range(xs, xe):
         for j in range(ys, ye):
-            ya[i, j, 0] = -2 * (2.0 * np.pi) ** 2 * np.sin(2 * np.pi * (i) * dx) * np.sin(2 * np.pi * (j) * dy)
-            ya[i, j, 1] = -0.2 * (2.0 * np.pi) ** 2 * np.sin(2 * np.pi * (i) * dx) * np.sin(2 * np.pi * (j) * dy)
+            ya[i, j, 0] = (
+                -2
+                * (2.0 * np.pi) ** 2
+                * np.sin(2 * np.pi * (i) * dx)
+                * np.sin(2 * np.pi * (j) * dy)
+            )
+            ya[i, j, 1] = (
+                -0.2
+                * (2.0 * np.pi) ** 2
+                * np.sin(2 * np.pi * (i) * dx)
+                * np.sin(2 * np.pi * (j) * dy)
+            )
     #
     # z = da.createGlobalVec()
     # za = da.getVecArray(z)
@@ -52,7 +64,7 @@ def main():
     # print(y.getArray()[0], z.getArray()[0])
 
     A = da.createMatrix()
-    A.setType('aij')  # sparse
+    A.setType("aij")  # sparse
     A.setFromOptions()
     A.setPreallocationNNZ((5, 5))
     A.setUp()
@@ -95,7 +107,7 @@ def main():
     exit()
 
     Id = da.createMatrix()
-    Id.setType('aij')  # sparse
+    Id.setType("aij")  # sparse
     Id.setFromOptions()
     Id.setPreallocationNNZ((5, 5))
     Id.setUp()
@@ -122,14 +134,14 @@ def main():
 
     res = da.createGlobalVec()
     A.mult(x, res)
-    print('1st turn', rank, res.getArray())
+    print("1st turn", rank, res.getArray())
     print((res - y).norm(PETSc.NormType.NORM_INFINITY))
 
     ksp = PETSc.KSP().create()
     ksp.setOperators(A)
-    ksp.setType('cg')
+    ksp.setType("cg")
     pc = ksp.getPC()
-    pc.setType('mg')
+    pc.setType("mg")
     ksp.setFromOptions()
 
     x1 = da.createGlobalVec()

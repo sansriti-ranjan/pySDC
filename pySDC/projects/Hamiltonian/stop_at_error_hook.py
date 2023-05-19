@@ -22,7 +22,7 @@ class stop_at_error_hook(hooks):
         # print(abs(uex - L.uend))
 
         if abs(uex - L.uend) < 1e-02:
-            print('Stop iterating at %s' % step.status.iter)
+            print("Stop iterating at %s" % step.status.iter)
             step.status.force_done = True
 
         return None

@@ -77,7 +77,10 @@ class generic_implicit_efficient(generic_implicit):
 
             # implicit solve with prefactor stemming from the diagonal of Qd
             L.u[m + 1] = P.solve_system(
-                rhs, L.dt * self.QI[m + 1, m + 1], L.u[m + 1], L.time + L.dt * self.coll.nodes[m]
+                rhs,
+                L.dt * self.QI[m + 1, m + 1],
+                L.u[m + 1],
+                L.time + L.dt * self.coll.nodes[m],
             )
             # update function values
             L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
@@ -117,10 +120,14 @@ class imex_1st_order_efficient(imex_1st_order):
 
         # integrate RHS over all collocation nodes
         for m in range(1, self.coll.num_nodes + 1):
-            me.append(L.dt * ((Q - QI)[m, 1] * L.f[1].impl + (Q - QE)[m, 1] * L.f[1].expl))
+            me.append(
+                L.dt * ((Q - QI)[m, 1] * L.f[1].impl + (Q - QE)[m, 1] * L.f[1].expl)
+            )
             # new instance of dtype_u, initialize values with 0
             for j in range(2, self.coll.num_nodes + 1):
-                me[m - 1] += L.dt * ((Q - QI)[m, j] * L.f[j].impl + (Q - QE)[m, j] * L.f[j].expl)
+                me[m - 1] += L.dt * (
+                    (Q - QI)[m, j] * L.f[j].impl + (Q - QE)[m, j] * L.f[j].expl
+                )
 
         return me
 
@@ -159,11 +166,16 @@ class imex_1st_order_efficient(imex_1st_order):
             # build rhs, consisting of the known values from above and new values from previous nodes (at k+1)
             rhs = P.dtype_u(integral[m])
             for j in range(1, m + 1):
-                rhs += L.dt * (self.QI[m + 1, j] * L.f[j].impl + self.QE[m + 1, j] * L.f[j].expl)
+                rhs += L.dt * (
+                    self.QI[m + 1, j] * L.f[j].impl + self.QE[m + 1, j] * L.f[j].expl
+                )
 
             # implicit solve with prefactor stemming from QI
             L.u[m + 1] = P.solve_system(
-                rhs, L.dt * self.QI[m + 1, m + 1], L.u[m + 1], L.time + L.dt * self.coll.nodes[m]
+                rhs,
+                L.dt * self.QI[m + 1, m + 1],
+                L.u[m + 1],
+                L.time + L.dt * self.coll.nodes[m],
             )
 
             # update function values

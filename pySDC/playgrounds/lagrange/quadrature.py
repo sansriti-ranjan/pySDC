@@ -29,7 +29,9 @@ class OriginCollocation(Collocation):
             numpy.ndarray: weights of the collocation formula given by the nodes
         """
         if self.nodes is None:
-            raise CollocationError("Need nodes before computing weights, got %s" % self.nodes)
+            raise CollocationError(
+                "Need nodes before computing weights, got %s" % self.nodes
+            )
 
         circ_one = np.zeros(self.num_nodes)
         circ_one[0] = 1.0
@@ -65,9 +67,9 @@ def getLastPlotCol():
     return plt.gca().get_lines()[-1].get_color()
 
 
-nodeTypes = ['EQUID', 'LEGENDRE']
-quadTypes = ['LOBATTO', 'RADAU-LEFT', 'RADAU-RIGHT', 'GAUSS']
-symbols = ['s', '>', '<', 'o']
+nodeTypes = ["EQUID", "LEGENDRE"]
+quadTypes = ["LOBATTO", "RADAU-LEFT", "RADAU-RIGHT", "GAUSS"]
+symbols = ["s", ">", "<", "o"]
 
 nMax = 12
 nNodes = np.arange(3, nMax + 1)
@@ -79,12 +81,12 @@ nPolyTest = 20
 QMatrixOrder = lambda n: n - 1 - (n % 2)
 
 weightsOrder = {
-    'EQUID': lambda n: n - 1 - (n % 2),
-    'LEGENDRE': {
-        'LOBATTO': lambda n: 2 * n - 3,
-        'RADAU-LEFT': lambda n: 2 * n - 2,
-        'RADAU-RIGHT': lambda n: 2 * n - 2,
-        'GAUSS': lambda n: 2 * n - 1,
+    "EQUID": lambda n: n - 1 - (n % 2),
+    "LEGENDRE": {
+        "LOBATTO": lambda n: 2 * n - 3,
+        "RADAU-LEFT": lambda n: 2 * n - 2,
+        "RADAU-RIGHT": lambda n: 2 * n - 2,
+        "GAUSS": lambda n: 2 * n - 1,
     },
 }
 
@@ -119,7 +121,6 @@ def testQMatrix(QMatrix, nodes, tBeg):
 
 
 def computeQuadratureErrors(nodeType, quadType, numQuad):
-
     errors = np.zeros((4, nMax - 2))
     errWeights = errors[:2]
     errQuad = errors[2:]
@@ -129,20 +130,18 @@ def computeQuadratureErrors(nodeType, quadType, numQuad):
     np.random.seed(1990)
 
     for i in range(nInterTest):
-
         tLeft = np.random.rand() * 0.2
         tRight = 0.8 + np.random.rand() * 0.2
 
         for l, n in enumerate(nNodes):
-
             tBeg = time()
-            if numQuad == 'ORIG':
+            if numQuad == "ORIG":
                 # Use origin collocation class
                 coll = OriginCollocation(n, tLeft, tRight, nodeType, quadType)
                 nodes = coll.nodes
                 weights = coll.weights
                 QMatrix = coll.Qmat[1:, 1:]
-            elif numQuad == 'NEW':
+            elif numQuad == "NEW":
                 # Use collocation class
                 coll = Collocation(n, tLeft, tRight, nodeType, quadType)
                 nodes = coll.nodes
@@ -161,9 +160,13 @@ def computeQuadratureErrors(nodeType, quadType, numQuad):
                 # Set-up Lagrange interpolation polynomial
                 approx = LagrangeApproximation(nodes)
                 # Compute quadrature weights for the whole interval
-                weights = approx.getIntegrationMatrix([[tLeft, tRight]], numQuad=numQuad)
+                weights = approx.getIntegrationMatrix(
+                    [[tLeft, tRight]], numQuad=numQuad
+                )
                 # Compute quadrature weights for the Q matrix
-                QMatrix = approx.getIntegrationMatrix([[tLeft, tau] for tau in approx.points], numQuad=numQuad)
+                QMatrix = approx.getIntegrationMatrix(
+                    [[tLeft, tau] for tau in approx.points], numQuad=numQuad
+                )
 
             tComp[l] += time() - tBeg
 
@@ -197,51 +200,50 @@ def plotQuadErrors(nodesType, numQuad, figTitle=False):
         plt.grid(True)
         plt.legend()
         if err:
-            if numQuad == 'ORIG':
+            if numQuad == "ORIG":
                 plt.ylim(1e-17, 1e-9)
             else:
                 plt.ylim(1e-17, 1e-11)
-        plt.xlabel('Polynomial degree')
+        plt.xlabel("Polynomial degree")
 
     plt.figure()
     maxWeigts = 0
     maxQMatrix = 0
     for qType, sym in zip(quadTypes, symbols):
-
         errs, tComp = computeQuadratureErrors(nodesType, qType, numQuad)
 
         plt.subplot(1, 3, 1)
-        plt.semilogy(nNodes - 1, errs[0], sym + '-', label=qType)
-        plt.semilogy(nNodes - 1, errs[1], sym + ':', c=getLastPlotCol())
+        plt.semilogy(nNodes - 1, errs[0], sym + "-", label=qType)
+        plt.semilogy(nNodes - 1, errs[1], sym + ":", c=getLastPlotCol())
         maxWeigts = max(maxWeigts, errs[1].max())
-        setFig('Weights error')
+        setFig("Weights error")
 
         plt.subplot(1, 3, 2)
-        plt.semilogy(nNodes - 1, errs[2], sym + '-', label=qType)
-        plt.semilogy(nNodes - 1, errs[3], sym + ':', c=getLastPlotCol())
+        plt.semilogy(nNodes - 1, errs[2], sym + "-", label=qType)
+        plt.semilogy(nNodes - 1, errs[3], sym + ":", c=getLastPlotCol())
         maxQMatrix = max(maxQMatrix, errs[3].max())
-        setFig('QMatrix error')
+        setFig("QMatrix error")
 
         plt.subplot(1, 3, 3)
-        plt.semilogy(nNodes - 1, tComp, sym + '-', label=qType)
-        setFig('Computation time', err=False)
+        plt.semilogy(nNodes - 1, tComp, sym + "-", label=qType)
+        setFig("Computation time", err=False)
 
     textArgs = dict(bbox=dict(boxstyle="round", ec=(0.5, 0.5, 0.5), fc=(0.8, 0.8, 0.8)))
     plt.subplot(1, 3, 1)
-    plt.hlines(maxWeigts, 2, nMax, linestyles='--', colors='gray')
-    plt.text(7, 1.5 * maxWeigts, f'{maxWeigts:1.2e}', **textArgs)
+    plt.hlines(maxWeigts, 2, nMax, linestyles="--", colors="gray")
+    plt.text(7, 1.5 * maxWeigts, f"{maxWeigts:1.2e}", **textArgs)
 
     plt.subplot(1, 3, 2)
-    plt.hlines(maxQMatrix, 2, nMax, linestyles='--', colors='gray')
-    plt.text(7, 1.5 * maxQMatrix, f'{maxQMatrix:1.2e}', **textArgs)
+    plt.hlines(maxQMatrix, 2, nMax, linestyles="--", colors="gray")
+    plt.text(7, 1.5 * maxQMatrix, f"{maxQMatrix:1.2e}", **textArgs)
 
     if figTitle:
-        plt.suptitle(f'node distribution : {nodesType}; ' f'numQuad : {numQuad}')
+        plt.suptitle(f"node distribution : {nodesType}; " f"numQuad : {numQuad}")
     plt.gcf().set_size_inches(17, 5)
     plt.tight_layout()
 
 
-if __name__ == '__main__':
-    nodesType = 'EQUID'
-    numQuad = 'ORIG'
+if __name__ == "__main__":
+    nodesType = "EQUID"
+    numQuad = "ORIG"
     plotQuadErrors(nodesType, numQuad)

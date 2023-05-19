@@ -14,7 +14,9 @@ class gmres_tolerance(hooks):
 
         L = step.levels[level_number]
         L.sweep.compute_residual()
-        L.prob.gmres_tol_limit = max(L.status.residual * L.prob.gmres_tol_factor, L.prob.gmres_tol_limit)
+        L.prob.gmres_tol_limit = max(
+            L.status.residual * L.prob.gmres_tol_factor, L.prob.gmres_tol_limit
+        )
 
     def post_sweep(self, step, level_number):
         """
@@ -29,4 +31,6 @@ class gmres_tolerance(hooks):
 
         L = step.levels[level_number]
 
-        L.prob.gmres_tol_limit = max(L.status.residual * L.prob.gmres_tol_factor, L.prob.gmres_tol_limit)
+        L.prob.gmres_tol_limit = max(
+            L.status.residual * L.prob.gmres_tol_factor, L.prob.gmres_tol_limit
+        )

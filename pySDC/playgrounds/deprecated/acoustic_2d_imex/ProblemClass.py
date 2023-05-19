@@ -29,11 +29,11 @@ class acoustic_2d_imex(ptype):
         """
 
         # these parameters will be used later, so assert their existence
-        assert 'nvars' in cparams
-        assert 'c_s' in cparams
-        assert 'u_adv' in cparams
-        assert 'x_bounds' in cparams
-        assert 'z_bounds' in cparams
+        assert "nvars" in cparams
+        assert "c_s" in cparams
+        assert "u_adv" in cparams
+        assert "x_bounds" in cparams
+        assert "z_bounds" in cparams
 
         # add parameters as attributes for further reference
         for k, v in cparams.items():
@@ -44,10 +44,20 @@ class acoustic_2d_imex(ptype):
 
         self.N = [self.nvars[1], self.nvars[2]]
 
-        self.bc_hor = [['periodic', 'periodic'], ['periodic', 'periodic'], ['periodic', 'periodic']]
-        self.bc_ver = [['neumann', 'neumann'], ['dirichlet', 'dirichlet'], ['neumann', 'neumann']]
+        self.bc_hor = [
+            ["periodic", "periodic"],
+            ["periodic", "periodic"],
+            ["periodic", "periodic"],
+        ]
+        self.bc_ver = [
+            ["neumann", "neumann"],
+            ["dirichlet", "dirichlet"],
+            ["neumann", "neumann"],
+        ]
 
-        self.xx, self.zz, self.h = get2DMesh(self.N, self.x_bounds, self.z_bounds, self.bc_hor[0], self.bc_ver[0])
+        self.xx, self.zz, self.h = get2DMesh(
+            self.N, self.x_bounds, self.z_bounds, self.bc_hor[0], self.bc_ver[0]
+        )
 
         self.Id, self.M = getWave2DMatrix(self.N, self.h, self.bc_hor, self.bc_ver)
         self.D_upwind = getWave2DUpwindMatrix(self.N, self.h[0])
@@ -69,7 +79,13 @@ class acoustic_2d_imex(ptype):
         b = rhs.values.flatten()
         # NOTE: A = -M, therefore solve Id + factor*M here
         sol, info = LA.gmres(
-            self.Id + factor * self.c_s * self.M, b, x0=u0.values.flatten(), tol=1e-13, restart=10, maxiter=20, atol=0
+            self.Id + factor * self.c_s * self.M,
+            b,
+            x0=u0.values.flatten(),
+            tol=1e-13,
+            restart=10,
+            maxiter=20,
+            atol=0,
         )
         me = mesh(self.nvars)
         me.values = unflatten(sol, 3, self.N[0], self.N[1])
@@ -150,7 +166,7 @@ class acoustic_2d_imex(ptype):
         me.values[0, :, :] = 0.0 * self.xx
         me.values[1, :, :] = 0.0 * self.xx
         # me.values[2,:,:] = 0.5*np.exp(-0.5*( self.xx-self.c_s*t - self.u_adv*t )**2/0.2**2.0) + 0.5*np.exp(-0.5*( self.xx + self.c_s*t - self.u_adv*t)**2/0.2**2.0)
-        me.values[2, :, :] = np.exp(-0.5 * (self.xx - 0.0) ** 2.0 / 0.15**2.0) * np.exp(
-            -0.5 * (self.zz - 0.5) ** 2 / 0.15**2
-        )
+        me.values[2, :, :] = np.exp(
+            -0.5 * (self.xx - 0.0) ** 2.0 / 0.15**2.0
+        ) * np.exp(-0.5 * (self.zz - 0.5) ** 2 / 0.15**2)
         return me

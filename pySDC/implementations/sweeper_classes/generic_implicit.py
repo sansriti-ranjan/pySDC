@@ -17,8 +17,8 @@ class generic_implicit(sweeper):
             params: parameters for the sweeper
         """
 
-        if 'QI' not in params:
-            params['QI'] = 'IE'
+        if "QI" not in params:
+            params["QI"] = "IE"
 
         # call parent's initialization routine
         super(generic_implicit, self).__init__(params)
@@ -92,7 +92,10 @@ class generic_implicit(sweeper):
 
             # implicit solve with prefactor stemming from the diagonal of Qd
             L.u[m + 1] = P.solve_system(
-                rhs, L.dt * self.QI[m + 1, m + 1], L.u[m + 1], L.time + L.dt * self.coll.nodes[m]
+                rhs,
+                L.dt * self.QI[m + 1, m + 1],
+                L.u[m + 1],
+                L.time + L.dt * self.coll.nodes[m],
             )
             # update function values
             L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])

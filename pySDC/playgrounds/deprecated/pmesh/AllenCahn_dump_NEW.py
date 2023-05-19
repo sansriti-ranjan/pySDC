@@ -41,7 +41,7 @@ class dump(hooks):
             self.size = 1
 
         # go back to real space
-        tmp_u = L.prob.pm.create(type='complex', value=L.u[0].values)
+        tmp_u = L.prob.pm.create(type="complex", value=L.u[0].values)
         tmp_u = np.ascontiguousarray(tmp_u.c2r().value)
 
         # compute local offset for I/O
@@ -61,16 +61,16 @@ class dump(hooks):
         # write json description
         if self.rank == 0 and step.status.slot == 0:
             json_obj = dict()
-            json_obj['type'] = 'dataset'
-            json_obj['datatype'] = str(tmp_u.dtype)
-            json_obj['endian'] = str(tmp_u.dtype.byteorder)
-            json_obj['time'] = L.time
-            json_obj['space_comm_size'] = self.size
-            json_obj['time_comm_size'] = step.status.time_size
-            json_obj['shape'] = L.prob.params.nvars
-            json_obj['elementsize'] = tmp_u.dtype.itemsize
+            json_obj["type"] = "dataset"
+            json_obj["datatype"] = str(tmp_u.dtype)
+            json_obj["endian"] = str(tmp_u.dtype.byteorder)
+            json_obj["time"] = L.time
+            json_obj["space_comm_size"] = self.size
+            json_obj["time_comm_size"] = step.status.time_size
+            json_obj["shape"] = L.prob.params.nvars
+            json_obj["elementsize"] = tmp_u.dtype.itemsize
 
-            with open(fname + '.json', 'w') as fp:
+            with open(fname + ".json", "w") as fp:
                 json.dump(json_obj, fp)
 
         # set step count
@@ -90,7 +90,7 @@ class dump(hooks):
         L = step.levels[0]
 
         # go back to real space
-        tmp_u = L.prob.pm.create(type='complex', value=L.uend.values)
+        tmp_u = L.prob.pm.create(type="complex", value=L.uend.values)
         tmp_u = np.ascontiguousarray(tmp_u.c2r().value)
 
         # compute local offset for I/O
@@ -110,16 +110,16 @@ class dump(hooks):
         # write json description
         if self.rank == 0:
             json_obj = dict()
-            json_obj['type'] = 'dataset'
-            json_obj['datatype'] = str(tmp_u.dtype)
-            json_obj['endian'] = str(tmp_u.dtype.byteorder)
-            json_obj['time'] = L.time + L.dt
-            json_obj['space_comm_size'] = self.size
-            json_obj['time_comm_size'] = step.status.time_size
-            json_obj['shape'] = L.prob.params.nvars
-            json_obj['elementsize'] = tmp_u.dtype.itemsize
+            json_obj["type"] = "dataset"
+            json_obj["datatype"] = str(tmp_u.dtype)
+            json_obj["endian"] = str(tmp_u.dtype.byteorder)
+            json_obj["time"] = L.time + L.dt
+            json_obj["space_comm_size"] = self.size
+            json_obj["time_comm_size"] = step.status.time_size
+            json_obj["shape"] = L.prob.params.nvars
+            json_obj["elementsize"] = tmp_u.dtype.itemsize
 
-            with open(fname + '.json', 'w') as fp:
+            with open(fname + ".json", "w") as fp:
                 json.dump(json_obj, fp)
 
         # update step count

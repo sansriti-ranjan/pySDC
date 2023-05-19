@@ -22,9 +22,20 @@ class buck_converter(ptype):
 
         # invoke super init, passing number of dofs
         nvars = 3
-        super().__init__(init=(nvars, None, np.dtype('float64')))
+        super().__init__(init=(nvars, None, np.dtype("float64")))
         self._makeAttributeAndRegister(
-            'nvars', 'duty', 'fsw', 'Vs', 'Rs', 'C1', 'Rp', 'L1', 'C2', 'Rl', localVars=locals(), readOnly=True
+            "nvars",
+            "duty",
+            "fsw",
+            "Vs",
+            "Rs",
+            "C1",
+            "Rp",
+            "L1",
+            "C2",
+            "Rl",
+            localVars=locals(),
+            readOnly=True,
         )
 
         self.A = np.zeros((nvars, nvars))
@@ -99,7 +110,7 @@ class buck_converter(ptype):
         Returns:
             dtype_u: exact solution
         """
-        assert t == 0, 'ERROR: u_exact only valid for t=0'
+        assert t == 0, "ERROR: u_exact only valid for t=0"
 
         me = self.dtype_u(self.init)
 

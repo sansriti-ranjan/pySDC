@@ -18,9 +18,9 @@ from pySDC.playgrounds.Dedalus.dedalus_field import dedalus_field
 #         return abs(self).evaluate()
 
 
-de.logging_setup.rootlogger.setLevel('INFO')
+de.logging_setup.rootlogger.setLevel("INFO")
 
-xbasis = de.Fourier('x', 16, interval=(0, 1), dealias=1)
+xbasis = de.Fourier("x", 16, interval=(0, 1), dealias=1)
 
 
 domain = de.Domain([xbasis], grid_dtype=np.float64, comm=None)
@@ -35,8 +35,8 @@ g = de.operators.FieldCopyField(f).evaluate()
 
 print((f + g).evaluate())
 
-f['g'][:] = 1.0
-print(f['g'], g['g'])
+f["g"][:] = 1.0
+print(f["g"], g["g"])
 print(f, g)
 
 
@@ -48,18 +48,18 @@ f2 = domain_2.new_field()
 try:
     print(f + f2)
 except ValueError:
-    print('Non-unique domains')
+    print("Non-unique domains")
 
 x = domain.grid(0, scales=1)
 
-f['g'] = np.sin(2 * np.pi * x)
-print(fxx.evaluate()['g'])
-f['g'] = np.cos(2 * np.pi * x)
-print(fxx.evaluate()['g'])
+f["g"] = np.sin(2 * np.pi * x)
+print(fxx.evaluate()["g"])
+f["g"] = np.cos(2 * np.pi * x)
+print(fxx.evaluate()["g"])
 exit()
 
 
-g['g'] = np.cos(2 * np.pi * x)
+g["g"] = np.cos(2 * np.pi * x)
 
 u = domain.new_field()
 
@@ -89,47 +89,49 @@ h = (f + g).evaluate()
 hxx = de.operators.differentiate(h, x=2).evaluate()
 
 hxxex = domain.new_field()
-hxxex['g'] = -((2 * np.pi) ** 2) * np.sin(2 * np.pi * x) - (2 * np.pi) ** 2 * np.cos(2 * np.pi * x)
+hxxex["g"] = -((2 * np.pi) ** 2) * np.sin(2 * np.pi * x) - (2 * np.pi) ** 2 * np.cos(
+    2 * np.pi * x
+)
 
-print(max(abs(hxx - hxxex).evaluate()['g']))
+print(max(abs(hxx - hxxex).evaluate()["g"]))
 # exit()
 
 forcing = domain.new_field()
-forcing['g'] = -np.sin(np.pi * 2 * x) * (np.sin(0) - (np.pi * 2) ** 2 * np.cos(0))
+forcing["g"] = -np.sin(np.pi * 2 * x) * (np.sin(0) - (np.pi * 2) ** 2 * np.cos(0))
 
 dt = 0.1 / 16
 
 u_old = domain.new_field()
-u_old['g'] = np.copy(f['g'])
+u_old["g"] = np.copy(f["g"])
 
-problem = de.LinearBoundaryValueProblem(domain=domain, variables=['u'])
-problem.meta[:]['x']['dirichlet'] = True
-problem.parameters['dt'] = dt
-problem.parameters['u_old'] = u_old + dt * forcing
+problem = de.LinearBoundaryValueProblem(domain=domain, variables=["u"])
+problem.meta[:]["x"]["dirichlet"] = True
+problem.parameters["dt"] = dt
+problem.parameters["u_old"] = u_old + dt * forcing
 problem.add_equation("u - dt * dx(dx(u)) = u_old")
 
 
 solver = problem.build_solver()
-u = solver.state['u']
+u = solver.state["u"]
 
 Tend = 1.0
 nsteps = int(Tend / dt)
 
 t = 0.0
 for n in range(nsteps):
-    problem.parameters['u_old'] = u_old + dt * forcing
+    problem.parameters["u_old"] = u_old + dt * forcing
     solver.solve()
     t += dt
-    forcing['g'] = -np.sin(np.pi * 2 * x) * (np.sin(t) - (np.pi * 2) ** 2 * np.cos(t))
-    u_old['g'] = np.copy(u['g'])
+    forcing["g"] = -np.sin(np.pi * 2 * x) * (np.sin(t) - (np.pi * 2) ** 2 * np.cos(t))
+    u_old["g"] = np.copy(u["g"])
     # print(n)
 
 
 uex = domain.new_field()
 # uex['g'] = np.sin(2*np.pi*x) * np.exp(-(2*np.pi)**2 * Tend)
-uex['g'] = np.sin(2 * np.pi * x) * np.cos(Tend)
+uex["g"] = np.sin(2 * np.pi * x) * np.cos(Tend)
 
-print(np.linalg.norm(u['g'] - uex['g'], np.inf))
+print(np.linalg.norm(u["g"] - uex["g"], np.inf))
 
 # plt.figure(1)
 # plt.plot(x,u['g'])
@@ -143,17 +145,17 @@ print(np.linalg.norm(u['g'] - uex['g'], np.inf))
 # forcing['g'] = -np.sin(np.pi * 2 * x) * (np.sin(0) - (np.pi * 2) ** 2 * np.cos(0))
 
 # u_old['g'] = np.zeros(domain.global_grid_shape())
-problem = de.IVP(domain=domain, variables=['u'])
+problem = de.IVP(domain=domain, variables=["u"])
 # problem.parameters['RHS'] = u_old + forcing
-problem.parameters['RHS'] = 0
+problem.parameters["RHS"] = 0
 problem.add_equation("dt(u) - dx(dx(u)) = RHS")
 
 ts = de.timesteppers.SBDF1
 solver = problem.build_solver(ts)
-u = solver.state['u']
+u = solver.state["u"]
 # u['g'] = np.sin(2*np.pi*x)
 tmp = np.tanh((0.25 - np.sqrt((x - 0.5) ** 2)) / (np.sqrt(2) * 0.04))
-u['g'] = tmp
+u["g"] = tmp
 
 dt = 1.912834231231e07
 t = 0.0
@@ -163,10 +165,10 @@ for n in range(nsteps):
     t += dt
 
     uxx = de.operators.differentiate(u, x=2).evaluate()
-    print(max(abs(u['g'] - dt * uxx['g'] - tmp)))
+    print(max(abs(u["g"] - dt * uxx["g"] - tmp)))
     exit()
 
-print(np.linalg.norm(u['g'] - uex['g'], np.inf))
+print(np.linalg.norm(u["g"] - uex["g"], np.inf))
 
 # #
 # plt.figure(1)

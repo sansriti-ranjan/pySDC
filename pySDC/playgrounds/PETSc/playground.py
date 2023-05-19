@@ -90,9 +90,9 @@ def main():
 
     OptDB = PETSc.Options()
 
-    n = OptDB.getInt('n', 16)
-    nx = OptDB.getInt('nx', n)
-    ny = OptDB.getInt('ny', n)
+    n = OptDB.getInt("n", 16)
+    nx = OptDB.getInt("nx", n)
+    ny = OptDB.getInt("ny", n)
 
     t0 = time.perf_counter()
     da = PETSc.DMDA().create([nx, ny], stencil_width=1, comm=space_comm)
@@ -108,9 +108,9 @@ def main():
 
     ksp = PETSc.KSP().create(comm=space_comm)
     ksp.setOperators(A)
-    ksp.setType('cg')
+    ksp.setType("cg")
     pc = ksp.getPC()
-    pc.setType('none')
+    pc.setType("none")
     ksp.setFromOptions()
 
     t1 = time.perf_counter()
@@ -128,16 +128,20 @@ def main():
     rank = PETSc.COMM_WORLD.Get_rank()
     size = PETSc.COMM_WORLD.Get_size()
 
-    print('Hello World! From process {rank} out of {size} process(es).'.format(rank=rank, size=size))
+    print(
+        "Hello World! From process {rank} out of {size} process(es).".format(
+            rank=rank, size=size
+        )
+    )
 
     x = PETSc.Vec().createSeq(n)  # Faster way to create a sequential vector.
 
     x.setValues(range(n), range(n))  # x = [0 1 ... 9]
     x.shift(1)  # x = x + 1 (add 1 to all elements in x)
 
-    print('Performing various vector operations on x =', x.getArray())
+    print("Performing various vector operations on x =", x.getArray())
 
-    print('Sum of elements of x =', x.sum())
+    print("Sum of elements of x =", x.sum())
 
     print(t1 - t0, t2 - t1, t2 - t0)
 

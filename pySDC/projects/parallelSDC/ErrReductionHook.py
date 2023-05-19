@@ -29,7 +29,7 @@ class err_reduction_hook(hooks):
                 level=L.level_index,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='error_pre_iteration',
+                type="error_pre_iteration",
                 value=err_full,
             )
             # print(L.time, step.status.iter, err_full)
@@ -60,7 +60,7 @@ class err_reduction_hook(hooks):
                 level=L.level_index,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='error_post_iteration',
+                type="error_post_iteration",
                 value=err_full,
             )
             # print(L.time, step.status.iter, err_full)

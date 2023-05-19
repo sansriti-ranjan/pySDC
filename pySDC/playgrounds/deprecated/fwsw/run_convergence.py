@@ -11,34 +11,33 @@ from pySDC.core import Log
 
 
 if __name__ == "__main__":
-
     # set global logger (remove this if you do not want the output at all)
-    logger = Log.setup_custom_logger('root')
+    logger = Log.setup_custom_logger("root")
 
     num_procs = 1
 
     # This comes as read-in for the level class
     lparams = {}
-    lparams['restol'] = 1e-12
+    lparams["restol"] = 1e-12
 
     sparams = {}
-    sparams['maxiter'] = 4
+    sparams["maxiter"] = 4
 
     # This comes as read-in for the problem class
     pparams = {}
-    pparams['lambda_s'] = np.array([0.1j], dtype='complex')
-    pparams['lambda_f'] = np.array([1.0j], dtype='complex')
-    pparams['u0'] = 1
+    pparams["lambda_s"] = np.array([0.1j], dtype="complex")
+    pparams["lambda_f"] = np.array([1.0j], dtype="complex")
+    pparams["u0"] = 1
 
     # Fill description dictionary for easy hierarchy creation
     description = {}
-    description['problem_class'] = swfw_scalar
-    description['problem_params'] = pparams
-    description['collocation_class'] = collclass.CollGaussLegendre
-    description['num_nodes'] = [3]
-    description['do_LU'] = False
-    description['sweeper_class'] = imex_1st_order
-    description['level_params'] = lparams
+    description["problem_class"] = swfw_scalar
+    description["problem_params"] = pparams
+    description["collocation_class"] = collclass.CollGaussLegendre
+    description["num_nodes"] = [3]
+    description["do_LU"] = False
+    description["sweeper_class"] = imex_1st_order
+    description["level_params"] = lparams
 
     # quickly generate block of steps
     MS = mp.generate_steps(num_procs, sparams, description)
@@ -60,9 +59,11 @@ if __name__ == "__main__":
         # call main function to get things done...
         uend, stats = mp.run_pfasst(MS, u0=uinit, t0=t0, dt=dt, Tend=Tend)
         error[j] = np.abs(uend.values - uex.values)
-        convline[j] = error[j] * (float(Nsteps_v[j]) / float(Nsteps_v[j])) ** sparams['maxiter']
+        convline[j] = (
+            error[j] * (float(Nsteps_v[j]) / float(Nsteps_v[j])) ** sparams["maxiter"]
+        )
 
     plt.figure()
-    plt.loglog(Nsteps_v, error, 'bo', markersize=12)
-    plt.loglog(Nsteps_v, convline, '-', color='k')
+    plt.loglog(Nsteps_v, error, "bo", markersize=12)
+    plt.loglog(Nsteps_v, convline, "-", color="k")
     plt.show()

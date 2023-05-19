@@ -12,7 +12,9 @@ from pySDC.implementations.controller_classes.controller_nonMPI import controlle
 from pySDC.implementations.problem_classes.FullSolarSystem import full_solar_system
 from pySDC.implementations.problem_classes.OuterSolarSystem import outer_solar_system
 from pySDC.implementations.sweeper_classes.verlet import verlet
-from pySDC.implementations.transfer_classes.TransferParticles_NoCoarse import particles_to_particles
+from pySDC.implementations.transfer_classes.TransferParticles_NoCoarse import (
+    particles_to_particles,
+)
 from pySDC.projects.Hamiltonian.hamiltonian_output import hamiltonian_output
 
 
@@ -27,37 +29,39 @@ def setup_outer_solar_system():
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-10
-    level_params['dt'] = 100.0
+    level_params["restol"] = 1e-10
+    level_params["dt"] = 100.0
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'LOBATTO'
-    sweeper_params['num_nodes'] = [5, 3]
-    sweeper_params['initial_guess'] = 'spread'
+    sweeper_params["quad_type"] = "LOBATTO"
+    sweeper_params["num_nodes"] = [5, 3]
+    sweeper_params["initial_guess"] = "spread"
 
     # initialize problem parameters for the Penning trap
     problem_params = dict()
-    problem_params['sun_only'] = [False, True]
+    problem_params["sun_only"] = [False, True]
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['hook_class'] = hamiltonian_output  # specialized hook class for more statistics and output
-    controller_params['logger_level'] = 30
+    controller_params[
+        "hook_class"
+    ] = hamiltonian_output  # specialized hook class for more statistics and output
+    controller_params["logger_level"] = 30
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = outer_solar_system
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = verlet
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
-    description['step_params'] = step_params
-    description['space_transfer_class'] = particles_to_particles
+    description["problem_class"] = outer_solar_system
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = verlet
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
+    description["step_params"] = step_params
+    description["space_transfer_class"] = particles_to_particles
 
     return description, controller_params
 
@@ -73,37 +77,39 @@ def setup_full_solar_system():
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-10
-    level_params['dt'] = 10.0
+    level_params["restol"] = 1e-10
+    level_params["dt"] = 10.0
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'LOBATTO'
-    sweeper_params['num_nodes'] = [5, 3]
-    sweeper_params['initial_guess'] = 'spread'
+    sweeper_params["quad_type"] = "LOBATTO"
+    sweeper_params["num_nodes"] = [5, 3]
+    sweeper_params["initial_guess"] = "spread"
 
     # initialize problem parameters for the Penning trap
     problem_params = dict()
-    problem_params['sun_only'] = [False, True]
+    problem_params["sun_only"] = [False, True]
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['hook_class'] = hamiltonian_output  # specialized hook class for more statistics and output
-    controller_params['logger_level'] = 30
+    controller_params[
+        "hook_class"
+    ] = hamiltonian_output  # specialized hook class for more statistics and output
+    controller_params["logger_level"] = 30
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = full_solar_system
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = verlet
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
-    description['step_params'] = step_params
-    description['space_transfer_class'] = particles_to_particles
+    description["problem_class"] = full_solar_system
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = verlet
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
+    description["step_params"] = step_params
+    description["space_transfer_class"] = particles_to_particles
 
     return description, controller_params
 
@@ -117,14 +123,14 @@ def run_simulation(prob=None):
 
     """
 
-    if prob == 'outer_solar_system':
+    if prob == "outer_solar_system":
         description, controller_params = setup_outer_solar_system()
         # set time parameters
         t0 = 0.0
         Tend = 10000.0
         num_procs = 100
         maxmeaniter = 6.0
-    elif prob == 'full_solar_system':
+    elif prob == "full_solar_system":
         description, controller_params = setup_full_solar_system()
         # set time parameters
         t0 = 0.0
@@ -132,15 +138,19 @@ def run_simulation(prob=None):
         num_procs = 100
         maxmeaniter = 19.0
     else:
-        raise NotImplementedError('Problem type not implemented, got %s' % prob)
+        raise NotImplementedError("Problem type not implemented, got %s" % prob)
 
-    f = open('data/' + prob + '_out.txt', 'w')
-    out = 'Running ' + prob + ' problem with %s processors...' % num_procs
-    f.write(out + '\n')
+    f = open("data/" + prob + "_out.txt", "w")
+    out = "Running " + prob + " problem with %s processors..." % num_procs
+    f.write(out + "\n")
     print(out)
 
     # instantiate the controller
-    controller = controller_nonMPI(num_procs=num_procs, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=num_procs,
+        controller_params=controller_params,
+        description=description,
+    )
 
     # get initial values on finest level
     P = controller.MS[0].levels[0].prob
@@ -150,7 +160,7 @@ def run_simulation(prob=None):
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 
     # filter statistics by type (number of iterations)
-    iter_counts = get_sorted(stats, type='niter', sortby='time')
+    iter_counts = get_sorted(stats, type="niter", sortby="time")
 
     # compute and print statistics
     # for item in iter_counts:
@@ -159,31 +169,39 @@ def run_simulation(prob=None):
     #     print(out)
 
     niters = np.array([item[1] for item in iter_counts])
-    out = '   Mean number of iterations: %4.2f' % np.mean(niters)
-    f.write(out + '\n')
+    out = "   Mean number of iterations: %4.2f" % np.mean(niters)
+    f.write(out + "\n")
     print(out)
-    out = '   Range of values for number of iterations: %2i ' % np.ptp(niters)
-    f.write(out + '\n')
+    out = "   Range of values for number of iterations: %2i " % np.ptp(niters)
+    f.write(out + "\n")
     print(out)
-    out = '   Position of max/min number of iterations: %2i -- %2i' % (int(np.argmax(niters)), int(np.argmin(niters)))
-    f.write(out + '\n')
+    out = "   Position of max/min number of iterations: %2i -- %2i" % (
+        int(np.argmax(niters)),
+        int(np.argmin(niters)),
+    )
+    f.write(out + "\n")
     print(out)
-    out = '   Std and var for number of iterations: %4.2f -- %4.2f' % (float(np.std(niters)), float(np.var(niters)))
-    f.write(out + '\n')
+    out = "   Std and var for number of iterations: %4.2f -- %4.2f" % (
+        float(np.std(niters)),
+        float(np.var(niters)),
+    )
+    f.write(out + "\n")
     print(out)
     f.close()
 
-    assert np.mean(niters) <= maxmeaniter, 'Mean number of iterations is too high, got %s' % np.mean(niters)
+    assert (
+        np.mean(niters) <= maxmeaniter
+    ), "Mean number of iterations is too high, got %s" % np.mean(niters)
 
-    fname = 'data/' + prob + '.dat'
-    f = open(fname, 'wb')
+    fname = "data/" + prob + ".dat"
+    f = open(fname, "wb")
     dill.dump(stats, f)
     f.close()
 
-    assert os.path.isfile(fname), 'Run for %s did not create stats file' % prob
+    assert os.path.isfile(fname), "Run for %s did not create stats file" % prob
 
 
-def show_results(prob=None, cwd=''):
+def show_results(prob=None, cwd=""):
     """
     Helper function to plot the error of the Hamiltonian
 
@@ -193,15 +211,15 @@ def show_results(prob=None, cwd=''):
     """
 
     # read in the dill data
-    f = open(cwd + 'data/' + prob + '.dat', 'rb')
+    f = open(cwd + "data/" + prob + ".dat", "rb")
     stats = dill.load(f)
     f.close()
 
-    plt_helper.mpl.style.use('classic')
+    plt_helper.mpl.style.use("classic")
     plt_helper.setup_mpl()
 
     # extract error in hamiltonian and prepare for plotting
-    extract_stats = filter_stats(stats, type='err_hamiltonian')
+    extract_stats = filter_stats(stats, type="err_hamiltonian")
     result = defaultdict(list)
     for k, v in extract_stats.items():
         result[k.iter].append((k.time, v))
@@ -216,25 +234,28 @@ def show_results(prob=None, cwd=''):
         time = [item[0] for item in v]
         ham = [item[1] for item in v]
         err_ham = ham[-1]
-        plt_helper.plt.semilogy(time, ham, '-', lw=1, label='Iter ' + str(k))
-    assert err_ham < 2.4e-14, 'Error in the Hamiltonian is too large for %s, got %s' % (prob, err_ham)
+        plt_helper.plt.semilogy(time, ham, "-", lw=1, label="Iter " + str(k))
+    assert err_ham < 2.4e-14, "Error in the Hamiltonian is too large for %s, got %s" % (
+        prob,
+        err_ham,
+    )
 
-    plt_helper.plt.xlabel('Time')
-    plt_helper.plt.ylabel('Error in Hamiltonian')
-    plt_helper.plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt_helper.plt.xlabel("Time")
+    plt_helper.plt.ylabel("Error in Hamiltonian")
+    plt_helper.plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 
-    fname = 'data/' + prob + '_hamiltonian'
+    fname = "data/" + prob + "_hamiltonian"
     plt_helper.savefig(fname)
 
-    assert os.path.isfile(fname + '.pdf'), 'ERROR: plotting did not create PDF file'
+    assert os.path.isfile(fname + ".pdf"), "ERROR: plotting did not create PDF file"
     # assert os.path.isfile(fname + '.pgf'), 'ERROR: plotting did not create PGF file'
-    assert os.path.isfile(fname + '.png'), 'ERROR: plotting did not create PNG file'
+    assert os.path.isfile(fname + ".png"), "ERROR: plotting did not create PNG file"
 
     # extract positions and prepare for plotting
-    result = get_sorted(stats, type='position', sortby='time')
+    result = get_sorted(stats, type="position", sortby="time")
 
     fig = plt_helper.plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    ax = fig.add_subplot(111, projection="3d")
 
     # Rearrange data for easy plotting
     nparts = len(result[1][1][0])
@@ -253,21 +274,23 @@ def show_results(prob=None, cwd=''):
         elif ndim == 3:
             ax.plot(pos[n, 0, :], pos[n, 1, :], pos[n, 2, :])
         else:
-            raise NotImplementedError('Wrong number of dimensions for plotting, got %s' % ndim)
+            raise NotImplementedError(
+                "Wrong number of dimensions for plotting, got %s" % ndim
+            )
 
-    fname = 'data/' + prob + '_positions'
+    fname = "data/" + prob + "_positions"
     plt_helper.savefig(fname)
 
-    assert os.path.isfile(fname + '.pdf'), 'ERROR: plotting did not create PDF file'
+    assert os.path.isfile(fname + ".pdf"), "ERROR: plotting did not create PDF file"
     # assert os.path.isfile(fname + '.pgf'), 'ERROR: plotting did not create PGF file'
-    assert os.path.isfile(fname + '.png'), 'ERROR: plotting did not create PNG file'
+    assert os.path.isfile(fname + ".png"), "ERROR: plotting did not create PNG file"
 
 
 def main():
-    prob = 'outer_solar_system'
+    prob = "outer_solar_system"
     run_simulation(prob)
     show_results(prob)
-    prob = 'full_solar_system'
+    prob = "full_solar_system"
     run_simulation(prob)
     show_results(prob)
 

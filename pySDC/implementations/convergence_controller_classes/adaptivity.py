@@ -51,12 +51,18 @@ class AdaptivityBase(ConvergenceController):
         Returns:
             None
         """
-        step_limiter_keys = ['dt_min', 'dt_max', 'dt_slope_min', 'dt_slope_max']
-        available_keys = [me for me in step_limiter_keys if me in self.params.__dict__.keys()]
+        step_limiter_keys = ["dt_min", "dt_max", "dt_slope_min", "dt_slope_max"]
+        available_keys = [
+            me for me in step_limiter_keys if me in self.params.__dict__.keys()
+        ]
 
         if len(available_keys) > 0:
-            step_limiter_params = {key: self.params.__dict__[key] for key in available_keys}
-            controller.add_convergence_controller(StepSizeLimiter, params=step_limiter_params, description=description)
+            step_limiter_params = {
+                key: self.params.__dict__[key] for key in available_keys
+            }
+            controller.add_convergence_controller(
+                StepSizeLimiter, params=step_limiter_params, description=description
+            )
 
         return None
 
@@ -121,8 +127,10 @@ class AdaptivityBase(ConvergenceController):
             e_est = self.get_local_error_estimate(controller, S)
             if e_est >= self.params.e_tol:
                 # see if we try to avoid restarts
-                if self.params.get('avoid_restarts'):
-                    more_iter_needed = max([L.status.iter_to_convergence for L in S.levels])
+                if self.params.get("avoid_restarts"):
+                    more_iter_needed = max(
+                        [L.status.iter_to_convergence for L in S.levels]
+                    )
                     k_final = S.status.iter + more_iter_needed
                     rho = max([L.status.contraction_factor for L in S.levels])
                     coll_order = S.levels[0].sweep.coll.order
@@ -133,7 +141,8 @@ class AdaptivityBase(ConvergenceController):
                     elif k_final > 2 * S.params.maxiter:
                         S.status.restart = True
                         self.log(
-                            f"{more_iter_needed} more iterations needed for convergence -> restart is more efficient", S
+                            f"{more_iter_needed} more iterations needed for convergence -> restart is more efficient",
+                            S,
                         )
                     elif k_final > coll_order:
                         S.status.restart = True
@@ -143,10 +152,15 @@ class AdaptivityBase(ConvergenceController):
                         )
                     else:
                         S.status.force_continue = True
-                        self.log(f"{more_iter_needed} more iterations needed for convergence -> no restart", S)
+                        self.log(
+                            f"{more_iter_needed} more iterations needed for convergence -> no restart",
+                            S,
+                        )
                 else:
                     S.status.restart = True
-                    self.log(f"Restarting: e={e_est:.2e} >= e_tol={self.params.e_tol:.2e}", S)
+                    self.log(
+                        f"Restarting: e={e_est:.2e} >= e_tol={self.params.e_tol:.2e}", S
+                    )
 
         return None
 
@@ -187,7 +201,7 @@ class Adaptivity(AdaptivityBase):
             (dict): The updated params dictionary
         """
         defaults = {
-            "embedded_error_flavor": 'standard',
+            "embedded_error_flavor": "standard",
         }
         return {**defaults, **super().setup(controller, params, description, **kwargs)}
 
@@ -202,23 +216,29 @@ class Adaptivity(AdaptivityBase):
         Returns:
             None
         """
-        from pySDC.implementations.convergence_controller_classes.estimate_embedded_error import EstimateEmbeddedError
+        from pySDC.implementations.convergence_controller_classes.estimate_embedded_error import (
+            EstimateEmbeddedError,
+        )
 
         super().dependencies(controller, description)
 
         controller.add_convergence_controller(
-            EstimateEmbeddedError.get_implementation(self.params.embedded_error_flavor, self.params.useMPI),
+            EstimateEmbeddedError.get_implementation(
+                self.params.embedded_error_flavor, self.params.useMPI
+            ),
             description=description,
         )
 
         # load contraction factor estimator if necessary
-        if self.params.get('avoid_restarts'):
+        if self.params.get("avoid_restarts"):
             from pySDC.implementations.convergence_controller_classes.estimate_contraction_factor import (
                 EstimateContractionFactor,
             )
 
-            params = {'e_tol': self.params.e_tol}
-            controller.add_convergence_controller(EstimateContractionFactor, description=description, params=params)
+            params = {"e_tol": self.params.e_tol}
+            controller.add_convergence_controller(
+                EstimateContractionFactor, description=description, params=params
+            )
         return None
 
     def check_parameters(self, controller, params, description, **kwargs):
@@ -272,13 +292,18 @@ smaller than 0!",
             L = S.levels[0]
 
             # compute next step size
-            order = S.status.iter  # embedded error estimate is same order as time marching
+            order = (
+                S.status.iter
+            )  # embedded error estimate is same order as time marching
 
             e_est = self.get_local_error_estimate(controller, S)
             L.status.dt_new = self.compute_optimal_step_size(
                 self.params.beta, L.params.dt, self.params.e_tol, e_est, order
             )
-            self.log(f'Adjusting step size from {L.params.dt:.2e} to {L.status.dt_new:.2e}', S)
+            self.log(
+                f"Adjusting step size from {L.params.dt:.2e} to {L.status.dt_new:.2e}",
+                S,
+            )
 
         return None
 
@@ -303,7 +328,9 @@ class AdaptivityRK(Adaptivity):
 
     def setup(self, controller, params, description, **kwargs):
         defaults = {}
-        defaults['update_order'] = params.get('update_order', description['sweeper_class'].get_update_order())
+        defaults["update_order"] = params.get(
+            "update_order", description["sweeper_class"].get_update_order()
+        )
         return {**defaults, **super().setup(controller, params, description, **kwargs)}
 
     def get_new_step_size(self, controller, S, **kwargs):
@@ -327,7 +354,10 @@ class AdaptivityRK(Adaptivity):
             L.status.dt_new = self.compute_optimal_step_size(
                 self.params.beta, L.params.dt, self.params.e_tol, e_est, order
             )
-            self.log(f'Adjusting step size from {L.params.dt:.2e} to {L.status.dt_new:.2e}', S)
+            self.log(
+                f"Adjusting step size from {L.params.dt:.2e} to {L.status.dt_new:.2e}",
+                S,
+            )
 
         return None
 
@@ -366,7 +396,10 @@ class AdaptivityResidual(AdaptivityBase):
             "e_tol_low": 0,
             "e_tol": np.inf,
             "max_restarts": 99 if "e_tol_low" in params else None,
-            "allowed_modifications": ['increase', 'decrease'],  # what we are allowed to do with the step size
+            "allowed_modifications": [
+                "increase",
+                "decrease",
+            ],  # what we are allowed to do with the step size
         }
         return {**defaults, **params}
 
@@ -382,10 +415,14 @@ class AdaptivityResidual(AdaptivityBase):
         """
         if self.params.max_restarts is not None:
             conv_controllers = controller.convergence_controllers
-            restart_cont = [me for me in conv_controllers if type(me) == BasicRestartingNonMPI]
+            restart_cont = [
+                me for me in conv_controllers if type(me) == BasicRestartingNonMPI
+            ]
 
             if len(restart_cont) == 0:
-                raise NotImplementedError("Please implement override of maximum number of restarts!")
+                raise NotImplementedError(
+                    "Please implement override of maximum number of restarts!"
+                )
 
             restart_cont[0].params.max_restarts = self.params.max_restarts
         return None
@@ -440,12 +477,24 @@ smaller than 0!",
 
             dt_planned = L.status.dt_new if L.status.dt_new is not None else L.params.dt
 
-            if res > self.params.e_tol and 'decrease' in self.params.allowed_modifications:
+            if (
+                res > self.params.e_tol
+                and "decrease" in self.params.allowed_modifications
+            ):
                 L.status.dt_new = min([dt_planned, L.params.dt / 2.0])
-                self.log(f'Adjusting step size from {L.params.dt:.2e} to {L.status.dt_new:.2e}', S)
-            elif res < self.params.e_tol_low and 'increase' in self.params.allowed_modifications:
+                self.log(
+                    f"Adjusting step size from {L.params.dt:.2e} to {L.status.dt_new:.2e}",
+                    S,
+                )
+            elif (
+                res < self.params.e_tol_low
+                and "increase" in self.params.allowed_modifications
+            ):
                 L.status.dt_new = max([dt_planned, L.params.dt * 2.0])
-                self.log(f'Adjusting step size from {L.params.dt:.2e} to {L.status.dt_new:.2e}', S)
+                self.log(
+                    f"Adjusting step size from {L.params.dt:.2e} to {L.status.dt_new:.2e}",
+                    S,
+                )
 
         return None
 
@@ -490,14 +539,16 @@ class AdaptivityCollocation(AdaptivityBase):
             "control_order": 220,
         }
 
-        for key in defaults['adaptive_coll_params'].keys():
-            if type(defaults['adaptive_coll_params'][key]) == list:
-                defaults['num_colls'] = max([defaults['num_colls'], len(defaults['adaptive_coll_params'][key])])
+        for key in defaults["adaptive_coll_params"].keys():
+            if type(defaults["adaptive_coll_params"][key]) == list:
+                defaults["num_colls"] = max(
+                    [defaults["num_colls"], len(defaults["adaptive_coll_params"][key])]
+                )
 
         return defaults
 
     def setup_status_variables(self, controller, **kwargs):
-        self.status = Status(['error', 'order'])
+        self.status = Status(["error", "order"])
         self.status.error = []
         self.status.order = []
 
@@ -519,7 +570,7 @@ class AdaptivityCollocation(AdaptivityBase):
 
         super().dependencies(controller, description)
 
-        params = {'adaptive_coll_params': self.params.adaptive_coll_params}
+        params = {"adaptive_coll_params": self.params.adaptive_coll_params}
         controller.add_convergence_controller(
             EstimateEmbeddedErrorCollocation,
             params=params,
@@ -568,7 +619,10 @@ class AdaptivityCollocation(AdaptivityBase):
             lvl.status.dt_new = self.compute_optimal_step_size(
                 self.params.beta, lvl.params.dt, self.params.e_tol, e_est, order
             )
-            self.log(f'Adjusting step size from {lvl.params.dt:.2e} to {lvl.status.dt_new:.2e}', S)
+            self.log(
+                f"Adjusting step size from {lvl.params.dt:.2e} to {lvl.status.dt_new:.2e}",
+                S,
+            )
 
     def check_parameters(self, controller, params, description, **kwargs):
         """
@@ -613,4 +667,6 @@ class AdaptivityCollocation(AdaptivityBase):
             e_est = self.get_local_error_estimate(controller, S)
             if e_est >= self.params.e_tol:
                 S.status.restart = True
-                self.log(f"Restarting: e={e_est:.2e} >= e_tol={self.params.e_tol:.2e}", S)
+                self.log(
+                    f"Restarting: e={e_est:.2e} >= e_tol={self.params.e_tol:.2e}", S
+                )

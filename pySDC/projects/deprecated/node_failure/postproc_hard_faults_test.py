@@ -6,7 +6,7 @@ from pylab import rcParams
 # import os
 
 
-def create_plots(setup, cwd=''):
+def create_plots(setup, cwd=""):
     """
     Function to create heatmaps for faults at different steps and iterations
 
@@ -15,22 +15,22 @@ def create_plots(setup, cwd=''):
         cwd: current working directory
     """
 
-    axis_font = {'fontname': 'Arial', 'size': '8', 'family': 'serif'}
+    axis_font = {"fontname": "Arial", "size": "8", "family": "serif"}
     fs = 8
 
     fields = [
-        (setup + '_results_hf_SPREAD.npz', 'SPREAD'),
-        (setup + '_results_hf_SPREAD_PREDICT.npz', 'SPREAD_PREDICT'),
-        (setup + '_results_hf_INTERP.npz', 'INTERP'),
-        (setup + '_results_hf_INTERP_PREDICT.npz', 'INTERP_PREDICT'),
+        (setup + "_results_hf_SPREAD.npz", "SPREAD"),
+        (setup + "_results_hf_SPREAD_PREDICT.npz", "SPREAD_PREDICT"),
+        (setup + "_results_hf_INTERP.npz", "INTERP"),
+        (setup + "_results_hf_INTERP_PREDICT.npz", "INTERP_PREDICT"),
     ]
 
     vmin = 99
     vmax = 0
     for file, _ in fields:
-        infile = np.load(cwd + 'data/' + file)
+        infile = np.load(cwd + "data/" + file)
 
-        data = infile['iter_count'].T
+        data = infile["iter_count"].T
 
         data = data - data[0, 0]
 
@@ -38,36 +38,38 @@ def create_plots(setup, cwd=''):
         vmax = max(vmax, data.max())
 
     for file, strategy in fields:
-        infile = np.load(cwd + 'data/' + file)
+        infile = np.load(cwd + "data/" + file)
 
-        data = infile['iter_count'].T
+        data = infile["iter_count"].T
 
         data = data - data[0, 0]
 
-        ft_iter = infile['ft_iter']
-        ft_step = infile['ft_step']
+        ft_iter = infile["ft_iter"]
+        ft_step = infile["ft_step"]
 
-        rcParams['figure.figsize'] = 3.0, 2.5
+        rcParams["figure.figsize"] = 3.0, 2.5
         fig, ax = plt.subplots()
 
-        cmap = plt.get_cmap('Reds', vmax - vmin + 1)
+        cmap = plt.get_cmap("Reds", vmax - vmin + 1)
         pcol = plt.pcolor(data, cmap=cmap, vmin=vmin, vmax=vmax)
-        pcol.set_edgecolor('face')
+        pcol.set_edgecolor("face")
 
         plt.axis([ft_step[0], ft_step[-1] + 1, ft_iter[0] - 1, ft_iter[-1]])
 
         ticks = np.arange(int(vmin) + 1, int(vmax) + 2, 2)
         tickpos = np.linspace(ticks[0] + 0.5, ticks[-1] - 0.5, len(ticks))
-        cax = plt.colorbar(pcol, ticks=tickpos, format='%2i')
+        cax = plt.colorbar(pcol, ticks=tickpos, format="%2i")
 
-        plt.tick_params(axis='both', which='major', labelsize=fs)
+        plt.tick_params(axis="both", which="major", labelsize=fs)
 
         cax.set_ticklabels(ticks)
-        cax.set_label(r'$K_\mathrm{add}$', **axis_font)
+        cax.set_label(r"$K_\mathrm{add}$", **axis_font)
         cax.ax.tick_params(labelsize=fs)
 
-        ax.set_xlabel('affected step', labelpad=1, **axis_font)
-        ax.set_ylabel(r'affected iteration ($K_\mathrm{fault}$)', labelpad=1, **axis_font)
+        ax.set_xlabel("affected step", labelpad=1, **axis_font)
+        ax.set_ylabel(
+            r"affected iteration ($K_\mathrm{fault}$)", labelpad=1, **axis_font
+        )
 
         ax.set_xticks(np.arange(len(ft_step)) + 0.5, minor=False)
         ax.set_xticklabels(ft_step, minor=False)
@@ -82,15 +84,15 @@ def create_plots(setup, cwd=''):
         # plt.tight_layout()
 
         # fname = setup+'_iteration_counts_hf_'+strategy+'.png'
-        fname = 'data/' + setup + '_iteration_counts_hf_' + strategy + '.png'
+        fname = "data/" + setup + "_iteration_counts_hf_" + strategy + ".png"
 
-        plt.savefig(fname, transparent=True, bbox_inches='tight')
+        plt.savefig(fname, transparent=True, bbox_inches="tight")
         # plt.savefig(fname, bbox_inches='tight')
         # os.system('pdfcrop ' + fname + ' ' + fname)
 
-        plt.close('all')
+        plt.close("all")
 
 
 if __name__ == "__main__":
-    create_plots(setup='HEAT')
-    create_plots(setup='ADVECTION')
+    create_plots(setup="HEAT")
+    create_plots(setup="ADVECTION")

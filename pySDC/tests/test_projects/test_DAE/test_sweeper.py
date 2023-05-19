@@ -10,26 +10,26 @@ def test_predict_main():
 
     # initialize level parameters
     level_params = dict()
-    level_params['dt'] = 5e-2
+    level_params["dt"] = 5e-2
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
-    sweeper_params['initial_guess'] = 'zero'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
+    sweeper_params["initial_guess"] = "zero"
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['newton_tol'] = 1e-12  # tollerance for implicit solver
-    problem_params['nvars'] = 3
+    problem_params["newton_tol"] = 1e-12  # tollerance for implicit solver
+    problem_params["nvars"] = 3
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = simple_dae_1
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = fully_implicit_DAE
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
+    description["problem_class"] = simple_dae_1
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = fully_implicit_DAE
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
 
     S = step(description=description)
     L = S.levels[0]
@@ -42,14 +42,14 @@ def test_predict_main():
     L.sweep.predict()
     # check correct initialisation
     assert np.array_equal(L.f[0], np.zeros(3))
-    for i in range(sweeper_params['num_nodes']):
+    for i in range(sweeper_params["num_nodes"]):
         assert np.array_equal(L.u[i + 1], np.zeros(3))
         assert np.array_equal(L.f[i + 1], np.zeros(3))
 
     # rerun check for random initialisation
     # expecting that random initialisation does not initialise to zero
-    sweeper_params['initial_guess'] = 'random'
-    description['sweeper_params'] = sweeper_params
+    sweeper_params["initial_guess"] = "random"
+    description["sweeper_params"] = sweeper_params
     S = step(description=description)
     L = S.levels[0]
     P = L.prob
@@ -59,7 +59,7 @@ def test_predict_main():
     L.u[0] = P.u_exact(L.time)
     L.sweep.predict()
     assert np.array_equal(L.f[0], np.zeros(3))
-    for i in range(sweeper_params['num_nodes']):
+    for i in range(sweeper_params["num_nodes"]):
         assert np.not_equal(L.u[i + 1], np.zeros(3)).any()
         assert np.not_equal(L.f[i + 1], np.zeros(3)).any()
 
@@ -72,26 +72,26 @@ def test_residual_main():
 
     # initialize level parameters
     level_params = dict()
-    level_params['dt'] = 1e-1
-    level_params['residual_type'] = 'last_abs'
+    level_params["dt"] = 1e-1
+    level_params["residual_type"] = "last_abs"
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['newton_tol'] = 1e-12  # tollerance for implicit solver
-    problem_params['nvars'] = 3
+    problem_params["newton_tol"] = 1e-12  # tollerance for implicit solver
+    problem_params["nvars"] = 3
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = simple_dae_1
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = fully_implicit_DAE
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
+    description["problem_class"] = simple_dae_1
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = fully_implicit_DAE
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
     # description['step_params'] = step_params
 
     # last_abs residual test
@@ -117,8 +117,8 @@ def test_residual_main():
     assert L.status.residual == ref_norm[-1], "ERROR: incorrect norm used"
 
     # full_rel residual test
-    level_params['residual_type'] = 'full_rel'
-    description['level_params'] = level_params
+    level_params["residual_type"] = "full_rel"
+    description["level_params"] = level_params
 
     S = step(description=description)
     L = S.levels[0]
@@ -130,11 +130,13 @@ def test_residual_main():
     # call prediction function to initialise nodes
     L.sweep.predict()
     L.sweep.compute_residual()
-    assert L.status.residual == max(ref_norm) / abs(L.u[0]), "ERROR: incorrect norm used"
+    assert L.status.residual == max(ref_norm) / abs(
+        L.u[0]
+    ), "ERROR: incorrect norm used"
 
     # last_rel residual test
-    level_params['residual_type'] = 'last_rel'
-    description['level_params'] = level_params
+    level_params["residual_type"] = "last_rel"
+    description["level_params"] = level_params
 
     S = step(description=description)
     L = S.levels[0]
@@ -157,26 +159,26 @@ def test_compute_end_point_main():
 
     # initialize level parameters
     level_params = dict()
-    level_params['dt'] = 1e-1
+    level_params["dt"] = 1e-1
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-LEFT'
-    sweeper_params['num_nodes'] = 3
-    sweeper_params['initial_guess'] = 'zero'
+    sweeper_params["quad_type"] = "RADAU-LEFT"
+    sweeper_params["num_nodes"] = 3
+    sweeper_params["initial_guess"] = "zero"
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['newton_tol'] = 1e-12  # tollerance for implicit solver
-    problem_params['nvars'] = 3
+    problem_params["newton_tol"] = 1e-12  # tollerance for implicit solver
+    problem_params["nvars"] = 3
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = simple_dae_1
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = fully_implicit_DAE
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
+    description["problem_class"] = simple_dae_1
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = fully_implicit_DAE
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
 
     # last_abs residual test
     S = step(description=description)

@@ -41,7 +41,7 @@ class monitor_and_dump(hooks):
             self.size = 1
 
         # go back to real space
-        tmp_u = L.prob.pm.create(type='complex', value=L.u[0].values)
+        tmp_u = L.prob.pm.create(type="complex", value=L.u[0].values)
         tmp_u = np.ascontiguousarray(tmp_u.c2r().value)
 
         # compute numerical radius
@@ -56,7 +56,7 @@ class monitor_and_dump(hooks):
         elif self.ndim == 2:
             radius = np.sqrt(v_global / np.pi) * L.prob.dx
         else:
-            raise NotImplementedError('Can use this only for 2 or 3D problems')
+            raise NotImplementedError("Can use this only for 2 or 3D problems")
 
         # c_local = np.count_nonzero(L.u[0].values > 0.5)
         # if self.comm is not None:
@@ -80,7 +80,7 @@ class monitor_and_dump(hooks):
                 level=-1,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='computed_radius',
+                type="computed_radius",
                 value=radius,
             )
             self.add_to_stats(
@@ -89,7 +89,7 @@ class monitor_and_dump(hooks):
                 level=-1,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='exact_radius',
+                type="exact_radius",
                 value=self.init_radius,
             )
 
@@ -110,16 +110,16 @@ class monitor_and_dump(hooks):
         # write json description
         if self.rank == 0 and step.status.slot == 0:
             json_obj = dict()
-            json_obj['type'] = 'dataset'
-            json_obj['datatype'] = str(tmp_u.dtype)
-            json_obj['endian'] = str(tmp_u.dtype.byteorder)
-            json_obj['time'] = L.time
-            json_obj['space_comm_size'] = self.size
-            json_obj['time_comm_size'] = step.status.time_size
-            json_obj['shape'] = L.prob.params.nvars
-            json_obj['elementsize'] = tmp_u.dtype.itemsize
+            json_obj["type"] = "dataset"
+            json_obj["datatype"] = str(tmp_u.dtype)
+            json_obj["endian"] = str(tmp_u.dtype.byteorder)
+            json_obj["time"] = L.time
+            json_obj["space_comm_size"] = self.size
+            json_obj["time_comm_size"] = step.status.time_size
+            json_obj["shape"] = L.prob.params.nvars
+            json_obj["elementsize"] = tmp_u.dtype.itemsize
 
-            with open(fname + '.json', 'w') as fp:
+            with open(fname + ".json", "w") as fp:
                 json.dump(json_obj, fp)
 
         # set step count
@@ -139,7 +139,7 @@ class monitor_and_dump(hooks):
         L = step.levels[0]
 
         # go back to real space
-        tmp_u = L.prob.pm.create(type='complex', value=L.uend.values)
+        tmp_u = L.prob.pm.create(type="complex", value=L.uend.values)
         tmp_u = np.ascontiguousarray(tmp_u.c2r().value)
 
         # compute numerical radius
@@ -153,7 +153,7 @@ class monitor_and_dump(hooks):
         elif self.ndim == 2:
             radius = np.sqrt(v_global / np.pi) * L.prob.dx
         else:
-            raise NotImplementedError('Can use this only for 2 or 3D problems')
+            raise NotImplementedError("Can use this only for 2 or 3D problems")
 
         # c_local = np.count_nonzero(L.uend.values > 0.5)
         # if self.comm is not None:
@@ -168,7 +168,9 @@ class monitor_and_dump(hooks):
         #     raise NotImplementedError('Can use this only for 2 or 3D problems')
 
         # compute exact radius
-        exact_radius = np.sqrt(max(self.init_radius**2 - 2.0 * (self.ndim - 1) * (L.time + L.dt), 0))
+        exact_radius = np.sqrt(
+            max(self.init_radius**2 - 2.0 * (self.ndim - 1) * (L.time + L.dt), 0)
+        )
 
         # write to stats
         self.add_to_stats(
@@ -177,7 +179,7 @@ class monitor_and_dump(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='computed_radius',
+            type="computed_radius",
             value=radius,
         )
         self.add_to_stats(
@@ -186,7 +188,7 @@ class monitor_and_dump(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='exact_radius',
+            type="exact_radius",
             value=exact_radius,
         )
 
@@ -207,16 +209,16 @@ class monitor_and_dump(hooks):
         # write json description
         if self.rank == 0:
             json_obj = dict()
-            json_obj['type'] = 'dataset'
-            json_obj['datatype'] = str(tmp_u.dtype)
-            json_obj['endian'] = str(tmp_u.dtype.byteorder)
-            json_obj['time'] = L.time + L.dt
-            json_obj['space_comm_size'] = self.size
-            json_obj['time_comm_size'] = step.status.time_size
-            json_obj['shape'] = L.prob.params.nvars
-            json_obj['elementsize'] = tmp_u.dtype.itemsize
+            json_obj["type"] = "dataset"
+            json_obj["datatype"] = str(tmp_u.dtype)
+            json_obj["endian"] = str(tmp_u.dtype.byteorder)
+            json_obj["time"] = L.time + L.dt
+            json_obj["space_comm_size"] = self.size
+            json_obj["time_comm_size"] = step.status.time_size
+            json_obj["shape"] = L.prob.params.nvars
+            json_obj["elementsize"] = tmp_u.dtype.itemsize
 
-            with open(fname + '.json', 'w') as fp:
+            with open(fname + ".json", "w") as fp:
                 json.dump(json_obj, fp)
 
         # update step count

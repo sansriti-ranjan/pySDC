@@ -18,23 +18,35 @@ class ButcherTableau(object):
         """
         # check if the arguments have the correct form
         if type(matrix) != np.ndarray:
-            raise ParameterError('Runge-Kutta matrix needs to be supplied as  a numpy array!')
+            raise ParameterError(
+                "Runge-Kutta matrix needs to be supplied as  a numpy array!"
+            )
         elif len(np.unique(matrix.shape)) != 1 or len(matrix.shape) != 2:
-            raise ParameterError('Runge-Kutta matrix needs to be a square 2D numpy array!')
+            raise ParameterError(
+                "Runge-Kutta matrix needs to be a square 2D numpy array!"
+            )
 
         if type(weights) != np.ndarray:
-            raise ParameterError('Weights need to be supplied as a numpy array!')
+            raise ParameterError("Weights need to be supplied as a numpy array!")
         elif len(weights.shape) != 1:
-            raise ParameterError(f'Incompatible dimension of weights! Need 1, got {len(weights.shape)}')
+            raise ParameterError(
+                f"Incompatible dimension of weights! Need 1, got {len(weights.shape)}"
+            )
         elif len(weights) != matrix.shape[0]:
-            raise ParameterError(f'Incompatible number of weights! Need {matrix.shape[0]}, got {len(weights)}')
+            raise ParameterError(
+                f"Incompatible number of weights! Need {matrix.shape[0]}, got {len(weights)}"
+            )
 
         if type(nodes) != np.ndarray:
-            raise ParameterError('Nodes need to be supplied as a numpy array!')
+            raise ParameterError("Nodes need to be supplied as a numpy array!")
         elif len(nodes.shape) != 1:
-            raise ParameterError(f'Incompatible dimension of nodes! Need 1, got {len(nodes.shape)}')
+            raise ParameterError(
+                f"Incompatible dimension of nodes! Need 1, got {len(nodes.shape)}"
+            )
         elif len(nodes) != matrix.shape[0]:
-            raise ParameterError(f'Incompatible number of nodes! Need {matrix.shape[0]}, got {len(nodes)}')
+            raise ParameterError(
+                f"Incompatible number of nodes! Need {matrix.shape[0]}, got {len(nodes)}"
+            )
 
         # Set number of nodes, left and right interval boundaries
         self.num_nodes = matrix.shape[0] + 1
@@ -45,7 +57,9 @@ class ButcherTableau(object):
         self.weights = weights
         self.Qmat = np.zeros([self.num_nodes + 1, self.num_nodes + 1])
         self.Qmat[1:-1, 1:-1] = matrix
-        self.Qmat[-1, 1:-1] = weights  # this is for computing the solution to the step from the previous stages
+        self.Qmat[
+            -1, 1:-1
+        ] = weights  # this is for computing the solution to the step from the previous stages
 
         self.left_is_node = True
         self.right_is_node = self.nodes[-1] == self.tright
@@ -75,23 +89,35 @@ class ButcherTableauEmbedded(object):
         """
         # check if the arguments have the correct form
         if type(matrix) != np.ndarray:
-            raise ParameterError('Runge-Kutta matrix needs to be supplied as  a numpy array!')
+            raise ParameterError(
+                "Runge-Kutta matrix needs to be supplied as  a numpy array!"
+            )
         elif len(np.unique(matrix.shape)) != 1 or len(matrix.shape) != 2:
-            raise ParameterError('Runge-Kutta matrix needs to be a square 2D numpy array!')
+            raise ParameterError(
+                "Runge-Kutta matrix needs to be a square 2D numpy array!"
+            )
 
         if type(weights) != np.ndarray:
-            raise ParameterError('Weights need to be supplied as a numpy array!')
+            raise ParameterError("Weights need to be supplied as a numpy array!")
         elif len(weights.shape) != 2:
-            raise ParameterError(f'Incompatible dimension of weights! Need 2, got {len(weights.shape)}')
+            raise ParameterError(
+                f"Incompatible dimension of weights! Need 2, got {len(weights.shape)}"
+            )
         elif len(weights[0]) != matrix.shape[0]:
-            raise ParameterError(f'Incompatible number of weights! Need {matrix.shape[0]}, got {len(weights[0])}')
+            raise ParameterError(
+                f"Incompatible number of weights! Need {matrix.shape[0]}, got {len(weights[0])}"
+            )
 
         if type(nodes) != np.ndarray:
-            raise ParameterError('Nodes need to be supplied as a numpy array!')
+            raise ParameterError("Nodes need to be supplied as a numpy array!")
         elif len(nodes.shape) != 1:
-            raise ParameterError(f'Incompatible dimension of nodes! Need 1, got {len(nodes.shape)}')
+            raise ParameterError(
+                f"Incompatible dimension of nodes! Need 1, got {len(nodes.shape)}"
+            )
         elif len(nodes) != matrix.shape[0]:
-            raise ParameterError(f'Incompatible number of nodes! Need {matrix.shape[0]}, got {len(nodes)}')
+            raise ParameterError(
+                f"Incompatible number of nodes! Need {matrix.shape[0]}, got {len(nodes)}"
+            )
 
         # Set number of nodes, left and right interval boundaries
         self.num_nodes = matrix.shape[0] + 2
@@ -102,8 +128,12 @@ class ButcherTableauEmbedded(object):
         self.weights = weights
         self.Qmat = np.zeros([self.num_nodes + 1, self.num_nodes + 1])
         self.Qmat[1:-2, 1:-2] = matrix
-        self.Qmat[-1, 1:-2] = weights[0]  # this is for computing the higher order solution
-        self.Qmat[-2, 1:-2] = weights[1]  # this is for computing the lower order solution
+        self.Qmat[-1, 1:-2] = weights[
+            0
+        ]  # this is for computing the higher order solution
+        self.Qmat[-2, 1:-2] = weights[
+            1
+        ]  # this is for computing the lower order solution
 
         self.left_is_node = True
         self.right_is_node = self.nodes[-1] == self.tright
@@ -155,33 +185,37 @@ class RungeKutta(sweeper):
             params: parameters for the sweeper
         """
         # set up logger
-        self.logger = logging.getLogger('sweeper')
+        self.logger = logging.getLogger("sweeper")
 
-        essential_keys = ['butcher_tableau']
+        essential_keys = ["butcher_tableau"]
         for key in essential_keys:
             if key not in params:
-                msg = 'need %s to instantiate step, only got %s' % (key, str(params.keys()))
+                msg = "need %s to instantiate step, only got %s" % (
+                    key,
+                    str(params.keys()),
+                )
                 self.logger.error(msg)
                 raise ParameterError(msg)
 
         # check if some parameters are set which only apply to actual sweepers
-        for key in ['initial_guess', 'collocation_class', 'num_nodes']:
+        for key in ["initial_guess", "collocation_class", "num_nodes"]:
             if key in params:
                 self.logger.warning(f'"{key}" will be ignored by Runge-Kutta sweeper')
 
         # set parameters to their actual values
-        params['initial_guess'] = 'zero'
-        params['collocation_class'] = type(params['butcher_tableau'])
-        params['num_nodes'] = params['butcher_tableau'].num_nodes
+        params["initial_guess"] = "zero"
+        params["collocation_class"] = type(params["butcher_tableau"])
+        params["num_nodes"] = params["butcher_tableau"].num_nodes
 
         # disable residual computation by default
-        params['skip_residual_computation'] = params.get(
-            'skip_residual_computation', ('IT_CHECK', 'IT_FINE', 'IT_COARSE', 'IT_UP', 'IT_DOWN')
+        params["skip_residual_computation"] = params.get(
+            "skip_residual_computation",
+            ("IT_CHECK", "IT_FINE", "IT_COARSE", "IT_UP", "IT_DOWN"),
         )
 
         self.params = _Pars(params)
 
-        self.coll = params['butcher_tableau']
+        self.coll = params["butcher_tableau"]
 
         # This will be set as soon as the sweeper is instantiated at the level
         self.__level = None
@@ -195,7 +229,7 @@ class RungeKutta(sweeper):
         Get the order of the lower order method for doing adaptivity. Only applies to embedded methods.
         """
         raise NotImplementedError(
-            f"There is not an update order for RK scheme \"{cls.__name__}\" implemented. Maybe it is not an embedded scheme?"
+            f'There is not an update order for RK scheme "{cls.__name__}" implemented. Maybe it is not an embedded scheme?'
         )
 
     def get_full_f(self, f):
@@ -213,7 +247,9 @@ class RungeKutta(sweeper):
         elif type(f) == imex_mesh:
             return f.impl + f.expl
         else:
-            raise NotImplementedError(f'Type \"{type(f)}\" not implemented in Runge-Kutta sweeper')
+            raise NotImplementedError(
+                f'Type "{type(f)}" not implemented in Runge-Kutta sweeper'
+            )
 
     def integrate(self):
         """
@@ -252,7 +288,9 @@ class RungeKutta(sweeper):
 
         # only if the level has been touched before
         assert L.status.unlocked
-        assert L.status.sweep <= 1, "RK schemes are direct solvers. Please perform only 1 iteration!"
+        assert (
+            L.status.sweep <= 1
+        ), "RK schemes are direct solvers. Please perform only 1 iteration!"
 
         # get number of collocation nodes for easier access
         M = self.coll.num_nodes
@@ -266,7 +304,10 @@ class RungeKutta(sweeper):
             # implicit solve with prefactor stemming from the diagonal of Qd
             if self.coll.implicit:
                 L.u[m + 1] = P.solve_system(
-                    rhs, L.dt * self.QI[m + 1, m + 1], L.u[m + 1], L.time + L.dt * self.coll.nodes[m]
+                    rhs,
+                    L.dt * self.QI[m + 1, m + 1],
+                    L.u[m + 1],
+                    L.time + L.dt * self.coll.nodes[m],
                 )
             else:
                 L.u[m + 1] = rhs
@@ -287,7 +328,7 @@ class RungeKutta(sweeper):
 
 class RK1(RungeKutta):
     def __init__(self, params):
-        implicit = params.get('implicit', False)
+        implicit = params.get("implicit", False)
         nodes = np.array([0.0])
         weights = np.array([1.0])
         if implicit:
@@ -302,7 +343,7 @@ class RK1(RungeKutta):
                     [0.0],
                 ]
             )
-        params['butcher_tableau'] = ButcherTableau(weights, nodes, matrix)
+        params["butcher_tableau"] = ButcherTableau(weights, nodes, matrix)
         super(RK1, self).__init__(params)
 
 
@@ -317,7 +358,7 @@ class CrankNicholson(RungeKutta):
         matrix = np.zeros((2, 2))
         matrix[1, 0] = 0.5
         matrix[1, 1] = 0.5
-        params['butcher_tableau'] = ButcherTableau(weights, nodes, matrix)
+        params["butcher_tableau"] = ButcherTableau(weights, nodes, matrix)
         super(CrankNicholson, self).__init__(params)
 
 
@@ -327,7 +368,7 @@ class MidpointMethod(RungeKutta):
     """
 
     def __init__(self, params):
-        implicit = params.get('implicit', False)
+        implicit = params.get("implicit", False)
         if implicit:
             nodes = np.array([0.5])
             weights = np.array([1])
@@ -338,7 +379,7 @@ class MidpointMethod(RungeKutta):
             weights = np.array([0, 1])
             matrix = np.zeros((2, 2))
             matrix[1, 0] = 0.5
-        params['butcher_tableau'] = ButcherTableau(weights, nodes, matrix)
+        params["butcher_tableau"] = ButcherTableau(weights, nodes, matrix)
         super(MidpointMethod, self).__init__(params)
 
 
@@ -354,7 +395,7 @@ class RK4(RungeKutta):
         matrix[1, 0] = 0.5
         matrix[2, 1] = 0.5
         matrix[3, 2] = 1.0
-        params['butcher_tableau'] = ButcherTableau(weights, nodes, matrix)
+        params["butcher_tableau"] = ButcherTableau(weights, nodes, matrix)
         super(RK4, self).__init__(params)
 
 
@@ -368,7 +409,7 @@ class Heun_Euler(RungeKutta):
         weights = np.array([[0.5, 0.5], [1, 0]])
         matrix = np.zeros((2, 2))
         matrix[1, 0] = 1
-        params['butcher_tableau'] = ButcherTableauEmbedded(weights, nodes, matrix)
+        params["butcher_tableau"] = ButcherTableauEmbedded(weights, nodes, matrix)
         super(Heun_Euler, self).__init__(params)
 
     @classmethod
@@ -386,7 +427,14 @@ class Cash_Karp(RungeKutta):
         weights = np.array(
             [
                 [37.0 / 378.0, 0.0, 250.0 / 621.0, 125.0 / 594.0, 0.0, 512.0 / 1771.0],
-                [2825.0 / 27648.0, 0.0, 18575.0 / 48384.0, 13525.0 / 55296.0, 277.0 / 14336.0, 1.0 / 4.0],
+                [
+                    2825.0 / 27648.0,
+                    0.0,
+                    18575.0 / 48384.0,
+                    13525.0 / 55296.0,
+                    277.0 / 14336.0,
+                    1.0 / 4.0,
+                ],
             ]
         )
         matrix = np.zeros((6, 6))
@@ -394,8 +442,14 @@ class Cash_Karp(RungeKutta):
         matrix[2, :2] = [3.0 / 40.0, 9.0 / 40.0]
         matrix[3, :3] = [0.3, -0.9, 1.2]
         matrix[4, :4] = [-11.0 / 54.0, 5.0 / 2.0, -70.0 / 27.0, 35.0 / 27.0]
-        matrix[5, :5] = [1631.0 / 55296.0, 175.0 / 512.0, 575.0 / 13824.0, 44275.0 / 110592.0, 253.0 / 4096.0]
-        params['butcher_tableau'] = ButcherTableauEmbedded(weights, nodes, matrix)
+        matrix[5, :5] = [
+            1631.0 / 55296.0,
+            175.0 / 512.0,
+            575.0 / 13824.0,
+            44275.0 / 110592.0,
+            253.0 / 4096.0,
+        ]
+        params["butcher_tableau"] = ButcherTableauEmbedded(weights, nodes, matrix)
         super(Cash_Karp, self).__init__(params)
 
     @classmethod
@@ -413,14 +467,17 @@ class DIRK34(RungeKutta):
     def __init__(self, params):
         nodes = np.array([5.0 / 6.0, 10.0 / 39.0, 0, 1.0 / 6.0])
         weights = np.array(
-            [[32.0 / 75.0, 169.0 / 300.0, 1.0 / 100.0, 0], [61.0 / 150.0, 2197.0 / 2100.0, 19.0 / 100.0, -9.0 / 14.0]]
+            [
+                [32.0 / 75.0, 169.0 / 300.0, 1.0 / 100.0, 0],
+                [61.0 / 150.0, 2197.0 / 2100.0, 19.0 / 100.0, -9.0 / 14.0],
+            ]
         )
         matrix = np.zeros((4, 4))
         matrix[0, 0] = 5.0 / 6.0
         matrix[1, :2] = [-15.0 / 26.0, 5.0 / 6.0]
         matrix[2, :3] = [215.0 / 54.0, -130.0 / 27.0, 5.0 / 6.0]
         matrix[3, :] = [4007.0 / 6075.0, -31031.0 / 24300.0, -133.0 / 2700.0, 5.0 / 6.0]
-        params['butcher_tableau'] = ButcherTableauEmbedded(weights, nodes, matrix)
+        params["butcher_tableau"] = ButcherTableauEmbedded(weights, nodes, matrix)
         super().__init__(params)
 
     @classmethod

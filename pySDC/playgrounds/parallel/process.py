@@ -14,6 +14,7 @@ MPI.COMM_WORLD.Barrier()
 # PyCon 2010, Atlanta, Georgia
 # http://www.dabeaz.com/python/UnderstandingGIL.pdf
 
+
 # Consider this trivial CPU-bound function
 def countdown(n):
     while n > 0:

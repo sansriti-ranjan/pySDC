@@ -13,7 +13,7 @@ dx = 1 / (nX + 1)
 dxc = 1 / (nXc + 1)
 
 stencil = [1, -2, 1]
-A = sp.diags(stencil, [-1, 0, 1], shape=(nX, nX), format='csc')
+A = sp.diags(stencil, [-1, 0, 1], shape=(nX, nX), format="csc")
 A *= -1.0 / (dx**2)
 b = np.zeros(nX)
 # %%
@@ -24,15 +24,19 @@ RGS = sp.eye(nX) - PGS @ A
 RJ = sp.eye(nX) - PJ @ A
 sRJ = sp.eye(nX) - 0.5 * PJ @ A
 
-Ac = sp.diags(stencil, [-1, 0, 1], shape=(nX // 2, nX // 2), format='csc')
+Ac = sp.diags(stencil, [-1, 0, 1], shape=(nX // 2, nX // 2), format="csc")
 Ac *= -1.0 / (dxc**2)
 Acinv = spl.inv(Ac)
 PJc = sp.dia_matrix(np.diag(1 / np.diag(Ac.todense())))
 
 fine_grid = np.linspace(dx, 1, nX, endpoint=False)
 coarse_grid = np.linspace(dxc, 1, nXc, endpoint=False)
-Pr = th.interpolation_matrix_1d(fine_grid, coarse_grid, k=2, periodic=False, equidist_nested=True)
-Prinj = th.interpolation_matrix_1d(fine_grid, coarse_grid, k=0, periodic=False, equidist_nested=True)
+Pr = th.interpolation_matrix_1d(
+    fine_grid, coarse_grid, k=2, periodic=False, equidist_nested=True
+)
+Prinj = th.interpolation_matrix_1d(
+    fine_grid, coarse_grid, k=0, periodic=False, equidist_nested=True
+)
 Re = 0.5 * Pr.T
 # Re = Prinj.T
 
@@ -80,7 +84,6 @@ uNum[:, 0, :] = uNum[0, 0, :]
 
 for k in range(nK):
     for l in range(nB):
-
         uF = fine(uNum[k, l])
         uGk = coarse(uNum[k, l], dK=1)
         uGkp1 = coarse(uNum[k + 1, l], dK=1)
@@ -97,7 +100,7 @@ err = np.linalg.norm(uNum, axis=-1)[:, -1]
 errSeq = np.linalg.norm(uSeq, axis=-1)
 
 plt.figure()
-plt.semilogy(err, label='Parareal')
-plt.semilogy(errSeq, label='Sequential')
+plt.semilogy(err, label="Parareal")
+plt.semilogy(errSeq, label="Sequential")
 plt.legend()
 plt.show()

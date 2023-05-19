@@ -8,7 +8,7 @@ class _Pars(FrozenClass):
         self.dt_initial = None
         self.restol = -1.0
         self.nsweeps = 1
-        self.residual_type = 'full_abs'
+        self.residual_type = "full_abs"
         for k, v in params.items():
             setattr(self, k, v)
         # freeze class, no further attributes allowed from this point
@@ -55,7 +55,15 @@ class level(FrozenClass):
         tau (list of dtype_u): FAS correction, allocated via step class if necessary
     """
 
-    def __init__(self, problem_class, problem_params, sweeper_class, sweeper_params, level_params, level_index):
+    def __init__(
+        self,
+        problem_class,
+        problem_params,
+        sweeper_class,
+        sweeper_params,
+        level_params,
+        level_index,
+    ):
         """
         Initialization routine
 

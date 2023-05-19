@@ -11,6 +11,6 @@ def test_main():
 
         del mpi4py
     except ImportError:
-        raise ImportError('petsc tests need mpi4py')
+        raise ImportError("petsc tests need mpi4py")
 
     main()

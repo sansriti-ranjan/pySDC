@@ -21,7 +21,7 @@ class InterpolateBetweenRestarts(ConvergenceController):
             description (dict): The description object used to instantiate the controller
         """
         defaults = {
-            'control_order': 50,
+            "control_order": 50,
         }
         return {**defaults, **super().setup(controller, params, description, **kwargs)}
 
@@ -32,7 +32,7 @@ class InterpolateBetweenRestarts(ConvergenceController):
         Args:
             controller (pySDC.Controller.controller): The controller
         """
-        self.status = Status(['u_inter', 'f_inter', 'perform_interpolation'])
+        self.status = Status(["u_inter", "f_inter", "perform_interpolation"])
 
         self.status.u_inter = []
         self.status.f_inter = []
@@ -76,16 +76,31 @@ class InterpolateBetweenRestarts(ConvergenceController):
         if step.status.restart and all(level.status.dt_new for level in step.levels):
             for level in step.levels:
                 nodes_old = level.sweep.coll.nodes.copy()
-                nodes_new = level.sweep.coll.nodes.copy() * level.status.dt_new / level.params.dt
+                nodes_new = (
+                    level.sweep.coll.nodes.copy()
+                    * level.status.dt_new
+                    / level.params.dt
+                )
 
                 interpolator = LagrangeApproximation(points=np.append(0, nodes_old))
-                self.status.u_inter += [(interpolator.getInterpolationMatrix(np.append(0, nodes_new)) @ level.u[:])[:]]
-                self.status.f_inter += [(interpolator.getInterpolationMatrix(np.append(0, nodes_new)) @ level.f[:])[:]]
+                self.status.u_inter += [
+                    (
+                        interpolator.getInterpolationMatrix(np.append(0, nodes_new))
+                        @ level.u[:]
+                    )[:]
+                ]
+                self.status.f_inter += [
+                    (
+                        interpolator.getInterpolationMatrix(np.append(0, nodes_new))
+                        @ level.f[:]
+                    )[:]
+                ]
 
                 self.status.perform_interpolation = True
 
                 self.log(
-                    f'Interpolating before restart from dt={level.params.dt:.2e} to dt={level.status.dt_new:.2e}', step
+                    f"Interpolating before restart from dt={level.params.dt:.2e} to dt={level.status.dt_new:.2e}",
+                    step,
                 )
         else:
             self.status.perform_interpolation = False

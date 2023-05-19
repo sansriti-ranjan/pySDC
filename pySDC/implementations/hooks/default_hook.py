@@ -137,7 +137,9 @@ class DefaultHooks(hooks):
         """
         super().post_comm(step, level_number)
         assert len(self.__t1_comm) >= level_number + 1
-        self.__t1_comm[level_number] += time.perf_counter() - self.__t0_comm[level_number]
+        self.__t1_comm[level_number] += (
+            time.perf_counter() - self.__t0_comm[level_number]
+        )
 
         if add_to_stats:
             L = step.levels[level_number]
@@ -148,7 +150,7 @@ class DefaultHooks(hooks):
                 level=L.level_index,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='timing_comm',
+                type="timing_comm",
                 value=self.__t1_comm[level_number],
             )
             self.__t1_comm[level_number] = 0.0
@@ -167,7 +169,8 @@ class DefaultHooks(hooks):
         L = step.levels[level_number]
 
         self.logger.info(
-            'Process %2i on time %8.6f at stage %15s: Level: %s -- Iteration: %2i -- Sweep: %2i -- ' 'residual: %12.8e',
+            "Process %2i on time %8.6f at stage %15s: Level: %s -- Iteration: %2i -- Sweep: %2i -- "
+            "residual: %12.8e",
             step.status.slot,
             L.time,
             step.status.stage,
@@ -183,7 +186,7 @@ class DefaultHooks(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='residual_post_sweep',
+            type="residual_post_sweep",
             value=L.status.residual,
         )
         self.add_to_stats(
@@ -192,7 +195,7 @@ class DefaultHooks(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='timing_sweep',
+            type="timing_sweep",
             value=self.__t1_sweep - self.__t0_sweep,
         )
 
@@ -215,7 +218,7 @@ class DefaultHooks(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='residual_post_iteration',
+            type="residual_post_iteration",
             value=L.status.residual,
         )
         self.add_to_stats(
@@ -224,7 +227,7 @@ class DefaultHooks(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='timing_iteration',
+            type="timing_iteration",
             value=self.__t1_iteration - self.__t0_iteration,
         )
 
@@ -247,7 +250,7 @@ class DefaultHooks(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='timing_step',
+            type="timing_step",
             value=self.__t1_step - self.__t0_step,
         )
         self.add_to_stats(
@@ -256,7 +259,7 @@ class DefaultHooks(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='niter',
+            type="niter",
             value=step.status.iter,
         )
         self.add_to_stats(
@@ -265,14 +268,20 @@ class DefaultHooks(hooks):
             level=L.level_index,
             iter=-1,
             sweep=L.status.sweep,
-            type='residual_post_step',
+            type="residual_post_step",
             value=L.status.residual,
         )
 
         # record the recomputed quantities at weird positions to make sure there is only one value for each step
         for t in [L.time, L.time + L.dt]:
             self.add_to_stats(
-                process=-1, time=t, level=-1, iter=-1, sweep=-1, type='_recomputed', value=step.status.get('restart')
+                process=-1,
+                time=t,
+                level=-1,
+                iter=-1,
+                sweep=-1,
+                type="_recomputed",
+                value=step.status.get("restart"),
             )
 
     def post_predict(self, step, level_number):
@@ -294,7 +303,7 @@ class DefaultHooks(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='timing_predictor',
+            type="timing_predictor",
             value=self.__t1_predict - self.__t0_predict,
         )
 
@@ -317,7 +326,7 @@ class DefaultHooks(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='timing_run',
+            type="timing_run",
             value=self.__t1_run - self.__t0_run,
         )
 
@@ -338,6 +347,6 @@ class DefaultHooks(hooks):
             level=-1,
             iter=-1,
             sweep=-1,
-            type='timing_setup',
+            type="timing_setup",
             value=self.__t1_setup - self.__t0_setup,
         )

@@ -35,18 +35,20 @@ class nonlinearschroedinger_imex(ptype):
             dtype_f: fft data type wuth implicit and explicit parts (will be passed to parent class)
         """
         if not L == 2.0 * np.pi:
-            raise ProblemError(f'Setup not implemented, L has to be 2pi, got {L}')
+            raise ProblemError(f"Setup not implemented, L has to be 2pi, got {L}")
 
         if not (c == 0.0 or c == 1.0):
-            raise ProblemError(f'Setup not implemented, c has to be 0 or 1, got {c}')
+            raise ProblemError(f"Setup not implemented, c has to be 0 or 1, got {c}")
 
         if not (isinstance(nvars, tuple) and len(nvars) > 1):
-            raise ProblemError('Need at least two dimensions')
+            raise ProblemError("Need at least two dimensions")
 
         # Creating FFT structure
         self.ndim = len(nvars)
         axes = tuple(range(self.ndim))
-        self.fft = PFFT(comm, list(nvars), axes=axes, dtype=np.complex128, collapse=True)
+        self.fft = PFFT(
+            comm, list(nvars), axes=axes, dtype=np.complex128, collapse=True
+        )
 
         # get test data to figure out type and dimensions
         tmp_u = newDistArray(self.fft, spectral)
@@ -54,8 +56,12 @@ class nonlinearschroedinger_imex(ptype):
         L = np.array([L] * self.ndim, dtype=float)
 
         # invoke super init, passing the communicator and the local dimensions as init
-        super(nonlinearschroedinger_imex, self).__init__(init=(tmp_u.shape, comm, tmp_u.dtype))
-        self._makeAttributeAndRegister('nvars', 'spectral', 'L', 'c', 'comm', localVars=locals(), readOnly=True)
+        super(nonlinearschroedinger_imex, self).__init__(
+            init=(tmp_u.shape, comm, tmp_u.dtype)
+        )
+        self._makeAttributeAndRegister(
+            "nvars", "spectral", "L", "c", "comm", localVars=locals(), readOnly=True
+        )
 
         # get local mesh
         X = np.ogrid[self.fft.local_slice(False)]
@@ -69,7 +75,7 @@ class nonlinearschroedinger_imex(ptype):
         N = self.fft.global_shape()
         k = [np.fft.fftfreq(n, 1.0 / n).astype(int) for n in N]
         K = [ki[si] for ki, si in zip(k, s)]
-        Ks = np.meshgrid(*K, indexing='ij', sparse=True)
+        Ks = np.meshgrid(*K, indexing="ij", sparse=True)
         Lp = 2 * np.pi / self.L
         for i in range(self.ndim):
             Ks[i] = (Ks[i] * Lp[i]).astype(float)
@@ -82,7 +88,7 @@ class nonlinearschroedinger_imex(ptype):
         self.dy = self.L / nvars[1]
 
         # work counters
-        self.work_counters['rhs'] = WorkCounter()
+        self.work_counters["rhs"] = WorkCounter()
 
     def eval_f(self, u, t):
         """
@@ -110,7 +116,7 @@ class nonlinearschroedinger_imex(ptype):
             f.impl[:] = self.fft.backward(lap_u_hat, f.impl)
             f.expl = self.ndim * self.c * 2j * np.absolute(u) ** 2 * u
 
-        self.work_counters['rhs']()
+        self.work_counters["rhs"]()
         return f
 
     def solve_system(self, rhs, factor, u0, t):
@@ -152,7 +158,11 @@ class nonlinearschroedinger_imex(ptype):
         def nls_exact_1D(t, x, c):
             ae = 1.0 / np.sqrt(2.0) * np.exp(1j * t)
             if c != 0:
-                u = ae * ((np.cosh(t) + 1j * np.sinh(t)) / (np.cosh(t) - 1.0 / np.sqrt(2.0) * np.cos(x)) - 1.0)
+                u = ae * (
+                    (np.cosh(t) + 1j * np.sinh(t))
+                    / (np.cosh(t) - 1.0 / np.sqrt(2.0) * np.cos(x))
+                    - 1.0
+                )
             else:
                 u = np.sin(x) * np.exp(-t * 1j)
 

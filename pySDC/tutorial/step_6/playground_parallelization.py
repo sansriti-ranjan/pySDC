@@ -19,7 +19,9 @@ if __name__ == "__main__":
     description, controller_params, t0, Tend = set_parameters_ml()
 
     # instantiate controllers
-    controller = controller_MPI(controller_params=controller_params, description=description, comm=comm)
+    controller = controller_MPI(
+        controller_params=controller_params, description=description, comm=comm
+    )
     # get initial values on finest level
     P = controller.S.levels[0].prob
     uinit = P.u_exact(t0)
@@ -28,7 +30,7 @@ if __name__ == "__main__":
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 
     # filter statistics by type (number of iterations)
-    iter_counts = get_sorted(stats, type='niter', sortby='time')
+    iter_counts = get_sorted(stats, type="niter", sortby="time")
 
     # combine statistics into list of statistics
     iter_counts_list = comm.gather(iter_counts, root=0)
@@ -41,20 +43,20 @@ if __name__ == "__main__":
         if len(sys.argv) == 2:
             fname = sys.argv[1]
         else:
-            fname = 'step_6_B_out.txt'
+            fname = "step_6_B_out.txt"
 
         Path("data").mkdir(parents=True, exist_ok=True)
-        f = open('data/' + fname, 'a')
-        out = 'Working with %2i processes...' % size
-        f.write(out + '\n')
+        f = open("data/" + fname, "a")
+        out = "Working with %2i processes..." % size
+        f.write(out + "\n")
         print(out)
 
         # compute exact solutions and compare with both results
         uex = P.u_exact(Tend)
         err = abs(uex - uend)
 
-        out = 'Error vs. exact solution: %12.8e' % err
-        f.write(out + '\n')
+        out = "Error vs. exact solution: %12.8e" % err
+        f.write(out + "\n")
         print(out)
 
         # build one list of statistics instead of list of lists, the sort by time
@@ -63,11 +65,13 @@ if __name__ == "__main__":
 
         # compute and print statistics
         for item in iter_counts:
-            out = 'Number of iterations for time %4.2f: %1i ' % (item[0], item[1])
-            f.write(out + '\n')
+            out = "Number of iterations for time %4.2f: %1i " % (item[0], item[1])
+            f.write(out + "\n")
             print(out)
 
-        f.write('\n')
+        f.write("\n")
         print()
 
-        assert all(item[1] <= 8 for item in iter_counts), "ERROR: weird iteration counts, got %s" % iter_counts
+        assert all(item[1] <= 8 for item in iter_counts), (
+            "ERROR: weird iteration counts, got %s" % iter_counts
+        )

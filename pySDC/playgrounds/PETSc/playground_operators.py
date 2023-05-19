@@ -12,7 +12,6 @@ import numpy as np
 
 
 def main():
-
     from petsc4py import PETSc
 
     n_fine = 5
@@ -28,7 +27,9 @@ def main():
         for j in range(ys, ye):
             # xa[i, j] = 1.0
             # xa[i, j] = i / nx
-            xa[i, j] = np.sin(2 * np.pi * i / (nx + 1)) * np.sin(2 * np.pi * j / (ny + 1))
+            xa[i, j] = np.sin(2 * np.pi * i / (nx + 1)) * np.sin(
+                2 * np.pi * j / (ny + 1)
+            )
 
     da_coarse.setInterpolationType(PETSc.DMDA.InterpolationType.Q1)
     B, vec = da_coarse.createInterpolation(da_fine)
@@ -43,7 +44,9 @@ def main():
         for j in range(ys, ye):
             xa[i, j] = 1.0
             # xa[i, j] = i / nx
-            xa[i, j] = np.sin(2 * np.pi * i / (nx + 1)) * np.sin(2 * np.pi * j / (ny + 1))
+            xa[i, j] = np.sin(2 * np.pi * i / (nx + 1)) * np.sin(
+                2 * np.pi * j / (ny + 1)
+            )
 
     y = da_fine.createGlobalVec()
     # x_coarse.pointwiseMult(x_coarse)

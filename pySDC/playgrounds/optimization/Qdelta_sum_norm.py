@@ -15,7 +15,7 @@ def evaluate(solution):
     Q = coll.Qmat[1:, 1:]
 
     # var = [x['x'+str(j)] for j in range(1, m + 1)]
-    var = [x['x' + str(j) + 'r'] + 1j * x['x' + str(j) + 'i'] for j in range(1, m + 1)]
+    var = [x["x" + str(j) + "r"] + 1j * x["x" + str(j) + "i"] for j in range(1, m + 1)]
 
     Qd = np.diag(var)
 
@@ -40,7 +40,11 @@ def evaluate(solution):
             k += 1
             lamdt = -(10**i) + 1j * 10**l
             if lamdt * np.linalg.norm(Qd, np.inf) != 1.0:
-                rhoR = abs(lamdt * np.linalg.norm(Q - Qd, np.inf) / (1.0 - lamdt * np.linalg.norm(Qd, np.inf)))
+                rhoR = abs(
+                    lamdt
+                    * np.linalg.norm(Q - Qd, np.inf)
+                    / (1.0 - lamdt * np.linalg.norm(Qd, np.inf))
+                )
             else:
                 rhoR = 0.0
             obj_val += rhoR
@@ -58,14 +62,50 @@ y = [1.0, 1.0, 1.0, 1.0, 1.0]
 ymax = 20.0
 ymin = -20.0
 params = dict()
-params['x1r'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[0]}
-params['x2r'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[1]}
-params['x3r'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[2]}
+params["x1r"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[0],
+}
+params["x2r"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[1],
+}
+params["x3r"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[2],
+}
 # params['x4r'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[3]}
 # params['x5r'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[4]}
-params['x1i'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[0]}
-params['x2i'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[1]}
-params['x3i'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[2]}
+params["x1i"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[0],
+}
+params["x2i"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[1],
+}
+params["x3i"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[2],
+}
 # params['x4i'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[3]}
 # params['x5i'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[4]}
 
@@ -80,9 +120,9 @@ params['x3i'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax,
 # params['x9'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[4]}
 
 problem = {
-    'problem_name': 'Qdelta_sum_norm',
-    'parameters': params,
-    'metrics': {'rho': {'type': 'objective', 'goal': 'minimize'}},
+    "problem_name": "Qdelta_sum_norm",
+    "parameters": params,
+    "metrics": {"rho": {"type": "objective", "goal": "minimize"}},
 }
 
 worker = indiesolver.indiesolver()

@@ -1,6 +1,8 @@
 import numpy as np
 
-from pySDC.projects.parallelSDC.linearized_implicit_parallel import linearized_implicit_parallel
+from pySDC.projects.parallelSDC.linearized_implicit_parallel import (
+    linearized_implicit_parallel,
+)
 
 
 class linearized_implicit_fixed_parallel(linearized_implicit_parallel):
@@ -21,14 +23,15 @@ class linearized_implicit_fixed_parallel(linearized_implicit_parallel):
             params: parameters for the sweeper
         """
 
-        if 'fixed_time_in_jacobian' not in params:
-            params['fixed_time_in_jacobian'] = 0
+        if "fixed_time_in_jacobian" not in params:
+            params["fixed_time_in_jacobian"] = 0
 
         # call parent's initialization routine
         super(linearized_implicit_fixed_parallel, self).__init__(params)
 
         assert self.params.fixed_time_in_jacobian in range(self.coll.num_nodes + 1), (
-            "ERROR: fixed_time_in_jacobian is too small or too large, got %s" % self.params.fixed_time_in_jacobian
+            "ERROR: fixed_time_in_jacobian is too small or too large, got %s"
+            % self.params.fixed_time_in_jacobian
         )
 
         self.D, self.V = np.linalg.eig(self.coll.Qmat[1:, 1:])
@@ -64,7 +67,11 @@ class linearized_implicit_fixed_parallel(linearized_implicit_parallel):
         # transform collocation problem forward
         Guv = []
         for m in range(M):
-            Guv.append(P.dtype_u((P.init[0], P.init[1], np.dtype('complex128')), val=0.0 + 0.0j))
+            Guv.append(
+                P.dtype_u(
+                    (P.init[0], P.init[1], np.dtype("complex128")), val=0.0 + 0.0j
+                )
+            )
             for j in range(M):
                 Guv[m] += self.Vi[m, j] * Gu[j]
 
@@ -72,12 +79,20 @@ class linearized_implicit_fixed_parallel(linearized_implicit_parallel):
         uv = []
         for m in range(M):  # hell yeah, this is parallel!!
             uv.append(
-                P.solve_system_jacobian(dfdu, Guv[m], L.dt * self.D[m], L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
+                P.solve_system_jacobian(
+                    dfdu,
+                    Guv[m],
+                    L.dt * self.D[m],
+                    L.u[m + 1],
+                    L.time + L.dt * self.coll.nodes[m],
+                )
             )
 
         # transform soultion backward
         for m in range(M):
-            tmp = P.dtype_u((P.init[0], P.init[1], np.dtype('complex128')), val=0.0 + 0.0j)
+            tmp = P.dtype_u(
+                (P.init[0], P.init[1], np.dtype("complex128")), val=0.0 + 0.0j
+            )
             for j in range(M):
                 tmp += self.V[m, j] * uv[j]
             L.u[m + 1][:] += np.real(tmp)

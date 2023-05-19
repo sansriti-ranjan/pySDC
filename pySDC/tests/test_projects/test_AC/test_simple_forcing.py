@@ -6,7 +6,10 @@ import warnings
 
 @pytest.mark.mpi4py
 def test_main_serial():
-    from pySDC.projects.AllenCahn_Bayreuth.run_simple_forcing_verification import main, visualize_radii
+    from pySDC.projects.AllenCahn_Bayreuth.run_simple_forcing_verification import (
+        main,
+        visualize_radii,
+    )
 
     main()
     visualize_radii()
@@ -21,15 +24,21 @@ def test_main_parallel():
 
         del mpi4py
     except ImportError:
-        raise ImportError('petsc tests need mpi4py')
+        raise ImportError("petsc tests need mpi4py")
 
     my_env = os.environ.copy()
-    my_env['PYTHONPATH'] = '../../..:.'
-    my_env['COVERAGE_PROCESS_START'] = 'pyproject.toml'
+    my_env["PYTHONPATH"] = "../../..:."
+    my_env["COVERAGE_PROCESS_START"] = "pyproject.toml"
 
     nprocs = 2
     cmd = f"export PYTHONPATH=$PYTHONPATH:$(pwd); export HWLOC_HIDE_ERRORS=2; mpirun -np {nprocs} python pySDC/projects/AllenCahn_Bayreuth/run_simple_forcing_benchmark.py -n {nprocs}"
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, shell=True)
+    p = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        shell=True,
+    )
     p.wait()
     (output, err) = p.communicate()
     print(output)
@@ -39,7 +48,13 @@ def test_main_parallel():
 
     nprocs = 4
     cmd = f"export PYTHONPATH=$PYTHONPATH:$(pwd); export HWLOC_HIDE_ERRORS=2; mpirun -np {nprocs} python pySDC/projects/AllenCahn_Bayreuth/run_simple_forcing_benchmark.py -n {nprocs}"
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, shell=True)
+    p = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        shell=True,
+    )
     p.wait()
     (output, err) = p.communicate()
     print(output)

@@ -18,10 +18,11 @@ def evaluate(solution):
     # if we have Gauss-Lobatto nodes, we can do a magic trick from the Book
     # this takes Gauss-Lobatto IIIB and create IIIA out of this
     if isinstance(coll, CollGaussLobatto):
-
         for i in range(coll.num_nodes):
             for j in range(coll.num_nodes):
-                QQ[i + 1, j + 1] = coll.weights[j] * (1.0 - coll.Qmat[j + 1, i + 1] / coll.weights[i])
+                QQ[i + 1, j + 1] = coll.weights[j] * (
+                    1.0 - coll.Qmat[j + 1, i + 1] / coll.weights[i]
+                )
         QQ = np.dot(coll.Qmat, QQ)
 
     # if we do not have Gauss-Lobatto, just multiply Q (will not get a symplectic method, they say)
@@ -34,10 +35,10 @@ def evaluate(solution):
     Qd = np.array(
         [
             [0.0, 0.0, 0.0, 0.0, 0.0],
-            [x['x21'], 0.0, 0.0, 0.0, 0.0],
-            [x['x31'], x['x32'], 0.0, 0.0, 0.0],
-            [x['x41'], x['x42'], x['x43'], 0.0, 0.0],
-            [x['x51'], x['x52'], x['x53'], x['x54'], 0.0],
+            [x["x21"], 0.0, 0.0, 0.0, 0.0],
+            [x["x31"], x["x32"], 0.0, 0.0, 0.0],
+            [x["x41"], x["x42"], x["x43"], 0.0, 0.0],
+            [x["x51"], x["x52"], x["x53"], x["x54"], 0.0],
         ]
     )
 
@@ -80,31 +81,115 @@ params = dict()
 # params['x4i'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[3]}
 # params['x5i'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[4]}
 
-params['x1'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[0]}
-params['x2'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[1]}
-params['x3'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[2]}
-params['x4'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[3]}
+params["x1"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[0],
+}
+params["x2"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[1],
+}
+params["x3"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[2],
+}
+params["x4"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[3],
+}
 # params['x5'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[4]}
 # params['x6'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[3]}
 # params['x7'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[4]}
 # params['x8'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[3]}
 # params['x9'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[4]}
 
-params['x21'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x31'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x32'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x41'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x42'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x43'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x51'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x52'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x53'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
-params['x54'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': 0.0}
+params["x21"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x31"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x32"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x41"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x42"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x43"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x51"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x52"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x53"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
+params["x54"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": 0.0,
+}
 
 problem = {
-    'problem_name': 'Qdelta_sum_verlet_ld',
-    'parameters': params,
-    'metrics': {'rho': {'type': 'objective', 'goal': 'minimize'}},
+    "problem_name": "Qdelta_sum_verlet_ld",
+    "parameters": params,
+    "metrics": {"rho": {"type": "objective", "goal": "minimize"}},
 }
 
 worker = indiesolver.indiesolver()

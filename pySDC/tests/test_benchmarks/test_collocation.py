@@ -8,8 +8,8 @@ t_end = 0.8 + np.random.rand(1) * 0.2
 
 tolQuad = 1e-13
 
-node_types = ['EQUID', 'LEGENDRE']
-quad_types = ['GAUSS', 'LOBATTO', 'RADAU-RIGHT', 'RADAU-LEFT']
+node_types = ["EQUID", "LEGENDRE"]
+quad_types = ["GAUSS", "LOBATTO", "RADAU-RIGHT", "RADAU-LEFT"]
 
 
 @pytest.mark.benchmark
@@ -33,7 +33,9 @@ def test_canintegratepolynomials(node_type, quad_type):
 
         # some basic consistency tests
         assert np.size(coll.nodes) == np.size(coll.weights), (
-            "For node type " + coll.__class__.__name__ + ", number of entries in nodes and weights is different"
+            "For node type "
+            + coll.__class__.__name__
+            + ", number of entries in nodes and weights is different"
         )
         assert np.size(coll.nodes) == M, (
             "For node type "
@@ -69,10 +71,16 @@ def test_relateQandSmat(node_type, quad_type):
         Q = coll.Qmat[1:, 1:]
         S = coll.Smat[1:, 1:]
         assert np.shape(Q) == np.shape(S), (
-            "For node type " + coll.__class__.__name__ + ", Qmat and Smat have different shape"
+            "For node type "
+            + coll.__class__.__name__
+            + ", Qmat and Smat have different shape"
         )
         shape = np.shape(Q)
-        assert shape[0] == shape[1], "For node type " + coll.__class__.__name__ + ", Qmat / Smat are not quadratic"
+        assert shape[0] == shape[1], (
+            "For node type "
+            + coll.__class__.__name__
+            + ", Qmat / Smat are not quadratic"
+        )
         SSum = np.cumsum(S[:, :], axis=0)
         for i in range(0, M):
             assert np.linalg.norm(Q[i, :] - SSum[i, :]) < 1e-15, (
@@ -94,7 +102,9 @@ def test_partialquadraturewithQ(node_type, quad_type):
         poly_vals = np.polyval(poly_coeff, coll.nodes)
         poly_int_coeff = np.polyint(poly_coeff)
         for i in range(0, M):
-            int_ex = np.polyval(poly_int_coeff, coll.nodes[i]) - np.polyval(poly_int_coeff, t_start)
+            int_ex = np.polyval(poly_int_coeff, coll.nodes[i]) - np.polyval(
+                poly_int_coeff, t_start
+            )
             int_coll = np.dot(poly_vals, Q[i, :])
             assert abs(int_ex - int_coll) < tolQuad, (
                 "For node type "
@@ -116,7 +126,9 @@ def test_partialquadraturewithS(node_type, quad_type):
         poly_vals = np.polyval(poly_coeff, coll.nodes)
         poly_int_coeff = np.polyint(poly_coeff)
         for i in range(1, M):
-            int_ex = np.polyval(poly_int_coeff, coll.nodes[i]) - np.polyval(poly_int_coeff, coll.nodes[i - 1])
+            int_ex = np.polyval(poly_int_coeff, coll.nodes[i]) - np.polyval(
+                poly_int_coeff, coll.nodes[i - 1]
+            )
             int_coll = np.dot(poly_vals, S[i, :])
             assert abs(int_ex - int_coll) < tolQuad, (
                 "For node type "

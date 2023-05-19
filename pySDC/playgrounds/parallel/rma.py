@@ -34,4 +34,4 @@ t1 = time.perf_counter()
 
 win.Free()
 
-print(f'Rank: {rank} -- Time: {t1-t0}')
+print(f"Rank: {rank} -- Time: {t1-t0}")

@@ -10,7 +10,7 @@ def evaluate(solution):
     coll = CollGaussRadau_Right(num_nodes=m, tleft=0.0, tright=1.0)
     Q = coll.Qmat[1:, 1:]
 
-    var = [x['x' + str(j)] for j in range(1, m + 1)]
+    var = [x["x" + str(j)] for j in range(1, m + 1)]
 
     Qd = np.diag(var)
 
@@ -28,16 +28,46 @@ y = [1.0, 1.0, 1.0, 1.0, 1.0]
 ymax = 20.0
 ymin = 0.0
 params = {}
-params['x1'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[0]}
-params['x2'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[1]}
-params['x3'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[2]}
-params['x4'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[3]}
-params['x5'] = {'type': 'float', 'space': 'decision', 'min': ymin, 'max': ymax, 'init': y[4]}
+params["x1"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[0],
+}
+params["x2"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[1],
+}
+params["x3"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[2],
+}
+params["x4"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[3],
+}
+params["x5"] = {
+    "type": "float",
+    "space": "decision",
+    "min": ymin,
+    "max": ymax,
+    "init": y[4],
+}
 
 problem = {
-    'problem_name': 'Qdelta_target',
-    'parameters': params,
-    'metrics': {'rho': {'type': 'objective', 'goal': 'minimize'}},
+    "problem_name": "Qdelta_target",
+    "parameters": params,
+    "metrics": {"rho": {"type": "objective", "goal": "minimize"}},
 }
 
 worker = indiesolver.indiesolver()

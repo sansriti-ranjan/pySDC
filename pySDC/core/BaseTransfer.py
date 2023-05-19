@@ -28,7 +28,14 @@ class base_transfer(object):
         coarse (pySDC.Level.level): reference to the coarse level
     """
 
-    def __init__(self, fine_level, coarse_level, base_transfer_params, space_transfer_class, space_transfer_params):
+    def __init__(
+        self,
+        fine_level,
+        coarse_level,
+        base_transfer_params,
+        space_transfer_class,
+        space_transfer_params,
+    ):
         """
         Initialization routine
 
@@ -43,7 +50,7 @@ class base_transfer(object):
         self.params = _Pars(base_transfer_params)
 
         # set up logger
-        self.logger = logging.getLogger('transfer')
+        self.logger = logging.getLogger("transfer")
 
         # just copy by object
         self.fine = fine_level
@@ -61,7 +68,9 @@ class base_transfer(object):
 
         # set up spatial transfer
         self.space_transfer = space_transfer_class(
-            fine_prob=self.fine.prob, coarse_prob=self.coarse.prob, params=space_transfer_params
+            fine_prob=self.fine.prob,
+            coarse_prob=self.coarse.prob,
+            params=space_transfer_params,
         )
 
     @staticmethod
@@ -100,7 +109,7 @@ class base_transfer(object):
 
         # only if the level is unlocked at least by prediction
         if not F.status.unlocked:
-            raise UnlockError('fine level is still locked, cannot use data from there')
+            raise UnlockError("fine level is still locked, cannot use data from there")
 
         # restrict fine values in space
         tmp_u = []
@@ -183,7 +192,9 @@ class base_transfer(object):
 
         # only of the level is unlocked at least by prediction or restriction
         if not G.status.unlocked:
-            raise UnlockError('coarse level is still locked, cannot use data from there')
+            raise UnlockError(
+                "coarse level is still locked, cannot use data from there"
+            )
 
         # build coarse correction
 
@@ -220,7 +231,9 @@ class base_transfer(object):
 
         # only of the level is unlocked at least by prediction or restriction
         if not G.status.unlocked:
-            raise UnlockError('coarse level is still locked, cannot use data from there')
+            raise UnlockError(
+                "coarse level is still locked, cannot use data from there"
+            )
 
         # build coarse correction
 

@@ -39,11 +39,11 @@ class acoustic_1d_imex(ptype):
         """
 
         # these parameters will be used later, so assert their existence
-        assert 'nvars' in cparams
-        assert 'cs' in cparams
-        assert 'cadv' in cparams
-        assert 'order_adv' in cparams
-        assert 'multiscale' in cparams
+        assert "nvars" in cparams
+        assert "cs" in cparams
+        assert "cadv" in cparams
+        assert "order_adv" in cparams
+        assert "multiscale" in cparams
 
         # add parameters as attributes for further reference
         for k, v in cparams.items():
@@ -55,8 +55,12 @@ class acoustic_1d_imex(ptype):
         self.mesh = np.linspace(0.0, 1.0, self.nvars[1], endpoint=False)
         self.dx = self.mesh[1] - self.mesh[0]
 
-        self.Dx = -self.cadv * getWave1DAdvectionMatrix(self.nvars[1], self.dx, self.order_adv)
-        self.Id, A = getWave1DMatrix(self.nvars[1], self.dx, ['periodic', 'periodic'], ['periodic', 'periodic'])
+        self.Dx = -self.cadv * getWave1DAdvectionMatrix(
+            self.nvars[1], self.dx, self.order_adv
+        )
+        self.Id, A = getWave1DMatrix(
+            self.nvars[1], self.dx, ["periodic", "periodic"], ["periodic", "periodic"]
+        )
         self.A = -self.cs * A
 
     def solve_system(self, rhs, factor, u0, t):
@@ -162,8 +166,12 @@ class acoustic_1d_imex(ptype):
             ms = 1.0
 
         me = mesh(self.nvars)
-        me.values[0, :] = np.exp(-np.square(self.mesh - x_0 - self.cs * t) / (sigma_0 * sigma_0)) + ms * np.exp(
+        me.values[0, :] = np.exp(
+            -np.square(self.mesh - x_0 - self.cs * t) / (sigma_0 * sigma_0)
+        ) + ms * np.exp(
             -np.square(self.mesh - x_1 - self.cs * t) / (sigma_0 * sigma_0)
-        ) * np.cos(k * (self.mesh - self.cs * t) / sigma_0)
+        ) * np.cos(
+            k * (self.mesh - self.cs * t) / sigma_0
+        )
         me.values[1, :] = me.values[0, :]
         return me

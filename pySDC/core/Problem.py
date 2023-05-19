@@ -52,7 +52,7 @@ class ptype(RegisterParams):
         custom logger for problem-related logging.
     """
 
-    logger = logging.getLogger('problem')
+    logger = logging.getLogger("problem")
     dtype_u = None
     dtype_f = None
 
@@ -86,13 +86,15 @@ class ptype(RegisterParams):
         f : dtype_f
             The RHS values.
         """
-        raise NotImplementedError('ERROR: problem has to implement eval_f(self, u, t)')
+        raise NotImplementedError("ERROR: problem has to implement eval_f(self, u, t)")
 
     def apply_mass_matrix(self, u):  # pragma: no cover
         """Default mass matrix : identity"""
         return u
 
-    def generate_scipy_reference_solution(self, eval_rhs, t, u_init=None, t_init=None, **kwargs):
+    def generate_scipy_reference_solution(
+        self, eval_rhs, t, u_init=None, t_init=None, **kwargs
+    ):
         """
         Compute a reference solution using `scipy.solve_ivp` with very small tolerances.
         Keep in mind that scipy needs the solution to be a one dimensional array. If you are solving something higher
@@ -121,5 +123,9 @@ class ptype(RegisterParams):
 
         u_shape = u_init.shape
         return (
-            solve_ivp(eval_rhs, (t_init, t), u_init.flatten(), rtol=tol, atol=tol, **kwargs).y[:, -1].reshape(u_shape)
+            solve_ivp(
+                eval_rhs, (t_init, t), u_init.flatten(), rtol=tol, atol=tol, **kwargs
+            )
+            .y[:, -1]
+            .reshape(u_shape)
         )

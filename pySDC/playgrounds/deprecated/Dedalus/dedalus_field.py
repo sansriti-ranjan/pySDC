@@ -36,8 +36,8 @@ class dedalus_field(object):
             self.values = []
             for f in init.values:
                 self.values.append(f.domain.new_field())
-                self.values[-1]['g'] = f['g']
-                self.values[-1]['c'] = f['c']
+                self.values[-1]["g"] = f["g"]
+                self.values[-1]["c"] = f["c"]
         elif isinstance(init, tuple):
             self.values = []
             for i in range(init[1]):
@@ -59,7 +59,9 @@ class dedalus_field(object):
         #     for i in range(init[0]):
         #         self.list_of_values.append(init[1].new_field())
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )
 
     def __add__(self, other):
         """
@@ -77,11 +79,13 @@ class dedalus_field(object):
             # always create new mesh, since otherwise c = a + b changes a as well!
             me = dedalus_field(other)
             for l in range(len(me.values)):
-                me.values[l]['g'] = self.values[l]['g'] + other.values[l]['g']
-                me.values[l]['c'] = self.values[l]['c'] + other.values[l]['c']
+                me.values[l]["g"] = self.values[l]["g"] + other.values[l]["g"]
+                me.values[l]["c"] = self.values[l]["c"] + other.values[l]["c"]
             return me
         else:
-            raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot add %s to %s" % (type(other), type(self))
+            )
 
     def __sub__(self, other):
         """
@@ -99,11 +103,13 @@ class dedalus_field(object):
             # always create new mesh, since otherwise c = a - b changes a as well!
             me = dedalus_field(other)
             for l in range(len(me.values)):
-                me.values[l]['g'] = self.values[l]['g'] - other.values[l]['g']
-                me.values[l]['c'] = self.values[l]['c'] - other.values[l]['c']
+                me.values[l]["g"] = self.values[l]["g"] - other.values[l]["g"]
+                me.values[l]["c"] = self.values[l]["c"] - other.values[l]["c"]
             return me
         else:
-            raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot subtract %s from %s" % (type(other), type(self))
+            )
 
     def __rmul__(self, other):
         """
@@ -121,11 +127,13 @@ class dedalus_field(object):
             # always create new mesh, since otherwise c = a * factor changes a as well!
             me = dedalus_field(self)
             for l in range(len(me.values)):
-                me.values[l]['g'] = other * self.values[l]['g']
-                me.values[l]['c'] = other * self.values[l]['c']
+                me.values[l]["g"] = other * self.values[l]["g"]
+                me.values[l]["c"] = other * self.values[l]["c"]
             return me
         else:
-            raise DataError("Type error: cannot multiply %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot multiply %s to %s" % (type(other), type(self))
+            )
 
     def __abs__(self):
         """
@@ -136,7 +144,7 @@ class dedalus_field(object):
         """
 
         # take absolute values of the mesh values
-        local_absval = np.amax([abs(f['g']) for f in self.values])
+        local_absval = np.amax([abs(f["g"]) for f in self.values])
 
         comm = self.values[0].domain.distributor.comm
         if comm is not None:
@@ -199,7 +207,7 @@ class dedalus_field(object):
         for data in self.values:
             if req is not None:
                 req.Free()
-            req = comm.Issend(data['g'][:], dest=dest, tag=tag)
+            req = comm.Issend(data["g"][:], dest=dest, tag=tag)
         return req
 
     def irecv(self, source=None, tag=None, comm=None):
@@ -218,7 +226,7 @@ class dedalus_field(object):
         for data in self.values:
             if req is not None:
                 req.Free()
-            req = comm.Irecv(data['g'], source=source, tag=tag)
+            req = comm.Irecv(data["g"], source=source, tag=tag)
         return req
         # return comm.Irecv(self.values['g'][:], source=source, tag=tag)
 
@@ -235,7 +243,7 @@ class dedalus_field(object):
         """
         me = dedalus_field(self)
         for l in range(len(me.values)):
-            me.values[l]['g'] = comm.bcast(self.values[l]['g'], root=root)
+            me.values[l]["g"] = comm.bcast(self.values[l]["g"], root=root)
         return me
 
 
@@ -270,7 +278,9 @@ class rhs_imex_dedalus_field(object):
             self.impl = dedalus_field(init)
             self.expl = dedalus_field(init)
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )
 
     def __sub__(self, other):
         """
@@ -291,7 +301,9 @@ class rhs_imex_dedalus_field(object):
             me.expl = self.expl - other.expl
             return me
         else:
-            raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot subtract %s from %s" % (type(other), type(self))
+            )
 
     def __add__(self, other):
         """
@@ -312,7 +324,9 @@ class rhs_imex_dedalus_field(object):
             me.expl = self.expl + other.expl
             return me
         else:
-            raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot add %s to %s" % (type(other), type(self))
+            )
 
     def __rmul__(self, other):
         """
@@ -333,7 +347,9 @@ class rhs_imex_dedalus_field(object):
             me.expl = other * self.expl
             return me
         else:
-            raise DataError("Type error: cannot multiply %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot multiply %s to %s" % (type(other), type(self))
+            )
 
     # def apply_mat(self, A):
     #     """

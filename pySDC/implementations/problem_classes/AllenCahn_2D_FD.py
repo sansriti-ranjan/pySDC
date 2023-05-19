@@ -26,30 +26,41 @@ class allencahn_fullyimplicit(ptype):
     dtype_u = mesh
     dtype_f = mesh
 
-    def __init__(self, nvars, nu, eps, newton_maxiter, newton_tol, lin_tol, lin_maxiter, radius, order=2):
+    def __init__(
+        self,
+        nvars,
+        nu,
+        eps,
+        newton_maxiter,
+        newton_tol,
+        lin_tol,
+        lin_maxiter,
+        radius,
+        order=2,
+    ):
         """
         Initialization routine
         """
         # we assert that nvars looks very particular here.. this will be necessary for coarsening in space later on
         if len(nvars) != 2:
-            raise ProblemError('this is a 2d example, got %s' % nvars)
+            raise ProblemError("this is a 2d example, got %s" % nvars)
         if nvars[0] != nvars[1]:
-            raise ProblemError('need a square domain, got %s' % nvars)
+            raise ProblemError("need a square domain, got %s" % nvars)
         if nvars[0] % 2 != 0:
-            raise ProblemError('the setup requires nvars = 2^p per dimension')
+            raise ProblemError("the setup requires nvars = 2^p per dimension")
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
-        super().__init__((nvars, None, np.dtype('float64')))
+        super().__init__((nvars, None, np.dtype("float64")))
         self._makeAttributeAndRegister(
-            'nvars',
-            'nu',
-            'eps',
-            'newton_maxiter',
-            'newton_tol',
-            'lin_tol',
-            'lin_maxiter',
-            'radius',
-            'order',
+            "nvars",
+            "nu",
+            "eps",
+            "newton_maxiter",
+            "newton_tol",
+            "lin_tol",
+            "lin_maxiter",
+            "radius",
+            "order",
             localVars=locals(),
             readOnly=True,
         )
@@ -59,11 +70,11 @@ class allencahn_fullyimplicit(ptype):
         self.A = problem_helper.get_finite_difference_matrix(
             derivative=2,
             order=self.order,
-            stencil_type='center',
+            stencil_type="center",
             dx=self.dx,
             size=self.nvars[0],
             dim=2,
-            bc='periodic',
+            bc="periodic",
         )
         self.xvalues = np.array([i * self.dx - 0.5 for i in range(self.nvars[0])])
 
@@ -97,7 +108,7 @@ class allencahn_fullyimplicit(ptype):
         )
         doffsets = np.concatenate((offsets, np.delete(offsets, zero_pos - 1) - N[0]))
 
-        A = sp.diags(dstencil, doffsets, shape=(N[0], N[0]), format='csc')
+        A = sp.diags(dstencil, doffsets, shape=(N[0], N[0]), format="csc")
         A = sp.kron(A, sp.eye(N[0])) + sp.kron(sp.eye(N[1]), A)
         A *= 1.0 / (dx**2)
         return A
@@ -129,7 +140,11 @@ class allencahn_fullyimplicit(ptype):
         res = 99
         while n < self.newton_maxiter:
             # form the function g with g(u) = 0
-            g = u - factor * (self.A.dot(u) + 1.0 / eps2 * u * (1.0 - u**nu)) - rhs.flatten()
+            g = (
+                u
+                - factor * (self.A.dot(u) + 1.0 / eps2 * u * (1.0 - u**nu))
+                - rhs.flatten()
+            )
 
             # if g is close to 0, then we are done
             res = np.linalg.norm(g, np.inf)
@@ -138,7 +153,9 @@ class allencahn_fullyimplicit(ptype):
                 break
 
             # assemble dg
-            dg = Id - factor * (self.A + 1.0 / eps2 * sp.diags((1.0 - (nu + 1) * u**nu), offsets=0))
+            dg = Id - factor * (
+                self.A + 1.0 / eps2 * sp.diags((1.0 - (nu + 1) * u**nu), offsets=0)
+            )
 
             # newton update: u1 = u0 - g/dg
             # u -= spsolve(dg, g)
@@ -171,7 +188,9 @@ class allencahn_fullyimplicit(ptype):
         """
         f = self.dtype_f(self.init)
         v = u.flatten()
-        f[:] = (self.A.dot(v) + 1.0 / self.eps**2 * v * (1.0 - v**self.nu)).reshape(self.nvars)
+        f[:] = (self.A.dot(v) + 1.0 / self.eps**2 * v * (1.0 - v**self.nu)).reshape(
+            self.nvars
+        )
 
         return f
 
@@ -186,12 +205,14 @@ class allencahn_fullyimplicit(ptype):
             dtype_u: exact solution
         """
 
-        assert t == 0, 'ERROR: u_exact only valid for t=0'
+        assert t == 0, "ERROR: u_exact only valid for t=0"
         me = self.dtype_u(self.init, val=0.0)
         for i in range(self.nvars[0]):
             for j in range(self.nvars[1]):
                 r2 = self.xvalues[i] ** 2 + self.xvalues[j] ** 2
-                me[i, j] = np.tanh((self.radius - np.sqrt(r2)) / (np.sqrt(2) * self.eps))
+                me[i, j] = np.tanh(
+                    (self.radius - np.sqrt(r2)) / (np.sqrt(2) * self.eps)
+                )
 
         return me
 
@@ -284,7 +305,9 @@ class allencahn_semiimplicit_v2(allencahn_fullyimplicit):
         """
         f = self.dtype_f(self.init)
         v = u.flatten()
-        f.impl[:] = (self.A.dot(v) - 1.0 / self.eps**2 * v ** (self.nu + 1)).reshape(self.nvars)
+        f.impl[:] = (self.A.dot(v) - 1.0 / self.eps**2 * v ** (self.nu + 1)).reshape(
+            self.nvars
+        )
         f.expl[:] = (1.0 / self.eps**2 * v).reshape(self.nvars)
 
         return f
@@ -315,7 +338,11 @@ class allencahn_semiimplicit_v2(allencahn_fullyimplicit):
         res = 99
         while n < self.newton_maxiter:
             # form the function g with g(u) = 0
-            g = u - factor * (self.A.dot(u) - 1.0 / eps2 * u ** (nu + 1)) - rhs.flatten()
+            g = (
+                u
+                - factor * (self.A.dot(u) - 1.0 / eps2 * u ** (nu + 1))
+                - rhs.flatten()
+            )
 
             # if g is close to 0, then we are done
             # res = np.linalg.norm(g, np.inf)
@@ -325,7 +352,9 @@ class allencahn_semiimplicit_v2(allencahn_fullyimplicit):
                 break
 
             # assemble dg
-            dg = Id - factor * (self.A - 1.0 / eps2 * sp.diags(((nu + 1) * u**nu), offsets=0))
+            dg = Id - factor * (
+                self.A - 1.0 / eps2 * sp.diags(((nu + 1) * u**nu), offsets=0)
+            )
 
             # newton update: u1 = u0 - g/dg
             # u -= spsolve(dg, g)
@@ -368,7 +397,9 @@ class allencahn_multiimplicit(allencahn_fullyimplicit):
         f = self.dtype_f(self.init)
         v = u.flatten()
         f.comp1[:] = self.A.dot(v).reshape(self.nvars)
-        f.comp2[:] = (1.0 / self.eps**2 * v * (1.0 - v**self.nu)).reshape(self.nvars)
+        f.comp2[:] = (1.0 / self.eps**2 * v * (1.0 - v**self.nu)).reshape(
+            self.nvars
+        )
 
         return f
 
@@ -447,7 +478,9 @@ class allencahn_multiimplicit(allencahn_fullyimplicit):
                 break
 
             # assemble dg
-            dg = Id - factor * (1.0 / eps2 * sp.diags((1.0 - (nu + 1) * u**nu), offsets=0))
+            dg = Id - factor * (
+                1.0 / eps2 * sp.diags((1.0 - (nu + 1) * u**nu), offsets=0)
+            )
 
             # newton update: u1 = u0 - g/dg
             # u -= spsolve(dg, g)
@@ -489,7 +522,9 @@ class allencahn_multiimplicit_v2(allencahn_fullyimplicit):
         """
         f = self.dtype_f(self.init)
         v = u.flatten()
-        f.comp1[:] = (self.A.dot(v) - 1.0 / self.eps**2 * v ** (self.nu + 1)).reshape(self.nvars)
+        f.comp1[:] = (self.A.dot(v) - 1.0 / self.eps**2 * v ** (self.nu + 1)).reshape(
+            self.nvars
+        )
         f.comp2[:] = (1.0 / self.eps**2 * v).reshape(self.nvars)
 
         return f
@@ -520,7 +555,11 @@ class allencahn_multiimplicit_v2(allencahn_fullyimplicit):
         res = 99
         while n < self.newton_maxiter:
             # form the function g with g(u) = 0
-            g = u - factor * (self.A.dot(u) - 1.0 / eps2 * u ** (nu + 1)) - rhs.flatten()
+            g = (
+                u
+                - factor * (self.A.dot(u) - 1.0 / eps2 * u ** (nu + 1))
+                - rhs.flatten()
+            )
 
             # if g is close to 0, then we are done
             res = np.linalg.norm(g, np.inf)
@@ -529,7 +568,9 @@ class allencahn_multiimplicit_v2(allencahn_fullyimplicit):
                 break
 
             # assemble dg
-            dg = Id - factor * (self.A - 1.0 / eps2 * sp.diags(((nu + 1) * u**nu), offsets=0))
+            dg = Id - factor * (
+                self.A - 1.0 / eps2 * sp.diags(((nu + 1) * u**nu), offsets=0)
+            )
 
             # newton update: u1 = u0 - g/dg
             # u -= spsolve(dg, g)

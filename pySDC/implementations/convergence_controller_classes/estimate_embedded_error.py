@@ -23,13 +23,15 @@ class EstimateEmbeddedError(ConvergenceController):
             params (dict): Parameters for the convergence controller
             description (dict): The description object used to instantiate the controller
         """
-        from pySDC.implementations.hooks.log_embedded_error_estimate import LogEmbeddedErrorEstimate
+        from pySDC.implementations.hooks.log_embedded_error_estimate import (
+            LogEmbeddedErrorEstimate,
+        )
 
         super().__init__(controller, params, description, **kwargs)
         controller.add_hook(LogEmbeddedErrorEstimate)
 
     @classmethod
-    def get_implementation(cls, flavor='standard', useMPI=False):
+    def get_implementation(cls, flavor="standard", useMPI=False):
         """
         Retrieve the implementation for a specific flavor of this class.
 
@@ -39,17 +41,19 @@ class EstimateEmbeddedError(ConvergenceController):
         Returns:
             cls: The child class that implements the desired flavor
         """
-        if flavor == 'standard':
+        if flavor == "standard":
             return cls
-        elif flavor == 'linearized':
+        elif flavor == "linearized":
             if useMPI:
                 return EstimateEmbeddedErrorLinearizedMPI
             else:
                 return EstimateEmbeddedErrorLinearizedNonMPI
-        elif flavor == 'collocation':
+        elif flavor == "collocation":
             return EstimateEmbeddedErrorCollocation
         else:
-            raise NotImplementedError(f'Flavor {flavor} of EstimateEmbeddedError is not implemented!')
+            raise NotImplementedError(
+                f"Flavor {flavor} of EstimateEmbeddedError is not implemented!"
+            )
 
     def setup(self, controller, params, description, **kwargs):
         """
@@ -63,7 +67,9 @@ class EstimateEmbeddedError(ConvergenceController):
         Returns:
             dict: Updated parameters
         """
-        sweeper_type = 'RK' if RungeKutta in description['sweeper_class'].__bases__ else 'SDC'
+        sweeper_type = (
+            "RK" if RungeKutta in description["sweeper_class"].__bases__ else "SDC"
+        )
         return {
             "control_order": -80,
             "sweeper_type": sweeper_type,
@@ -116,16 +122,16 @@ class EstimateEmbeddedError(ConvergenceController):
         Args:
             controller (pySDC.Controller): The controller
         """
-        if 'comm' in kwargs.keys():
+        if "comm" in kwargs.keys():
             steps = [controller.S]
         else:
-            if 'active_slots' in kwargs.keys():
-                steps = [controller.MS[i] for i in kwargs['active_slots']]
+            if "active_slots" in kwargs.keys():
+                steps = [controller.MS[i] for i in kwargs["active_slots"]]
             else:
                 steps = controller.MS
         where = ["levels", "status"]
         for S in steps:
-            self.add_variable(S, name='error_embedded_estimate', where=where, init=None)
+            self.add_variable(S, name="error_embedded_estimate", where=where, init=None)
 
     def reset_status_variables(self, controller, **kwargs):
         self.setup_status_variables(controller, **kwargs)
@@ -147,7 +153,9 @@ class EstimateEmbeddedError(ConvergenceController):
 
         if S.status.iter > 0 or self.params.sweeper_type == "RK":
             for L in S.levels:
-                L.status.error_embedded_estimate = max([self.estimate_embedded_error_serial(L), np.finfo(float).eps])
+                L.status.error_embedded_estimate = max(
+                    [self.estimate_embedded_error_serial(L), np.finfo(float).eps]
+                )
 
         return None
 
@@ -163,7 +171,7 @@ class EstimateEmbeddedErrorLinearizedNonMPI(EstimateEmbeddedError):
             description (dict): The description object used to instantiate the controller
         """
         super().__init__(controller, params, description, **kwargs)
-        self.buffers = Pars({'e_em_last': 0.0})
+        self.buffers = Pars({"e_em_last": 0.0})
 
     def reset_buffers_nonMPI(self, controller, **kwargs):
         """
@@ -199,7 +207,9 @@ level"
         if S.status.iter > 0 or self.params.sweeper_type == "RK":
             for L in S.levels:
                 temp = self.estimate_embedded_error_serial(L)
-                L.status.error_embedded_estimate = max([abs(temp - self.buffers.e_em_last), np.finfo(float).eps])
+                L.status.error_embedded_estimate = max(
+                    [abs(temp - self.buffers.e_em_last), np.finfo(float).eps]
+                )
 
             self.buffers.e_em_last = temp * 1.0
 
@@ -217,7 +227,7 @@ class EstimateEmbeddedErrorLinearizedMPI(EstimateEmbeddedError):
             description (dict): The description object used to instantiate the controller
         """
         super().__init__(controller, params, description, **kwargs)
-        self.buffers = Pars({'e_em_last': 0.0})
+        self.buffers = Pars({"e_em_last": 0.0})
 
     def post_iteration_processing(self, controller, S, **kwargs):
         """
@@ -231,7 +241,7 @@ class EstimateEmbeddedErrorLinearizedMPI(EstimateEmbeddedError):
         Returns:
             None
         """
-        comm = kwargs['comm']
+        comm = kwargs["comm"]
 
         if S.status.iter > 0 or self.params.sweeper_type == "RK":
             for L in S.levels:
@@ -246,7 +256,9 @@ class EstimateEmbeddedErrorLinearizedMPI(EstimateEmbeddedError):
                 temp = self.estimate_embedded_error_serial(L)
 
                 # estimate local error as difference of accumulated errors
-                L.status.error_embedded_estimate = max([abs(temp - self.buffers.e_em_last), np.finfo(float).eps])
+                L.status.error_embedded_estimate = max(
+                    [abs(temp - self.buffers.e_em_last), np.finfo(float).eps]
+                )
 
                 # send the accumulated local errors forward
                 if not S.status.last:
@@ -296,10 +308,14 @@ class EstimateEmbeddedErrorCollocation(ConvergenceController):
             controller (pySDC.Controller): The controller
             description (dict): The description object used to instantiate the controller
         """
-        from pySDC.implementations.convergence_controller_classes.adaptive_collocation import AdaptiveCollocation
+        from pySDC.implementations.convergence_controller_classes.adaptive_collocation import (
+            AdaptiveCollocation,
+        )
 
         controller.add_convergence_controller(
-            AdaptiveCollocation, params=self.params.adaptive_coll_params, description=description
+            AdaptiveCollocation,
+            params=self.params.adaptive_coll_params,
+            description=description,
         )
 
     def post_iteration_processing(self, controller, step, **kwargs):
@@ -320,7 +336,12 @@ class EstimateEmbeddedErrorCollocation(ConvergenceController):
             if len(self.status.u) > 1:
                 lvl.status.error_embedded_estimate_collocation = (
                     self.status.iter[-2],
-                    max([np.finfo(float).eps, abs(self.status.u[-1] - self.status.u[-2])]),
+                    max(
+                        [
+                            np.finfo(float).eps,
+                            abs(self.status.u[-1] - self.status.u[-2]),
+                        ]
+                    ),
                 )
 
     def setup_status_variables(self, controller, **kwargs):
@@ -330,20 +351,22 @@ class EstimateEmbeddedErrorCollocation(ConvergenceController):
         Args:
             controller (pySDC.Controller): The controller
         """
-        self.status = Status(['u', 'iter'])
+        self.status = Status(["u", "iter"])
         self.status.u = []  # the solutions of converged collocation problems
         self.status.iter = []  # the iteration in which the solution converged
 
-        if 'comm' in kwargs.keys():
+        if "comm" in kwargs.keys():
             steps = [controller.S]
         else:
-            if 'active_slots' in kwargs.keys():
-                steps = [controller.MS[i] for i in kwargs['active_slots']]
+            if "active_slots" in kwargs.keys():
+                steps = [controller.MS[i] for i in kwargs["active_slots"]]
             else:
                 steps = controller.MS
         where = ["levels", "status"]
         for S in steps:
-            self.add_variable(S, name='error_embedded_estimate_collocation', where=where, init=None)
+            self.add_variable(
+                S, name="error_embedded_estimate_collocation", where=where, init=None
+            )
 
     def reset_status_variables(self, controller, **kwargs):
         self.setup_status_variables(controller, **kwargs)

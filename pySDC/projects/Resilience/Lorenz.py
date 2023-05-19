@@ -42,40 +42,42 @@ def run_Lorenz(
 
     # initialize level parameters
     level_params = dict()
-    level_params['dt'] = 1e-2
+    level_params["dt"] = 1e-2
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
-    sweeper_params['QI'] = 'IE'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
+    sweeper_params["QI"] = "IE"
 
     problem_params = {
-        'newton_tol': 1e-9,
-        'newton_maxiter': 99,
+        "newton_tol": 1e-9,
+        "newton_maxiter": 99,
     }
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 4
+    step_params["maxiter"] = 4
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30
-    controller_params['hook_class'] = hook_collection + (hook_class if type(hook_class) == list else [hook_class])
-    controller_params['mssdc_jac'] = False
+    controller_params["logger_level"] = 30
+    controller_params["hook_class"] = hook_collection + (
+        hook_class if type(hook_class) == list else [hook_class]
+    )
+    controller_params["mssdc_jac"] = False
 
     if custom_controller_params is not None:
         controller_params = {**controller_params, **custom_controller_params}
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = LorenzAttractor
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = generic_implicit
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
-    description['step_params'] = step_params
+    description["problem_class"] = LorenzAttractor
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = generic_implicit
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
+    description["step_params"] = step_params
 
     if custom_description is not None:
         description = merge_descriptions(description, custom_description)
@@ -86,24 +88,32 @@ def run_Lorenz(
     # instantiate controller
     if use_MPI:
         from mpi4py import MPI
-        from pySDC.implementations.controller_classes.controller_MPI import controller_MPI
+        from pySDC.implementations.controller_classes.controller_MPI import (
+            controller_MPI,
+        )
 
-        comm = kwargs.get('comm', MPI.COMM_WORLD)
-        controller = controller_MPI(controller_params=controller_params, description=description, comm=comm)
+        comm = kwargs.get("comm", MPI.COMM_WORLD)
+        controller = controller_MPI(
+            controller_params=controller_params, description=description, comm=comm
+        )
         P = controller.S.levels[0].prob
     else:
         controller = controller_nonMPI(
-            num_procs=num_procs, controller_params=controller_params, description=description
+            num_procs=num_procs,
+            controller_params=controller_params,
+            description=description,
         )
         P = controller.MS[0].levels[0].prob
     uinit = P.u_exact(t0)
 
     # insert faults
     if fault_stuff is not None:
-        from pySDC.projects.Resilience.fault_injection import prepare_controller_for_faults
+        from pySDC.projects.Resilience.fault_injection import (
+            prepare_controller_for_faults,
+        )
 
-        rnd_args = {'iteration': 5}
-        args = {'time': 0.3, 'target': 0}
+        rnd_args = {"iteration": 5}
+        args = {"time": 0.3, "target": 0}
         prepare_controller_for_faults(controller, fault_stuff, rnd_args, args)
 
     # call main function to get things done...
@@ -126,13 +136,13 @@ def plot_solution(stats):  # pragma: no cover
         None
     """
     fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
+    ax = fig.add_subplot(projection="3d")
 
-    u = get_sorted(stats, type='u')
+    u = get_sorted(stats, type="u")
     ax.plot([me[1][0] for me in u], [me[1][1] for me in u], [me[1][2] for me in u])
-    ax.set_xlabel('x')
-    ax.set_ylabel('y')
-    ax.set_zlabel('z')
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
     plt.show()
 
 
@@ -149,12 +159,14 @@ def check_solution(stats, controller, thresh=5e-4):
     Returns:
         None
     """
-    u = get_sorted(stats, type='u')
+    u = get_sorted(stats, type="u")
     u_exact = controller.MS[0].levels[0].prob.u_exact(t=u[-1][0])
     error = np.linalg.norm(u[-1][1] - u_exact, np.inf)
-    error_hook = get_sorted(stats, type='e_global_post_run')[-1][1]
+    error_hook = get_sorted(stats, type="e_global_post_run")[-1][1]
 
-    assert error == error_hook, f'Expected errors to match, got {error:.2e} and {error_hook:.2e}!'
+    assert (
+        error == error_hook
+    ), f"Expected errors to match, got {error:.2e} and {error_hook:.2e}!"
     assert error < thresh, f"Error too large, got e={error:.2e}"
 
 
@@ -171,8 +183,8 @@ def main(plotting=True):
     from pySDC.implementations.hooks.log_errors import LogGlobalErrorPostRun
 
     custom_description = {}
-    custom_description['convergence_controllers'] = {Adaptivity: {'e_tol': 1e-5}}
-    custom_controller_params = {'logger_level': 30}
+    custom_description["convergence_controllers"] = {Adaptivity: {"e_tol": 1e-5}}
+    custom_controller_params = {"logger_level": 30}
     stats, controller, _ = run_Lorenz(
         custom_description=custom_description,
         custom_controller_params=custom_controller_params,

@@ -53,19 +53,21 @@ class indiesolver:
     def send(self, request):
         BUFFER_SIZE = 1024
         request["token"] = self.token
-        message = json.dumps(request) + '\0'
+        message = json.dumps(request) + "\0"
         while 1:
             try:
                 # self.skt.send(message) # Python 2.x
                 self.skt.sendto(message.encode(), (self.url, self.port))  # Python 3.x
                 message_is_complete = 0
-                reply = ''
+                reply = ""
                 while message_is_complete == 0:
                     # reply = reply + self.skt.recv(BUFFER_SIZE) # Python 2.x
-                    reply = reply + self.skt.recv(BUFFER_SIZE).decode('utf-8')  # Python 3.x
+                    reply = reply + self.skt.recv(BUFFER_SIZE).decode(
+                        "utf-8"
+                    )  # Python 3.x
 
                     if len(reply) > 0:
-                        if reply[len(reply) - 1] == '\0':
+                        if reply[len(reply) - 1] == "\0":
                             message_is_complete = 1
                             reply = reply[: len(reply) - 1]
 
@@ -80,7 +82,7 @@ class indiesolver:
                     self.skt.connect((self.url, self.port))
                 except Exception as msg:
                     print(msg)
-                    print('reconnect\t')
+                    print("reconnect\t")
                     time.sleep(2)
 
     def disconnect_socket(self):

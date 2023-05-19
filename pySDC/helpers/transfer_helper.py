@@ -22,7 +22,14 @@ def next_neighbors_periodic(p, ps, k):
     p_bar = p - np.floor(p / 1.0) * 1.0
     ps = ps - ps[0]
     distance_to_p = np.asarray(
-        list(map(lambda tk: min([np.abs(tk + 1 - p_bar), np.abs(tk - p_bar), np.abs(tk - 1 - p_bar)]), ps))
+        list(
+            map(
+                lambda tk: min(
+                    [np.abs(tk + 1 - p_bar), np.abs(tk - p_bar), np.abs(tk - 1 - p_bar)]
+                ),
+                ps,
+            )
+        )
     )
 
     # zip it
@@ -115,8 +122,10 @@ def restriction_matrix_1d(fine_grid, coarse_grid, k=2, periodic=False, pad=1):
                 cont_arr += 1
             bary_pol = []
             for l in range(k):
-                bary_pol.append(BarycentricInterpolator(cont_arr, np.roll(circulating_one, l)))
-            with np.errstate(divide='ignore'):
+                bary_pol.append(
+                    BarycentricInterpolator(cont_arr, np.roll(circulating_one, l))
+                )
+            with np.errstate(divide="ignore"):
                 M[i, nn] = np.asarray(list(map(lambda x: x(p), bary_pol)))
     else:
         M = np.zeros((coarse_grid.size, fine_grid.size + 2 * pad))
@@ -127,8 +136,12 @@ def restriction_matrix_1d(fine_grid, coarse_grid, k=2, periodic=False, pad=1):
             circulating_one = np.asarray([1.0] + [0.0] * (k - 1))
             bary_pol = []
             for l in range(k):
-                bary_pol.append(BarycentricInterpolator(padded_f_grid[nn], np.roll(circulating_one, l)))
-            with np.errstate(divide='ignore'):
+                bary_pol.append(
+                    BarycentricInterpolator(
+                        padded_f_grid[nn], np.roll(circulating_one, l)
+                    )
+                )
+            with np.errstate(divide="ignore"):
                 M[i, nn] = np.asarray(list(map(lambda x: x(p), bary_pol)))
         if pad > 0:
             M = M[:, pad:-pad]
@@ -136,7 +149,9 @@ def restriction_matrix_1d(fine_grid, coarse_grid, k=2, periodic=False, pad=1):
     return sprs.csc_matrix(M)
 
 
-def interpolation_matrix_1d(fine_grid, coarse_grid, k=2, periodic=False, pad=1, equidist_nested=True):
+def interpolation_matrix_1d(
+    fine_grid, coarse_grid, k=2, periodic=False, pad=1, equidist_nested=True
+):
     """
     Function to contruct the restriction matrix in 1d using barycentric interpolation
 
@@ -179,13 +194,19 @@ def interpolation_matrix_1d(fine_grid, coarse_grid, k=2, periodic=False, pad=1, 
                     else:
                         cont_arr = coarse_grid
 
-                    if p > np.mean(fine_grid) and not (cont_arr[0] <= p <= cont_arr[-1]):
+                    if p > np.mean(fine_grid) and not (
+                        cont_arr[0] <= p <= cont_arr[-1]
+                    ):
                         cont_arr += 1
 
                     bary_pol = []
                     for l in range(k):
-                        bary_pol.append(BarycentricInterpolator(cont_arr, np.roll(circulating_one, l)))
-                    with np.errstate(divide='ignore'):
+                        bary_pol.append(
+                            BarycentricInterpolator(
+                                cont_arr, np.roll(circulating_one, l)
+                            )
+                        )
+                    with np.errstate(divide="ignore"):
                         M[i, nn] = np.asarray(list(map(lambda x: x(p), bary_pol)))
 
         else:
@@ -199,8 +220,10 @@ def interpolation_matrix_1d(fine_grid, coarse_grid, k=2, periodic=False, pad=1, 
 
                 bary_pol = []
                 for l in range(k):
-                    bary_pol.append(BarycentricInterpolator(cont_arr, np.roll(circulating_one, l)))
-                with np.errstate(divide='ignore'):
+                    bary_pol.append(
+                        BarycentricInterpolator(cont_arr, np.roll(circulating_one, l))
+                    )
+                with np.errstate(divide="ignore"):
                     M[i, nn] = np.asarray(list(map(lambda x: x(p), bary_pol)))
 
     else:
@@ -226,8 +249,12 @@ def interpolation_matrix_1d(fine_grid, coarse_grid, k=2, periodic=False, pad=1, 
                     circulating_one = np.asarray([1.0] + [0.0] * (k - 1))
                     bary_pol = []
                     for l in range(k):
-                        bary_pol.append(BarycentricInterpolator(padded_c_grid[nn], np.roll(circulating_one, l)))
-                    with np.errstate(divide='ignore'):
+                        bary_pol.append(
+                            BarycentricInterpolator(
+                                padded_c_grid[nn], np.roll(circulating_one, l)
+                            )
+                        )
+                    with np.errstate(divide="ignore"):
                         M[i, nn] = np.asarray(list(map(lambda x: x(p), bary_pol)))
 
         else:
@@ -237,8 +264,12 @@ def interpolation_matrix_1d(fine_grid, coarse_grid, k=2, periodic=False, pad=1, 
                 circulating_one = np.asarray([1.0] + [0.0] * (k - 1))
                 bary_pol = []
                 for l in range(k):
-                    bary_pol.append(BarycentricInterpolator(padded_c_grid[nn], np.roll(circulating_one, l)))
-                with np.errstate(divide='ignore'):
+                    bary_pol.append(
+                        BarycentricInterpolator(
+                            padded_c_grid[nn], np.roll(circulating_one, l)
+                        )
+                    )
+                with np.errstate(divide="ignore"):
                     M[i, nn] = np.asarray(list(map(lambda x: x(p), bary_pol)))
 
         if pad > 0:
@@ -247,7 +278,7 @@ def interpolation_matrix_1d(fine_grid, coarse_grid, k=2, periodic=False, pad=1, 
     return sprs.csc_matrix(M)
 
 
-def border_padding(grid, l, r, pad_type='mirror'):
+def border_padding(grid, l, r, pad_type="mirror"):
     """
     Function to pad/embed an array at the boundaries
 
@@ -264,7 +295,7 @@ def border_padding(grid, l, r, pad_type='mirror'):
 
     assert l < grid.size and r < grid.size
     padded_arr = np.zeros(grid.size + l + r)
-    if pad_type == 'mirror':
+    if pad_type == "mirror":
         for i in range(l):
             padded_arr[i] = 2 * grid[0] - grid[l - i]
         for j in range(r):

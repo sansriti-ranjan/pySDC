@@ -17,8 +17,8 @@ class explicit(sweeper):
             params: parameters for the sweeper
         """
 
-        if 'QE' not in params:
-            params['QE'] = 'EE'
+        if "QE" not in params:
+            params["QE"] = "EE"
 
         # call parent's initialization routine
         super(explicit, self).__init__(params)

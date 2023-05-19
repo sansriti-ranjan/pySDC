@@ -10,7 +10,9 @@ from pySDC.implementations.controller_classes.controller_MPI import controller_M
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 
 from pySDC.playgrounds.Dedalus.TransferDedalusFields import dedalus_field_transfer
-from pySDC.playgrounds.Dedalus.RayleighBenard_2D_Dedalus import rayleighbenard_2d_dedalus
+from pySDC.playgrounds.Dedalus.RayleighBenard_2D_Dedalus import (
+    rayleighbenard_2d_dedalus,
+)
 from pySDC.playgrounds.Dedalus.RayleighBenard_monitor import monitor
 
 
@@ -50,46 +52,48 @@ def main():
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-08
-    level_params['dt'] = 0.0001
-    level_params['nsweeps'] = [1]
+    level_params["restol"] = 1e-08
+    level_params["dt"] = 0.0001
+    level_params["nsweeps"] = [1]
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
     # sweeper_params['collocation_class'] = EquidistantNoLeft
-    sweeper_params['num_nodes'] = [1]
-    sweeper_params['QI'] = ['LU']  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
-    sweeper_params['initial_guess'] = 'spread'
+    sweeper_params["num_nodes"] = [1]
+    sweeper_params["QI"] = [
+        "LU"
+    ]  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
+    sweeper_params["initial_guess"] = "spread"
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['Ra'] = 1e05
-    problem_params['Pr'] = 1.0
-    problem_params['initial'] = 'random'
-    problem_params['nvars'] = [(64, 32)]  # number of degrees of freedom for each level
-    problem_params['comm'] = space_comm
+    problem_params["Ra"] = 1e05
+    problem_params["Pr"] = 1.0
+    problem_params["initial"] = "random"
+    problem_params["nvars"] = [(64, 32)]  # number of degrees of freedom for each level
+    problem_params["comm"] = space_comm
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 1
+    step_params["maxiter"] = 1
     # step_params['errtol'] = 1E-07
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 20 if space_rank == 0 else 99
-    controller_params['hook_class'] = monitor
+    controller_params["logger_level"] = 20 if space_rank == 0 else 99
+    controller_params["hook_class"] = monitor
     # controller_params['use_iteration_estimator'] = True
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = rayleighbenard_2d_dedalus
-    description['problem_params'] = problem_params  # pass problem parameters
-    description['sweeper_class'] = imex_1st_order
-    description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    description['level_params'] = level_params  # pass level parameters
-    description['step_params'] = step_params  # pass step parameters
-    description['space_transfer_class'] = dedalus_field_transfer
+    description["problem_class"] = rayleighbenard_2d_dedalus
+    description["problem_params"] = problem_params  # pass problem parameters
+    description["sweeper_class"] = imex_1st_order
+    description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    description["level_params"] = level_params  # pass level parameters
+    description["step_params"] = step_params  # pass step parameters
+    description["space_transfer_class"] = dedalus_field_transfer
     # description['space_transfer_params'] = space_transfer_params  # pass paramters for spatial transfer
 
     # set time parameters
@@ -97,7 +101,9 @@ def main():
     Tend = 0.1
 
     # instantiate controller
-    controller = controller_MPI(controller_params=controller_params, description=description, comm=time_comm)
+    controller = controller_MPI(
+        controller_params=controller_params, description=description, comm=time_comm
+    )
 
     # get initial values on finest level
     P = controller.S.levels[0].prob

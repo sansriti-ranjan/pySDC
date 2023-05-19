@@ -55,28 +55,35 @@ class AdaptiveCollocation(ConvergenceController):
         """
 
         defaults = {
-            'control_order': 300,
-            'num_colls': 0,
-            'sweeper_params': description['sweeper_params'],
-            'vary_keys_sweeper': [],
-            'vary_keys_level': [],
+            "control_order": 300,
+            "num_colls": 0,
+            "sweeper_params": description["sweeper_params"],
+            "vary_keys_sweeper": [],
+            "vary_keys_level": [],
         }
 
         # only these keys can be changed by this convergence controller
-        self.allowed_sweeper_keys = ['quad_type', 'num_nodes', 'node_type', 'do_coll_update']
-        self.allowed_level_keys = ['restol']
+        self.allowed_sweeper_keys = [
+            "quad_type",
+            "num_nodes",
+            "node_type",
+            "do_coll_update",
+        ]
+        self.allowed_level_keys = ["restol"]
 
         # add the keys to lists so we know what we need to change later
         for key in params.keys():
             if type(params[key]) == list:
                 if key in self.allowed_sweeper_keys:
-                    defaults['vary_keys_sweeper'] += [key]
+                    defaults["vary_keys_sweeper"] += [key]
                 elif key in self.allowed_level_keys:
-                    defaults['vary_keys_level'] += [key]
+                    defaults["vary_keys_level"] += [key]
                 else:
-                    raise NotImplementedError(f'Don\'t know what to do with key {key} here!')
+                    raise NotImplementedError(
+                        f"Don't know what to do with key {key} here!"
+                    )
 
-                defaults['num_colls'] = max([defaults['num_colls'], len(params[key])])
+                defaults["num_colls"] = max([defaults["num_colls"], len(params[key])])
 
         return {**defaults, **super().setup(controller, params, description, **kwargs)}
 
@@ -93,12 +100,16 @@ class AdaptiveCollocation(ConvergenceController):
 
         # generate dictionaries with the new parameters
         new_params_sweeper = {
-            key: self.params.get(key)[self.status.active_coll] for key in self.params.vary_keys_sweeper
+            key: self.params.get(key)[self.status.active_coll]
+            for key in self.params.vary_keys_sweeper
         }
         sweeper_params = self.params.sweeper_params.copy()
         update_params_sweeper = {**sweeper_params, **new_params_sweeper}
 
-        new_params_level = {key: self.params.get(key)[self.status.active_coll] for key in self.params.vary_keys_level}
+        new_params_level = {
+            key: self.params.get(key)[self.status.active_coll]
+            for key in self.params.vary_keys_level
+        }
 
         # update sweeper for all levels
         for L in S.levels:
@@ -120,7 +131,9 @@ class AdaptiveCollocation(ConvergenceController):
             nodes_new = L.sweep.coll.nodes.copy()
             interpolator = LagrangeApproximation(points=np.append(0, nodes_old))
 
-            u_inter = interpolator.getInterpolationMatrix(np.append(0, nodes_new)) @ u_old
+            u_inter = (
+                interpolator.getInterpolationMatrix(np.append(0, nodes_new)) @ u_old
+            )
 
             # assign the interpolated values to the nodes in the level
             for i in range(0, len(u_inter)):
@@ -133,15 +146,19 @@ class AdaptiveCollocation(ConvergenceController):
                 L.f[i] = L.prob.eval_f(L.u[i], L.time)
 
         # log the new parameters
-        self.log(f'Switching to collocation {self.status.active_coll + 1} of {self.params.num_colls}', S, level=20)
-        msg = 'New quadrature:'
+        self.log(
+            f"Switching to collocation {self.status.active_coll + 1} of {self.params.num_colls}",
+            S,
+            level=20,
+        )
+        msg = "New quadrature:"
         for key in list(sweeper_params.keys()) + list(new_params_level.keys()):
             if key in self.params.vary_keys_sweeper:
-                msg += f'\n--> {key}: {update_params_sweeper[key]}'
+                msg += f"\n--> {key}: {update_params_sweeper[key]}"
             elif key in self.params.vary_keys_level:
-                msg += f'\n--> {key}: {new_params_level[key]}'
+                msg += f"\n--> {key}: {new_params_level[key]}"
             else:
-                msg += f'\n    {key}: {update_params_sweeper[key]}'
+                msg += f"\n    {key}: {update_params_sweeper[key]}"
         self.log(msg, S)
 
     def setup_status_variables(self, controller, **kwargs):
@@ -154,7 +171,7 @@ class AdaptiveCollocation(ConvergenceController):
         Returns:
             None
         """
-        self.status = Status(['active_coll'])
+        self.status = Status(["active_coll"])
 
     def reset_status_variables(self, controller, **kwargs):
         """

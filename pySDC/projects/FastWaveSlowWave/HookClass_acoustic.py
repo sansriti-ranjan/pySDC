@@ -10,7 +10,7 @@ class dump_energy(hooks):
         """
         super(dump_energy, self).__init__()
 
-        self.file = open('data/energy-sdc.txt', 'w')
+        self.file = open("data/energy-sdc.txt", "w")
 
     def post_step(self, step, level_number):
         """
@@ -28,4 +28,4 @@ class dump_energy(hooks):
 
         xx = L.uend
         E = np.sum(np.square(xx[0, :]) + np.square(xx[1, :]))
-        self.file.write('%30.20f\n' % E)
+        self.file.write("%30.20f\n" % E)

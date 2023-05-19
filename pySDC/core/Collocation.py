@@ -63,7 +63,15 @@ class CollBase(object):
         left_is_node (bool): flag to indicate whether left point is collocation node
     """
 
-    def __init__(self, num_nodes=None, tleft=0, tright=1, node_type='LEGENDRE', quad_type=None, **kwargs):
+    def __init__(
+        self,
+        num_nodes=None,
+        tleft=0,
+        tright=1,
+        node_type="LEGENDRE",
+        quad_type=None,
+        **kwargs,
+    ):
         """
         Initialization routine for a collocation object
 
@@ -74,11 +82,15 @@ class CollBase(object):
         """
 
         if not num_nodes > 0:
-            raise CollocationError('At least one quadrature node required, got %s' % num_nodes)
+            raise CollocationError(
+                "At least one quadrature node required, got %s" % num_nodes
+            )
         if not tleft < tright:
-            raise CollocationError('Interval boundaries are corrupt, got %s and %s' % (tleft, tright))
+            raise CollocationError(
+                "Interval boundaries are corrupt, got %s and %s" % (tleft, tright)
+            )
 
-        self.logger = logging.getLogger('collocation')
+        self.logger = logging.getLogger("collocation")
 
         # Set number of nodes, left and right interval boundaries
         self.num_nodes = num_nodes
@@ -90,18 +102,18 @@ class CollBase(object):
 
         # Instantiate attributes
         self.nodeGenerator = NodesGenerator(self.node_type, self.quad_type)
-        if self.node_type == 'EQUID':
+        if self.node_type == "EQUID":
             self.order = num_nodes
         else:
-            if self.quad_type == 'GAUSS':
+            if self.quad_type == "GAUSS":
                 self.order = 2 * num_nodes
-            elif self.quad_type.startswith('RADAU'):
+            elif self.quad_type.startswith("RADAU"):
                 self.order = 2 * num_nodes - 1
-            elif self.quad_type == 'LOBATTO':
+            elif self.quad_type == "LOBATTO":
                 self.order = 2 * num_nodes - 2
 
-        self.left_is_node = self.quad_type in ['LOBATTO', 'RADAU-LEFT']
-        self.right_is_node = self.quad_type in ['LOBATTO', 'RADAU-RIGHT']
+        self.left_is_node = self.quad_type in ["LOBATTO", "RADAU-LEFT"]
+        self.right_is_node = self.quad_type in ["LOBATTO", "RADAU-RIGHT"]
 
         self.nodes = self._getNodes
         self.weights = self._getWeights(tleft, tright)
@@ -122,7 +134,9 @@ class CollBase(object):
             numpy.ndarray: integral over f(x) between tleft and tright
         """
         if not np.size(weights) == np.size(data):
-            raise CollocationError("Input size does not match number of weights, but is %s" % np.size(data))
+            raise CollocationError(
+                "Input size does not match number of weights, but is %s" % np.size(data)
+            )
 
         return np.dot(weights, data)
 
@@ -138,7 +152,9 @@ class CollBase(object):
             numpy.ndarray: weights of the collocation formula given by the nodes
         """
         if self.nodes is None:
-            raise CollocationError(f"Need nodes before computing weights, got {self.nodes}")
+            raise CollocationError(
+                f"Need nodes before computing weights, got {self.nodes}"
+            )
 
         # Instantiate the Lagrange interpolator object
         approx = LagrangeApproximation(self.nodes)
@@ -146,7 +162,7 @@ class CollBase(object):
         # Compute weights
         tLeft = np.ravel(self.tleft)[0]
         tRight = np.ravel(self.tright)[0]
-        weights = approx.getIntegrationMatrix([(tLeft, tRight)], numQuad='FEJER')
+        weights = approx.getIntegrationMatrix([(tLeft, tRight)], numQuad="FEJER")
 
         return np.ravel(weights)
 
@@ -185,7 +201,9 @@ class CollBase(object):
             numpy.ndarray: matrix containing the weights for tleft to node
         """
         if self.nodes is None:
-            raise CollocationError(f"Need nodes before computing weights, got {self.nodes}")
+            raise CollocationError(
+                f"Need nodes before computing weights, got {self.nodes}"
+            )
         M = self.num_nodes
         Q = np.zeros([M + 1, M + 1])
 
@@ -195,7 +213,7 @@ class CollBase(object):
         # Compute tleft-to-node integration matrix
         tLeft = np.ravel(self.tleft)[0]
         intervals = [(tLeft, tau) for tau in self.nodes]
-        intQ = approx.getIntegrationMatrix(intervals, numQuad='FEJER')
+        intQ = approx.getIntegrationMatrix(intervals, numQuad="FEJER")
 
         # Store into Q matrix
         Q[1:, 1:] = intQ

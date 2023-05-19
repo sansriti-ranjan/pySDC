@@ -59,6 +59,7 @@ class Compression(ConvergenceController):
             # metrics = self.compressor.get_metrics()
             # print(metrics)
 
+
 class Compression_Conv_Controller(ConvergenceController):
     def setup(self, controller, params, description, **kwargs):
         defaults = {
@@ -67,11 +68,11 @@ class Compression_Conv_Controller(ConvergenceController):
             **super().setup(controller, params, description, **kwargs),
         }
 
-        #The bottom line gets access to manager but makes a new mesh
-        # x = compressed_mesh(init=((30,), None, np.float64)) 
+        # The bottom line gets access to manager but makes a new mesh
+        # x = compressed_mesh(init=((30,), None, np.float64))
         # self.manager = x.manager
         self.manager = compressed_mesh(init=((30,), None, np.float64)).manager
-        self.manager.errBound = defaults['errBound']
+        self.manager.errBound = defaults["errBound"]
         return defaults
 
     def dependencies(self, controller, description, **kwargs):
@@ -86,7 +87,10 @@ class Compression_Conv_Controller(ConvergenceController):
             None
         """
 
-        from pySDC.implementations.convergence_controller_classes.estimate_contraction_factor import EstimateContractionFactor
+        from pySDC.implementations.convergence_controller_classes.estimate_contraction_factor import (
+            EstimateContractionFactor,
+        )
+
         controller.add_convergence_controller(
             EstimateContractionFactor,
             description=description,
@@ -95,7 +99,6 @@ class Compression_Conv_Controller(ConvergenceController):
     def post_iteration_processing(self, controller, S, **kwargs):
         self.log(S.levels[0].status.contraction_factor, S, level=10)
         self.log(S.levels[0].status.error_embedded_estimate, S)
-
 
     # def post_step_processing(self, controller, S, **kwargs):
     #     print(self.manager)

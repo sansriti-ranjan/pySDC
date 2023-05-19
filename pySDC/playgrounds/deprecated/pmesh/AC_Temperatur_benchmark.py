@@ -9,12 +9,14 @@ from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 
 from pySDC.playgrounds.pmesh.AllenCahn_Temperature_PMESH import allencahn_imex
 from pySDC.playgrounds.pmesh.TransferMesh_PMESH import pmesh_to_pmesh
-from pySDC.playgrounds.pmesh.AllenCahn_Temperatur_monitor_and_dump import monitor_and_dump
+from pySDC.playgrounds.pmesh.AllenCahn_Temperatur_monitor_and_dump import (
+    monitor_and_dump,
+)
 from pySDC.playgrounds.pmesh.AllenCahn_dump import dump
 from pySDC.playgrounds.pmesh.visualize_Temperature import plot_data
 
 
-def run_simulation(name=''):
+def run_simulation(name=""):
     """
     A simple test program to do PFASST runs for the AC equation
     """
@@ -48,55 +50,61 @@ def run_simulation(name=''):
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-08
-    level_params['dt'] = 1e-03
-    level_params['nsweeps'] = [1]
+    level_params["restol"] = 1e-08
+    level_params["dt"] = 1e-03
+    level_params["nsweeps"] = [1]
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = [3]
-    sweeper_params['QI'] = ['LU']  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
-    sweeper_params['initial_guess'] = 'zero'
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = [3]
+    sweeper_params["QI"] = [
+        "LU"
+    ]  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
+    sweeper_params["initial_guess"] = "zero"
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['L'] = 1.0
-    problem_params['nvars'] = [(128, 128)]  # , (64, 64)]#, 128)]
-    problem_params['eps'] = [0.04]
-    problem_params['dw'] = [21.0]
-    problem_params['D'] = [0.1]
-    problem_params['TM'] = [1.0]
-    problem_params['radius'] = 0.25
-    problem_params['comm'] = space_comm
-    problem_params['name'] = name
+    problem_params["L"] = 1.0
+    problem_params["nvars"] = [(128, 128)]  # , (64, 64)]#, 128)]
+    problem_params["eps"] = [0.04]
+    problem_params["dw"] = [21.0]
+    problem_params["D"] = [0.1]
+    problem_params["TM"] = [1.0]
+    problem_params["radius"] = 0.25
+    problem_params["comm"] = space_comm
+    problem_params["name"] = name
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 20 if space_rank == 0 else 99  # set level depending on rank
-    controller_params['hook_class'] = monitor_and_dump
+    controller_params["logger_level"] = (
+        20 if space_rank == 0 else 99
+    )  # set level depending on rank
+    controller_params["hook_class"] = monitor_and_dump
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = allencahn_imex
+    description["problem_class"] = allencahn_imex
     # description['problem_class'] = allencahn_imex_stab
-    description['problem_params'] = problem_params  # pass problem parameters
-    description['sweeper_class'] = imex_1st_order
-    description['sweeper_params'] = sweeper_params  # pass sweeper parameters
-    description['level_params'] = level_params  # pass level parameters
-    description['step_params'] = step_params  # pass step parameters
-    description['space_transfer_class'] = pmesh_to_pmesh
+    description["problem_params"] = problem_params  # pass problem parameters
+    description["sweeper_class"] = imex_1st_order
+    description["sweeper_params"] = sweeper_params  # pass sweeper parameters
+    description["level_params"] = level_params  # pass level parameters
+    description["step_params"] = step_params  # pass step parameters
+    description["space_transfer_class"] = pmesh_to_pmesh
 
     # set time parameters
     t0 = 0.0
     Tend = 128 * 0.001
 
     # instantiate controller
-    controller = controller_MPI(controller_params=controller_params, description=description, comm=time_comm)
+    controller = controller_MPI(
+        controller_params=controller_params, description=description, comm=time_comm
+    )
 
     # get initial values on finest level
     P = controller.S.levels[0].prob
@@ -106,26 +114,25 @@ def run_simulation(name=''):
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 
     if space_rank == 0:
-
         # filter statistics by type (number of iterations)
-        iter_counts = get_sorted(stats, type='niter', sortby='time')
+        iter_counts = get_sorted(stats, type="niter", sortby="time")
 
         print()
 
         niters = np.array([item[1] for item in iter_counts])
-        out = f'Mean number of iterations on rank {time_rank}: {np.mean(niters):.4f}'
+        out = f"Mean number of iterations on rank {time_rank}: {np.mean(niters):.4f}"
         print(out)
 
-        timing = get_sorted(stats, type='timing_run', sortby='time')
+        timing = get_sorted(stats, type="timing_run", sortby="time")
 
-        out = f'Time to solution on rank {time_rank}: {timing[0][1]:.4f} sec.'
+        out = f"Time to solution on rank {time_rank}: {timing[0][1]:.4f} sec."
         print(out)
 
         print()
 
         # convert filtered statistics to list of computed radii, sorted by time
-        computed_radii = get_sorted(stats, type='computed_radius', sortby='time')
-        exact_radii = get_sorted(stats, type='exact_radius', sortby='time')
+        computed_radii = get_sorted(stats, type="computed_radius", sortby="time")
+        exact_radii = get_sorted(stats, type="exact_radius", sortby="time")
 
         # print radii and error over time
         for cr, er in zip(computed_radii, exact_radii):
@@ -133,11 +140,14 @@ def run_simulation(name=''):
                 err = abs(cr[1] - er[1]) / er[1]
             else:
                 err = 1.0
-            out = f'Computed/exact/error radius for time {cr[0]:6.4f}: ' f'{cr[1]:6.4f} / {er[1]:6.4f} / {err:6.4e}'
+            out = (
+                f"Computed/exact/error radius for time {cr[0]:6.4f}: "
+                f"{cr[1]:6.4f} / {er[1]:6.4f} / {err:6.4e}"
+            )
             print(out)
 
 
 if __name__ == "__main__":
-    name = 'AC-temperature-test'
+    name = "AC-temperature-test"
     run_simulation(name=name)
     # plot_data(name=name)

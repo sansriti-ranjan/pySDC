@@ -3,7 +3,9 @@ import numpy as np
 from pySDC.helpers.problem_helper import get_finite_difference_stencil
 
 
-def get_finite_difference_eigenvalues(derivative, order, stencil_type=None, steps=None, dx=None, L=1.0):
+def get_finite_difference_eigenvalues(
+    derivative, order, stencil_type=None, steps=None, dx=None, L=1.0
+):
     """
     Compute the eigenvalues of the finite difference (FD) discretization using Fourier transform.
 
@@ -38,6 +40,11 @@ def get_finite_difference_eigenvalues(derivative, order, stencil_type=None, step
     # get the impact of the stencil in Fourier space
     for n in range(N):
         for i in range(len(weights)):
-            eigenvalues[n] += weights[i] * np.exp(2 * np.pi * 1j * n / N * offsets[i]) * 1.0 / (dx**derivative)
+            eigenvalues[n] += (
+                weights[i]
+                * np.exp(2 * np.pi * 1j * n / N * offsets[i])
+                * 1.0
+                / (dx**derivative)
+            )
 
     return eigenvalues

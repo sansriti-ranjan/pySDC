@@ -19,8 +19,10 @@ class fermi_pasta_ulam_tsingou(ptype):
     def __init__(self, npart, alpha, k, energy_modes):
         """Initialization routine"""
         # invoke super init, passing nparts
-        super().__init__((npart, None, np.dtype('float64')))
-        self._makeAttributeAndRegister('npart', 'alpha', 'k', 'energy_modes', localVars=locals(), readOnly=True)
+        super().__init__((npart, None, np.dtype("float64")))
+        self._makeAttributeAndRegister(
+            "npart", "alpha", "k", "energy_modes", localVars=locals(), readOnly=True
+        )
 
         self.dx = (self.npart / 32) / (self.npart + 1)
         self.xvalues = np.array([(i + 1) * self.dx for i in range(self.npart)])
@@ -45,7 +47,9 @@ class fermi_pasta_ulam_tsingou(ptype):
         #     self.alpha * ((u.pos[1] - u.pos[0]) ** 2 - (u.pos[0]) ** 2)
         # me[-1] = u.pos[-2] - 2.0 * u.pos[-1] + \
         #     self.alpha * ((u.pos[-1]) ** 2 - (u.pos[-1] - u.pos[-2]) ** 2)
-        me[1:-1] = (u.pos[:-2] - 2.0 * u.pos[1:-1] + u.pos[2:]) * (self.ones + self.alpha * (u.pos[2:] - u.pos[:-2]))
+        me[1:-1] = (u.pos[:-2] - 2.0 * u.pos[1:-1] + u.pos[2:]) * (
+            self.ones + self.alpha * (u.pos[2:] - u.pos[:-2])
+        )
         me[0] = (-2.0 * u.pos[0] + u.pos[1]) * (1 + self.alpha * (u.pos[1]))
         me[-1] = (u.pos[-2] - 2.0 * u.pos[-1]) * (1 + self.alpha * (-u.pos[-2]))
 
@@ -60,7 +64,7 @@ class fermi_pasta_ulam_tsingou(ptype):
         Returns:
             dtype_u: exact/initial position and velocity
         """
-        assert t == 0.0, 'error, u_exact only works for the initial time t0=0'
+        assert t == 0.0, "error, u_exact only works for the initial time t0=0"
 
         me = self.dtype_u(self.init, val=0.0)
 
@@ -84,7 +88,11 @@ class fermi_pasta_ulam_tsingou(ptype):
             + 0.5 * (u.pos[1:] - u.pos[:-1]) ** 2
             + self.alpha / 3.0 * (u.pos[1:] - u.pos[:-1]) ** 3
         )
-        ham += 0.5 * u.vel[-1] ** 2 + 0.5 * (u.pos[-1]) ** 2 + self.alpha / 3.0 * (-u.pos[-1]) ** 3
+        ham += (
+            0.5 * u.vel[-1] ** 2
+            + 0.5 * (u.pos[-1]) ** 2
+            + self.alpha / 3.0 * (-u.pos[-1]) ** 3
+        )
         ham += 0.5 * (u.pos[0]) ** 2 + self.alpha / 3.0 * (u.pos[0]) ** 3
         return ham
 
@@ -103,9 +111,13 @@ class fermi_pasta_ulam_tsingou(ptype):
 
         for k in self.energy_modes:
             # Qk = np.sqrt(2.0 / (self.npart + 1)) * np.dot(u.pos, np.sin(np.pi * k * self.xvalues))
-            Qk = np.sqrt(2.0 * self.dx) * np.dot(u.pos, np.sin(np.pi * k * self.xvalues))
+            Qk = np.sqrt(2.0 * self.dx) * np.dot(
+                u.pos, np.sin(np.pi * k * self.xvalues)
+            )
             # Qkdot = np.sqrt(2.0 / (self.npart + 1)) * np.dot(u.vel, np.sin(np.pi * k * self.xvalues))
-            Qkdot = np.sqrt(2.0 * self.dx) * np.dot(u.vel, np.sin(np.pi * k * self.xvalues))
+            Qkdot = np.sqrt(2.0 * self.dx) * np.dot(
+                u.vel, np.sin(np.pi * k * self.xvalues)
+            )
 
             # omegak2 = 4.0 * np.sin(k * np.pi / (2.0 * (self.npart + 1))) ** 2
             omegak2 = 4.0 * np.sin(k * np.pi * self.dx / 2.0) ** 2

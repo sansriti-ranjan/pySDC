@@ -29,15 +29,19 @@ class testequation0d(ptype):
             dtype_u: mesh data type for solution
             dtype_f: mesh data type for RHS
         """
-        assert not any(isinstance(i, list) for i in lambdas), 'ERROR: expect flat list here, got %s' % lambdas
+        assert not any(isinstance(i, list) for i in lambdas), (
+            "ERROR: expect flat list here, got %s" % lambdas
+        )
         nvars = len(lambdas)
-        assert nvars > 0, 'ERROR: expect at least one lambda parameter here'
+        assert nvars > 0, "ERROR: expect at least one lambda parameter here"
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
-        super().__init__(init=(nvars, None, np.dtype('complex128')))
+        super().__init__(init=(nvars, None, np.dtype("complex128")))
 
         self.A = self.__get_A(lambdas)
-        self._makeAttributeAndRegister('nvars', 'lambdas', 'u0', localVars=locals(), readOnly=True)
+        self._makeAttributeAndRegister(
+            "nvars", "lambdas", "u0", localVars=locals(), readOnly=True
+        )
 
     @staticmethod
     def __get_A(lambdas):
@@ -85,7 +89,7 @@ class testequation0d(ptype):
         """
 
         me = self.dtype_u(self.init)
-        L = splu(sp.eye(self.nvars, format='csc') - factor * self.A)
+        L = splu(sp.eye(self.nvars, format="csc") - factor * self.A)
         me[:] = L.solve(rhs)
         return me
 

@@ -32,7 +32,9 @@ class pmesh_datatype(object):
             self.values[:] = val
         # something is wrong, if none of the ones above hit
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )
 
     def __add__(self, other):
         """
@@ -52,7 +54,9 @@ class pmesh_datatype(object):
             me.values = self.values + other.values
             return me
         else:
-            raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot add %s to %s" % (type(other), type(self))
+            )
 
     def __sub__(self, other):
         """
@@ -72,7 +76,9 @@ class pmesh_datatype(object):
             me.values = self.values - other.values
             return me
         else:
-            raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot subtract %s from %s" % (type(other), type(self))
+            )
 
     def __rmul__(self, other):
         """
@@ -92,7 +98,9 @@ class pmesh_datatype(object):
             me.values = other * self.values
             return me
         else:
-            raise DataError("Type error: cannot multiply %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot multiply %s to %s" % (type(other), type(self))
+            )
 
     def __abs__(self):
         """
@@ -204,7 +212,9 @@ class rhs_imex_pmesh(object):
             self.expl = pmesh_datatype(init, val=val)
         # something is wrong, if none of the ones above hit
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )
 
     def __sub__(self, other):
         """
@@ -225,7 +235,9 @@ class rhs_imex_pmesh(object):
             me.expl = self.expl - other.expl
             return me
         else:
-            raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot subtract %s from %s" % (type(other), type(self))
+            )
 
     def __add__(self, other):
         """
@@ -246,7 +258,9 @@ class rhs_imex_pmesh(object):
             me.expl = self.expl + other.expl
             return me
         else:
-            raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot add %s to %s" % (type(other), type(self))
+            )
 
     def __rmul__(self, other):
         """
@@ -267,4 +281,6 @@ class rhs_imex_pmesh(object):
             me.expl = other * self.expl
             return me
         else:
-            raise DataError("Type error: cannot multiply %s to %s" % (type(other), type(self)))
+            raise DataError(
+                "Type error: cannot multiply %s to %s" % (type(other), type(self))
+            )

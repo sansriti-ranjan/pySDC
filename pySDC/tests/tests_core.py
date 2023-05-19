@@ -4,7 +4,7 @@ import pytest
 
 @pytest.mark.base
 def test_errors():
-    classes = ['DataError']
+    classes = ["DataError"]
     for subclass in classes:
         yield check_error, subclass
 
@@ -16,7 +16,7 @@ def check_error(subclass):
     err = getattr(pySDC.core.Errors, subclass)
 
     try:
-        raise err('bla')
+        raise err("bla")
     except err:
         assert True
 
@@ -32,7 +32,7 @@ def test_datatypes_mesh():
 def check_datatypes_mesh(init):
     import pySDC.implementations.datatype_classes.mesh as m
 
-    m1 = m.mesh((init, None, np.dtype('float64')))
+    m1 = m.mesh((init, None, np.dtype("float64")))
     m2 = m.mesh(m1)
 
     m1[:] = 1.0
@@ -84,9 +84,9 @@ def check_datatypes_particles(init):
     from pySDC.implementations.datatype_classes.particles import particles
     from pySDC.implementations.datatype_classes.particles import acceleration
 
-    p1 = particles((init, None, np.dtype('float64')))
+    p1 = particles((init, None, np.dtype("float64")))
     p2 = particles(p1)
-    p5 = particles((init, None, np.dtype('float64')))
+    p5 = particles((init, None, np.dtype("float64")))
 
     p1.pos[:] = 1.0
     p2.pos[:] = 2.0
@@ -101,7 +101,7 @@ def check_datatypes_particles(init):
 
     p7 = abs(p1)
 
-    a1 = acceleration((init, None, np.dtype('float64')))
+    a1 = acceleration((init, None, np.dtype("float64")))
     a2 = acceleration(a1)
     p8 = particles(p1)
 

@@ -4,7 +4,9 @@ from scipy.special import factorial
 from pySDC.core.ConvergenceController import ConvergenceController, Status
 from pySDC.core.Errors import DataError
 from pySDC.implementations.datatype_classes.mesh import mesh, imex_mesh
-from pySDC.implementations.hooks.log_extrapolated_error_estimate import LogExtrapolationErrorEstimate
+from pySDC.implementations.hooks.log_extrapolated_error_estimate import (
+    LogExtrapolationErrorEstimate,
+)
 
 
 class EstimateExtrapolationErrorBase(ConvergenceController):
@@ -25,8 +27,12 @@ class EstimateExtrapolationErrorBase(ConvergenceController):
             params (dict): The params passed for this specific convergence controller
             description (dict): The description object used to instantiate the controller
         """
-        self.prev = Status(["t", "u", "f", "dt"])  # store solutions etc. of previous steps here
-        self.coeff = Status(["u", "f", "prefactor"])  # store coefficients for extrapolation here
+        self.prev = Status(
+            ["t", "u", "f", "dt"]
+        )  # store solutions etc. of previous steps here
+        self.coeff = Status(
+            ["u", "f", "prefactor"]
+        )  # store coefficients for extrapolation here
         super().__init__(controller, params, description)
         controller.add_hook(LogExtrapolationErrorEstimate)
 
@@ -52,18 +58,28 @@ class EstimateExtrapolationErrorBase(ConvergenceController):
 
         default_params = {
             "control_order": -75,
-            "use_adaptivity": True in [me == Adaptivity for me in description.get("convergence_controllers", {})],
-            "use_HotRod": True in [me == HotRod for me in description.get("convergence_controllers", {})],
+            "use_adaptivity": True
+            in [
+                me == Adaptivity
+                for me in description.get("convergence_controllers", {})
+            ],
+            "use_HotRod": True
+            in [me == HotRod for me in description.get("convergence_controllers", {})],
             "order_time_marching": description["step_params"]["maxiter"],
         }
 
-        new_params = {**default_params, **super().setup(controller, params, description, **kwargs)}
+        new_params = {
+            **default_params,
+            **super().setup(controller, params, description, **kwargs),
+        }
 
         # Do a sufficiently high order Taylor expansion
         new_params["Taylor_order"] = new_params["order_time_marching"] + 2
 
         # Estimate and store values from this iteration
-        new_params["estimate_iter"] = new_params["order_time_marching"] - (1 if new_params["use_HotRod"] else 0)
+        new_params["estimate_iter"] = new_params["order_time_marching"] - (
+            1 if new_params["use_HotRod"] else 0
+        )
 
         # Store n values. Since we store u and f, we need only half of each (the +1 is for rounding)
         new_params["n"] = (new_params["Taylor_order"] + 1) // 2
@@ -97,16 +113,18 @@ class EstimateExtrapolationErrorBase(ConvergenceController):
         Returns:
             None
         """
-        if 'comm' in kwargs.keys():
+        if "comm" in kwargs.keys():
             steps = [controller.S]
         else:
-            if 'active_slots' in kwargs.keys():
-                steps = [controller.MS[i] for i in kwargs['active_slots']]
+            if "active_slots" in kwargs.keys():
+                steps = [controller.MS[i] for i in kwargs["active_slots"]]
             else:
                 steps = controller.MS
         where = ["levels", "status"]
         for S in steps:
-            self.add_variable(S, name='error_extrapolation_estimate', where=where, init=None)
+            self.add_variable(
+                S, name="error_extrapolation_estimate", where=where, init=None
+            )
 
     def check_parameters(self, controller, params, description, **kwargs):
         """
@@ -225,7 +243,9 @@ el multistep mode!",
 
             # Taylor expansions of the first derivatives a.k.a. right hand side evaluations
             A[i, self.params.n : self.params.Taylor_order] = (
-                steps_from_now[2 * self.params.n - self.params.Taylor_order :] ** (j[i] - 1) * inv_facs[i - 1]
+                steps_from_now[2 * self.params.n - self.params.Taylor_order :]
+                ** (j[i] - 1)
+                * inv_facs[i - 1]
             )
 
         # prepare rhs
@@ -235,10 +255,14 @@ el multistep mode!",
         # solve linear system for the coefficients
         coeff = np.linalg.solve(A, b)
         self.coeff.u = coeff[: self.params.n]
-        self.coeff.f[self.params.n * 2 - self.params.Taylor_order :] = coeff[self.params.n : self.params.Taylor_order]
+        self.coeff.f[self.params.n * 2 - self.params.Taylor_order :] = coeff[
+            self.params.n : self.params.Taylor_order
+        ]
 
         # determine prefactor
-        step_size_ratios = abs(dt[len(dt) - len(self.coeff.u) :] / dt[-1]) ** (self.params.Taylor_order - 1)
+        step_size_ratios = abs(dt[len(dt) - len(self.coeff.u) :] / dt[-1]) ** (
+            self.params.Taylor_order - 1
+        )
         inv_prefactor = -sum(step_size_ratios[1:]) - 1.0
         for i in range(len(self.coeff.u)):
             inv_prefactor += sum(step_size_ratios[1 : i + 1]) * self.coeff.u[i]
@@ -373,7 +397,9 @@ class EstimateExtrapolationErrorNonMPI(EstimateExtrapolationErrorBase):
             dtype_u: The extrapolated solution
         """
         if len(S.levels) > 1:
-            raise NotImplementedError("Extrapolated estimate only works on the finest level for now")
+            raise NotImplementedError(
+                "Extrapolated estimate only works on the finest level for now"
+            )
 
         # prepare variables
         u_ex = S.levels[0].u[-1] * 0.0
@@ -390,7 +416,10 @@ class EstimateExtrapolationErrorNonMPI(EstimateExtrapolationErrorBase):
 
         # do the extrapolation by summing everything up
         for i in range(self.params.n):
-            u_ex += self.coeff.u[i] * self.prev.u[idx[mask][i]] + self.coeff.f[i] * self.prev.f[idx[mask][i]]
+            u_ex += (
+                self.coeff.u[i] * self.prev.u[idx[mask][i]]
+                + self.coeff.f[i] * self.prev.f[idx[mask][i]]
+            )
 
         return u_ex
 
@@ -407,7 +436,9 @@ class EstimateExtrapolationErrorNonMPI(EstimateExtrapolationErrorBase):
         """
         u_ex = self.get_extrapolated_solution(S)
         if u_ex is not None:
-            S.levels[0].status.error_extrapolation_estimate = abs(u_ex - S.levels[0].u[-1]) * self.coeff.prefactor
+            S.levels[0].status.error_extrapolation_estimate = (
+                abs(u_ex - S.levels[0].u[-1]) * self.coeff.prefactor
+            )
         else:
             S.levels[0].status.error_extrapolation_estimate = None
 
@@ -440,15 +471,18 @@ class EstimateExtrapolationErrorWithinQ(EstimateExtrapolationErrorBase):
         Returns:
             dict: Updated parameters with default values
         """
-        num_nodes = description['sweeper_params']['num_nodes']
+        num_nodes = description["sweeper_params"]["num_nodes"]
 
         default_params = {
             "control_order": 400,
-            'Taylor_order': 2 * num_nodes,
-            'n': num_nodes,
+            "Taylor_order": 2 * num_nodes,
+            "n": num_nodes,
         }
 
-        return {**super().setup(controller, params, description, **kwargs), **default_params}
+        return {
+            **super().setup(controller, params, description, **kwargs),
+            **default_params,
+        }
 
     def post_iteration_processing(self, controller, S, **kwargs):
         """
@@ -494,5 +528,7 @@ class EstimateExtrapolationErrorWithinQ(EstimateExtrapolationErrorBase):
             u_ex += self.coeff.u[i] * lvl.u[i] + self.coeff.f[i] * f[i]
 
         # store the error
-        lvl.status.error_extrapolation_estimate = abs(u_ex - lvl.u[-1]) * self.coeff.prefactor
+        lvl.status.error_extrapolation_estimate = (
+            abs(u_ex - lvl.u[-1]) * self.coeff.prefactor
+        )
         return None

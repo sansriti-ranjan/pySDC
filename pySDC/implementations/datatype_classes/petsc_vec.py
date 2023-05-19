@@ -4,7 +4,9 @@ from pySDC.core.Errors import DataError
 
 
 class petsc_vec(PETSc.Vec):
-    __array_priority__ = 1000  # otherwise rmul with float64 does not work (don't ask, won't tell)
+    __array_priority__ = (
+        1000  # otherwise rmul with float64 does not work (don't ask, won't tell)
+    )
 
     def __new__(cls, init=None, val=0.0):
         if isinstance(init, petsc_vec) or isinstance(init, PETSc.Vec):
@@ -103,7 +105,9 @@ class petsc_vec_imex(object):
             self.expl = petsc_vec(init, val=val)
         # something is wrong, if none of the ones above hit
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )
 
 
 class petsc_vec_comp2(object):
@@ -137,4 +141,6 @@ class petsc_vec_comp2(object):
             self.comp2 = petsc_vec(init, val=val)
         # something is wrong, if none of the ones above hit
         else:
-            raise DataError('something went wrong during %s initialization' % type(self))
+            raise DataError(
+                "something went wrong during %s initialization" % type(self)
+            )

@@ -44,7 +44,7 @@ class monitor(hooks):
                 level=-1,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='computed_radius',
+                type="computed_radius",
                 value=radius,
             )
             self.add_to_stats(
@@ -53,7 +53,7 @@ class monitor(hooks):
                 level=-1,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type='exact_radius',
+                type="exact_radius",
                 value=self.init_radius,
             )
             # self.add_to_stats(process=step.status.slot, time=L.time, level=-1, iter=step.status.iter,
@@ -86,7 +86,7 @@ class monitor(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='computed_radius',
+            type="computed_radius",
             value=radius,
         )
         self.add_to_stats(
@@ -95,7 +95,7 @@ class monitor(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='exact_radius',
+            type="exact_radius",
             value=exact_radius,
         )
         # self.add_to_stats(process=step.status.slot, time=L.time + L.dt, level=-1, iter=step.status.iter,

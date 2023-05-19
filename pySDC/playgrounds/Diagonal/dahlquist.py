@@ -15,18 +15,17 @@ from qmatrix import genCollocation, genQDelta
 
 
 class IMEXSDC(object):
-
     # -------------------------------------------------------------------------
     # SDC settings (class attributes and methods)
     # -------------------------------------------------------------------------
 
     # Default : RADAU-RIGHT nodes (using a LEGENDRE distribution), two sweeps
     nSweep = 2
-    nodeDistr = 'LEGENDRE'
-    quadType = 'RADAU-RIGHT'
-    implSweep = 'BE'
-    explSweep = 'FE'
-    initSweep = 'QDELTA'
+    nodeDistr = "LEGENDRE"
+    quadType = "RADAU-RIGHT"
+    implSweep = "BE"
+    explSweep = "FE"
+    initSweep = "QDELTA"
     forceProl = False
 
     # Collocation method attributes
@@ -36,10 +35,17 @@ class IMEXSDC(object):
     QDeltaE, dtauE = genQDelta(nodes, explSweep, Q)
 
     @classmethod
-    def setParameters(cls, M=None, nodeDistr=None, quadType=None,
-                      implSweep=None, explSweep=None, initSweep=None,
-                      nSweep=None, forceProl=None):
-
+    def setParameters(
+        cls,
+        M=None,
+        nodeDistr=None,
+        quadType=None,
+        implSweep=None,
+        explSweep=None,
+        initSweep=None,
+        nSweep=None,
+        forceProl=None,
+    ):
         # Get non-changing parameters
         keepM = M is None
         keepNodeDistr = nodeDistr is None
@@ -61,8 +67,7 @@ class IMEXSDC(object):
 
         # Update parameters
         if updateNode:
-            cls.nodes, cls.weights, cls.Q = genCollocation(
-                M, nodeDistr, quadType)
+            cls.nodes, cls.weights, cls.Q = genCollocation(M, nodeDistr, quadType)
             cls.nodeDistr, cls.quadType = nodeDistr, quadType
         if updateQDeltaI:
             cls.QDeltaI, cls.dtauI = genQDelta(cls.nodes, implSweep, cls.Q)
@@ -80,14 +85,17 @@ class IMEXSDC(object):
     def getMaxOrder(cls):
         # TODO : adapt to non-LEGENDRE node distributions
         M = len(cls.nodes)
-        return 2*M if cls.quadType == 'GAUSS' else \
-            2*M-1 if cls.quadType.startswith('RADAU') else \
-            2*M-2  # LOBATTO
+        return (
+            2 * M
+            if cls.quadType == "GAUSS"
+            else 2 * M - 1
+            if cls.quadType.startswith("RADAU")
+            else 2 * M - 2
+        )  # LOBATTO
 
     def __init__(self, u0, lambdaI, lambdaE):
-
-        model = np.asarray(np.asarray(lambdaI) + np.asarray(lambdaE) + 0.)
-        c = lambda : np.zeros_like(model)
+        model = np.asarray(np.asarray(lambdaI) + np.asarray(lambdaE) + 0.0)
+        c = lambda: np.zeros_like(model)
 
         self.lambdaI, self.lambdaE = c(), c()
         np.copyto(self.lambdaI, lambdaI)
@@ -106,7 +114,7 @@ class IMEXSDC(object):
         self.lhs = [None] * self.M
 
         self.dt = None
-        self.axpy = blas.get_blas_funcs('axpy', dtype=self.u.dtype)
+        self.axpy = blas.get_blas_funcs("axpy", dtype=self.u.dtype)
 
     @property
     def M(self):
@@ -141,7 +149,7 @@ class IMEXSDC(object):
         # Attribute references
         qI = self.QDeltaI
         for i in range(self.M):
-            self.lhs[i] = 1 - dt*qI[i, i]*self.lambdaI
+            self.lhs[i] = 1 - dt * qI[i, i] * self.lambdaI
 
     def _evalImplicit(self, lamIU):
         np.copyto(lamIU, self.u)
@@ -155,7 +163,7 @@ class IMEXSDC(object):
         np.copyto(self.u, self.rhs)
         self.u /= self.lhs[iNode]
 
-    def _initSweep(self, iType='QDELTA'):
+    def _initSweep(self, iType="QDELTA"):
         """
         Initialize node terms for one given time-step
 
@@ -175,15 +183,14 @@ class IMEXSDC(object):
             lamEU0, lamIU0 = self.lamEU0, self.lamIU0
         axpy = self.axpy
 
-        if iType == 'QDELTA':
-
+        if iType == "QDELTA":
             # Prepare initial field evaluation
             if not self.leftIsNode:
                 self._evalExplicit(lamEU0)
-                lamEU0 *= dt*self.dtauE
+                lamEU0 *= dt * self.dtauE
                 if self.dtauI != 0.0:
                     self._evalImplicit(lamIU0)
-                    axpy(a=dt*self.dtauI, x=lamIU0, y=lamEU0)
+                    axpy(a=dt * self.dtauI, x=lamIU0, y=lamEU0)
 
             # Loop on all quadrature nodes
             for i in range(self.M):
@@ -195,15 +202,15 @@ class IMEXSDC(object):
                     rhs += lamEU0
                 # -- add explicit and implicit terms (already computed)
                 for j in range(i):
-                    axpy(a=dt*qE[i, j], x=lamEUk[j], y=rhs)
-                    axpy(a=dt*qI[i, j], x=lamIUk[j], y=rhs)
+                    axpy(a=dt * qE[i, j], x=lamEUk[j], y=rhs)
+                    axpy(a=dt * qI[i, j], x=lamIUk[j], y=rhs)
                 # Solve system and store node solution in solver state
                 self._solveAndStoreState(i)
                 # Evaluate implicit and implicit terms with current state
                 self._evalImplicit(lamIUk[i])
                 self._evalExplicit(lamEUk[i])
 
-        elif iType == 'COPY':  # also called "spread" in pySDC
+        elif iType == "COPY":  # also called "spread" in pySDC
             self._evalImplicit(lamIUk[0])
             self._evalExplicit(lamEUk[0])
             for i in range(1, self.M):
@@ -211,7 +218,7 @@ class IMEXSDC(object):
                 np.copyto(lamEUk[i], lamEUk[0])
 
         else:
-            raise NotImplementedError(f'iType={iType}')
+            raise NotImplementedError(f"iType={iType}")
 
     def _sweep(self):
         """Perform a sweep for the current time-step"""
@@ -230,17 +237,17 @@ class IMEXSDC(object):
             np.copyto(rhs, u0)
             # -- add quadrature terms
             for j in range(self.M):
-                axpy(a=dt*q[i, j], x=lamEUk[j], y=rhs)
-                axpy(a=dt*q[i, j], x=lamIUk[j], y=rhs)
+                axpy(a=dt * q[i, j], x=lamEUk[j], y=rhs)
+                axpy(a=dt * q[i, j], x=lamIUk[j], y=rhs)
             # -- add explicit and implicit terms from iteration k+1
             for j in range(i):
-                axpy(a=dt*qE[i, j], x=lamEUk1[j], y=rhs)
-                axpy(a=dt*qI[i, j], x=lamIUk1[j].data, y=rhs)
+                axpy(a=dt * qE[i, j], x=lamEUk1[j], y=rhs)
+                axpy(a=dt * qI[i, j], x=lamIUk1[j].data, y=rhs)
             # -- add explicit and implicit terms from iteration k
             for j in range(i):
-                axpy(a=-dt*qE[i, j], x=lamEUk[j], y=rhs)
-                axpy(a=-dt*qI[i, j], x=lamIUk[j], y=rhs)
-            axpy(a=-dt*qI[i, i], x=lamIUk[i], y=rhs)
+                axpy(a=-dt * qE[i, j], x=lamEUk[j], y=rhs)
+                axpy(a=-dt * qI[i, j], x=lamIUk[j], y=rhs)
+            axpy(a=-dt * qI[i, i], x=lamIUk[i], y=rhs)
             # Solve system and store node solution in solver state
             self._solveAndStoreState(i)
             # Evaluate implicit and implicit terms with current state
@@ -264,8 +271,8 @@ class IMEXSDC(object):
         np.copyto(rhs, u0)
         # -- add quadrature terms
         for i in range(self.M):
-            axpy(a=dt*w[i], x=lamEUk[i], y=rhs)
-            axpy(a=dt*w[i], x=lamIUk[i], y=rhs)
+            axpy(a=dt * w[i], x=lamEUk[i], y=rhs)
+            axpy(a=dt * w[i], x=lamIUk[i], y=rhs)
         # -- store to state
         np.copyto(self.u, rhs)
 
@@ -302,14 +309,14 @@ class IMEXSDC(object):
     @classmethod
     def imagStability(cls):
         zoom = 5
-        lamBnd = -4*zoom, 4*zoom, 201
+        lamBnd = -4 * zoom, 4 * zoom, 201
         lam = np.linspace(*lamBnd)
-        lams = 1j*lam
+        lams = 1j * lam
 
         nSweepPrev = cls.nSweep
         cls.nSweep = 1
         solver = cls(1.0, lams, 0)
-        solver.step(1.)
+        solver.step(1.0)
         cls.nSweep = nSweepPrev
         uNum = solver.u
         stab = np.abs(uNum)
@@ -317,22 +324,27 @@ class IMEXSDC(object):
         return lam[np.argwhere(stab <= 1)].max()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Basic testing
     import matplotlib.pyplot as plt
 
     nStep = 15
-    dt = 2*np.pi/nStep
-    times = np.linspace(0, 2*np.pi, nStep+1)
+    dt = 2 * np.pi / nStep
+    times = np.linspace(0, 2 * np.pi, nStep + 1)
 
     u0 = 1.0
     lambdaE = 1j
     lambdaI = -0.1
 
     IMEXSDC.setParameters(
-        M=3, quadType='LOBATTO', nodeDistr='LEGENDRE',
-        implSweep='BEpar', explSweep='PIC', initSweep='COPY',
-        forceProl=False)
+        M=3,
+        quadType="LOBATTO",
+        nodeDistr="LEGENDRE",
+        implSweep="BEpar",
+        explSweep="PIC",
+        initSweep="COPY",
+        forceProl=False,
+    )
     IMEXSDC.nSweep = 1
     solver = IMEXSDC(u0, lambdaI, lambdaE)
 
@@ -342,9 +354,9 @@ if __name__ == '__main__':
         u += [solver.u.copy()]
 
     u = np.array(u)
-    plt.plot(u.real[0], u.imag[0], 's', ms=15)
-    plt.plot(u.real, u.imag, 'o-')
-    uTh = u0*np.exp(times*(lambdaE+lambdaI))
-    plt.plot(uTh.real, uTh.imag, '^-')
+    plt.plot(u.real[0], u.imag[0], "s", ms=15)
+    plt.plot(u.real, u.imag, "o-")
+    uTh = u0 * np.exp(times * (lambdaE + lambdaI))
+    plt.plot(uTh.real, uTh.imag, "^-")
 
     print(IMEXSDC.imagStability())

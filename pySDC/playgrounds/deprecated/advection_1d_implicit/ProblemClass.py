@@ -27,11 +27,11 @@ class advection(ptype):
         """
 
         # these parameters will be used later, so assert their existence
-        assert 'nvars' in cparams
-        assert 'c' in cparams
-        assert 'order' in cparams
+        assert "nvars" in cparams
+        assert "c" in cparams
+        assert "order" in cparams
 
-        assert cparams['nvars'] % 2 == 0
+        assert cparams["nvars"] % 2 == 0
 
         # add parameters as attributes for further reference
         for k, v in cparams.items():

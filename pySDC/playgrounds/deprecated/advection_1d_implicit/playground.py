@@ -8,42 +8,41 @@ from pySDC.implementations.sweeper_classes.generic_LU import generic_LU
 from pySDC.playgrounds.deprecated.advection_1d_implicit.ProblemClass import advection
 
 if __name__ == "__main__":
-
     # set global logger (remove this if you do not want the output at all)
-    logger = Log.setup_custom_logger('root')
+    logger = Log.setup_custom_logger("root")
 
     num_procs = 1
 
     # This comes as read-in for the level class (this is optional!)
     lparams = {}
-    lparams['restol'] = 1e-10
+    lparams["restol"] = 1e-10
 
     # This comes as read-in for the step class (this is optional!)
     sparams = {}
-    sparams['maxiter'] = 10
+    sparams["maxiter"] = 10
 
     # This comes as read-in for the problem class
     pparams = {}
-    pparams['c'] = 1
-    pparams['nvars'] = [8, 4]
-    pparams['order'] = [2]
+    pparams["c"] = 1
+    pparams["nvars"] = [8, 4]
+    pparams["order"] = [2]
 
     # This comes as read-in for the transfer operations (this is optional!)
     tparams = {}
-    tparams['finter'] = True
-    tparams['iorder'] = 2
-    tparams['rorder'] = 1
+    tparams["finter"] = True
+    tparams["iorder"] = 2
+    tparams["rorder"] = 1
 
     # Fill description dictionary for easy hierarchy creation
     description = {}
-    description['problem_class'] = advection
-    description['problem_params'] = pparams
-    description['collocation_class'] = collclass.CollGaussLegendre
-    description['num_nodes'] = 5
-    description['sweeper_class'] = generic_LU
-    description['level_params'] = lparams
-    description['transfer_class'] = mesh_to_mesh_1d_periodic
-    description['transfer_params'] = tparams
+    description["problem_class"] = advection
+    description["problem_params"] = pparams
+    description["collocation_class"] = collclass.CollGaussLegendre
+    description["num_nodes"] = 5
+    description["sweeper_class"] = generic_LU
+    description["level_params"] = lparams
+    description["transfer_class"] = mesh_to_mesh_1d_periodic
+    description["transfer_params"] = tparams
 
     # quickly generate block of steps
     MS = mp.generate_steps(num_procs, sparams, description)
@@ -64,8 +63,12 @@ if __name__ == "__main__":
     uex = P.u_exact(Tend)
 
     print(
-        'error at time %s: %s'
-        % (Tend, np.linalg.norm(uex.values - uend.values, np.inf) / np.linalg.norm(uex.values, np.inf))
+        "error at time %s: %s"
+        % (
+            Tend,
+            np.linalg.norm(uex.values - uend.values, np.inf)
+            / np.linalg.norm(uex.values, np.inf),
+        )
     )
 
     # extract_stats = grep_stats(stats,iter=-1,type='residual')

@@ -30,12 +30,24 @@ class particle_hook(hooks):
         for i in range(N):
             # inner loop, omit ith particle
             for j in range(0, i):
-                dist2 = np.linalg.norm(part.pos[:, i] - part.pos[:, j], 2) ** 2 + L.prob.sig**2
+                dist2 = (
+                    np.linalg.norm(part.pos[:, i] - part.pos[:, j], 2) ** 2
+                    + L.prob.sig**2
+                )
                 fpot[i] += part.q[j] / np.sqrt(dist2)
             for j in range(i + 1, N):
-                dist2 = np.linalg.norm(part.pos[:, i] - part.pos[:, j], 2) ** 2 + L.prob.sig**2
+                dist2 = (
+                    np.linalg.norm(part.pos[:, i] - part.pos[:, j], 2) ** 2
+                    + L.prob.sig**2
+                )
                 fpot[i] += part.q[j] / np.sqrt(dist2)
-            fpot[i] -= L.prob.omega_E**2 * part.m[i] / part.q[i] / 2.0 * np.dot(w, part.pos[:, i] * part.pos[:, i])
+            fpot[i] -= (
+                L.prob.omega_E**2
+                * part.m[i]
+                / part.q[i]
+                / 2.0
+                * np.dot(w, part.pos[:, i] * part.pos[:, i])
+            )
 
         # add up kinetic and potntial contributions to total energy
         epot = 0
@@ -50,7 +62,7 @@ class particle_hook(hooks):
             level=L.level_index,
             iter=0,
             sweep=L.status.sweep,
-            type='etot',
+            type="etot",
             value=epot + ekin,
         )
 
@@ -76,12 +88,24 @@ class particle_hook(hooks):
         for i in range(N):
             # inner loop, omit ith particle
             for j in range(0, i):
-                dist2 = np.linalg.norm(part.pos[:, i] - part.pos[:, j], 2) ** 2 + L.prob.sig**2
+                dist2 = (
+                    np.linalg.norm(part.pos[:, i] - part.pos[:, j], 2) ** 2
+                    + L.prob.sig**2
+                )
                 fpot[i] += part.q[j] / np.sqrt(dist2)
             for j in range(i + 1, N):
-                dist2 = np.linalg.norm(part.pos[:, i] - part.pos[:, j], 2) ** 2 + L.prob.sig**2
+                dist2 = (
+                    np.linalg.norm(part.pos[:, i] - part.pos[:, j], 2) ** 2
+                    + L.prob.sig**2
+                )
                 fpot[i] += part.q[j] / np.sqrt(dist2)
-            fpot[i] -= L.prob.omega_E**2 * part.m[i] / part.q[i] / 2.0 * np.dot(w, part.pos[:, i] * part.pos[:, i])
+            fpot[i] -= (
+                L.prob.omega_E**2
+                * part.m[i]
+                / part.q[i]
+                / 2.0
+                * np.dot(w, part.pos[:, i] * part.pos[:, i])
+            )
 
         # add up kinetic and potntial contributions to total energy
         epot = 0
@@ -96,7 +120,7 @@ class particle_hook(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='etot',
+            type="etot",
             value=epot + ekin,
         )
 

@@ -6,7 +6,6 @@ import numpy as np
 
 
 def main():
-
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
@@ -20,7 +19,9 @@ def main():
 
     # print(rank, tmp_u.shape)
     Lloc = tmp_u.shape[0]
-    tvalues = np.linspace(rank * 1.0 / size, (rank + 1) * 1.0 / size, Lloc, endpoint=False)
+    tvalues = np.linspace(
+        rank * 1.0 / size, (rank + 1) * 1.0 / size, Lloc, endpoint=False
+    )
     print(tvalues)
 
     u = np.zeros(tmp_u.shape)
@@ -31,5 +32,5 @@ def main():
     print(pfft.forward(u))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

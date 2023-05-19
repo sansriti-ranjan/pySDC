@@ -4,7 +4,10 @@ import dolfin as df
 import numpy as np
 
 from pySDC.core.Problem import ptype
-from pySDC.implementations.datatype_classes.fenics_mesh import fenics_mesh, rhs_fenics_mesh
+from pySDC.implementations.datatype_classes.fenics_mesh import (
+    fenics_mesh,
+    rhs_fenics_mesh,
+)
 
 
 # noinspection PyUnusedLocal
@@ -39,11 +42,11 @@ class fenics_heat_weak_fullyimplicit(ptype):
             return on_boundary
 
         # these parameters will be used later, so assert their existence
-        essential_keys = ['c_nvars', 't0', 'family', 'order', 'refinements', 'nu']
+        essential_keys = ["c_nvars", "t0", "family", "order", "refinements", "nu"]
 
         # set logger level for FFC and dolfin
-        logging.getLogger('ULF').setLevel(logging.WARNING)
-        logging.getLogger('FFC').setLevel(logging.WARNING)
+        logging.getLogger("ULF").setLevel(logging.WARNING)
+        logging.getLogger("FFC").setLevel(logging.WARNING)
         df.set_log_level(30)
 
         # set solver and form parameters
@@ -58,16 +61,23 @@ class fenics_heat_weak_fullyimplicit(ptype):
         # define function space for future reference
         self.V = df.FunctionSpace(mesh, family, order)
         tmp = df.Function(self.V)
-        print('DoFs on this level:', len(tmp.vector()[:]))
+        print("DoFs on this level:", len(tmp.vector()[:]))
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
         super(fenics_heat_weak_fullyimplicit, self).__init__(self.V)
         self._makeAttributeAndRegister(
-            'c_nvars', 't0', 'family', 'order', 'refinements', 'nu', localVars=locals(), readOnly=True
+            "c_nvars",
+            "t0",
+            "family",
+            "order",
+            "refinements",
+            "nu",
+            localVars=locals(),
+            readOnly=True,
         )
 
         self.g = df.Expression(
-            '-sin(a*x[0]) * (sin(t) - b*a*a*cos(t))',
+            "-sin(a*x[0]) * (sin(t) - b*a*a*cos(t))",
             a=np.pi,
             b=self.nu,
             t=self.t0,
@@ -77,7 +87,10 @@ class fenics_heat_weak_fullyimplicit(ptype):
         # rhs in weak form
         self.w = df.Function(self.V)
         v = df.TestFunction(self.V)
-        self.a_K = -self.nu * df.inner(df.nabla_grad(self.w), df.nabla_grad(v)) * df.dx + self.g * v * df.dx
+        self.a_K = (
+            -self.nu * df.inner(df.nabla_grad(self.w), df.nabla_grad(v)) * df.dx
+            + self.g * v * df.dx
+        )
 
         # mass matrix
         u = df.TrialFunction(self.V)
@@ -137,10 +150,10 @@ class fenics_heat_weak_fullyimplicit(ptype):
         solver = df.NonlinearVariationalSolver(problem)
 
         prm = solver.parameters
-        prm['newton_solver']['absolute_tolerance'] = 1e-12
-        prm['newton_solver']['relative_tolerance'] = 1e-12
-        prm['newton_solver']['maximum_iterations'] = 25
-        prm['newton_solver']['relaxation_parameter'] = 1.0
+        prm["newton_solver"]["absolute_tolerance"] = 1e-12
+        prm["newton_solver"]["relative_tolerance"] = 1e-12
+        prm["newton_solver"]["maximum_iterations"] = 25
+        prm["newton_solver"]["relaxation_parameter"] = 1.0
 
         # df.set_log_level(df.PROGRESS)
 
@@ -184,7 +197,7 @@ class fenics_heat_weak_fullyimplicit(ptype):
             dtype_u: exact solution
         """
 
-        u0 = df.Expression('sin(a*x[0]) * cos(t)', a=np.pi, t=t, degree=self.order)
+        u0 = df.Expression("sin(a*x[0]) * cos(t)", a=np.pi, t=t, degree=self.order)
         me = self.dtype_u(self.V)
         me.values = df.interpolate(u0, self.V)
 
@@ -222,8 +235,8 @@ class fenics_heat_weak_imex(ptype):
             return on_boundary
 
         # set logger level for FFC and dolfin
-        logging.getLogger('ULF').setLevel(logging.WARNING)
-        logging.getLogger('FFC').setLevel(logging.WARNING)
+        logging.getLogger("ULF").setLevel(logging.WARNING)
+        logging.getLogger("FFC").setLevel(logging.WARNING)
         df.set_log_level(30)
 
         # set solver and form parameters
@@ -238,16 +251,23 @@ class fenics_heat_weak_imex(ptype):
         # define function space for future reference
         self.V = df.FunctionSpace(mesh, family, order)
         tmp = df.Function(self.V)
-        print('DoFs on this level:', len(tmp.vector()[:]))
+        print("DoFs on this level:", len(tmp.vector()[:]))
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
         super(fenics_heat_weak_imex, self).__init__(self.V)
         self._makeAttributeAndRegister(
-            'c_nvars', 't0', 'family', 'order', 'refinements', 'nu', localVars=locals(), readOnly=True
+            "c_nvars",
+            "t0",
+            "family",
+            "order",
+            "refinements",
+            "nu",
+            localVars=locals(),
+            readOnly=True,
         )
 
         self.g = df.Expression(
-            '-sin(a*x[0]) * (sin(t) - b*a*a*cos(t))',
+            "-sin(a*x[0]) * (sin(t) - b*a*a*cos(t))",
             a=np.pi,
             b=self.nu,
             t=self.t0,
@@ -302,7 +322,11 @@ class fenics_heat_weak_imex(ptype):
 
         sol = self.dtype_u(u0)
 
-        df.solve(self.u * self.v * df.dx - factor * self.a_K == rhs.values * self.v * df.dx, sol.values, self.bc)
+        df.solve(
+            self.u * self.v * df.dx - factor * self.a_K == rhs.values * self.v * df.dx,
+            sol.values,
+            self.bc,
+        )
 
         return sol
 
@@ -336,7 +360,9 @@ class fenics_heat_weak_imex(ptype):
         """
 
         tmp = self.dtype_u(self.V)
-        tmp.values.vector()[:] = df.assemble(-self.nu * df.inner(df.grad(u.values), df.grad(self.v)) * df.dx)
+        tmp.values.vector()[:] = df.assemble(
+            -self.nu * df.inner(df.grad(u.values), df.grad(self.v)) * df.dx
+        )
         fimpl = self.__invert_mass_matrix(tmp)
 
         return fimpl
@@ -369,7 +395,7 @@ class fenics_heat_weak_imex(ptype):
             dtype_u: exact solution
         """
 
-        u0 = df.Expression('sin(a*x[0]) * cos(t)', a=np.pi, t=t, degree=self.order)
+        u0 = df.Expression("sin(a*x[0]) * cos(t)", a=np.pi, t=t, degree=self.order)
         me = self.dtype_u(df.interpolate(u0, self.V))
 
         return me

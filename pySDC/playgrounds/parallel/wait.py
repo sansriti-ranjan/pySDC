@@ -15,17 +15,17 @@ def sleep(n):
 
 
 def wait(req):
-    print('p0', req.Test())
+    print("p0", req.Test())
     req.Wait()
-    print('p1', req.Test())
+    print("p1", req.Test())
 
 
 def isend(sbuf, comm):
-    print('sending')
+    print("sending")
     comm.send(sbuf, dest=1, tag=99)
     # print('waiting')
     # req.Wait()
-    print('done')
+    print("done")
 
 
 def main():
@@ -46,19 +46,19 @@ def main():
         p.join()
         print("[%02d] Original data %s" % (rank, sbuf))
     else:
-        print('working')
+        print("working")
         sleep(1000000)
-        print('receiving')
+        print("receiving")
         rbuf = comm.recv(source=0, tag=99)
-        print('rdone')
+        print("rdone")
         print("[%02d] Received data %s" % (rank, rbuf))
 
     t1 = time.perf_counter()
 
     comm.Barrier()
 
-    print(f'Rank: {rank} -- Time: {t1-t0}')
+    print(f"Rank: {rank} -- Time: {t1-t0}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

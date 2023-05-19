@@ -4,10 +4,19 @@ from scipy.sparse.linalg import gmres
 from pySDC.core.Errors import ParameterError
 from pySDC.core.Problem import ptype
 from pySDC.implementations.datatype_classes.mesh import mesh, imex_mesh
-from pySDC.implementations.problem_classes.boussinesq_helpers.build2DFDMatrix import get2DMesh
-from pySDC.implementations.problem_classes.boussinesq_helpers.buildBoussinesq2DMatrix import getBoussinesq2DMatrix
-from pySDC.implementations.problem_classes.boussinesq_helpers.buildBoussinesq2DMatrix import getBoussinesq2DUpwindMatrix
-from pySDC.implementations.problem_classes.boussinesq_helpers.helper_classes import Callback, logging
+from pySDC.implementations.problem_classes.boussinesq_helpers.build2DFDMatrix import (
+    get2DMesh,
+)
+from pySDC.implementations.problem_classes.boussinesq_helpers.buildBoussinesq2DMatrix import (
+    getBoussinesq2DMatrix,
+)
+from pySDC.implementations.problem_classes.boussinesq_helpers.buildBoussinesq2DMatrix import (
+    getBoussinesq2DUpwindMatrix,
+)
+from pySDC.implementations.problem_classes.boussinesq_helpers.helper_classes import (
+    Callback,
+    logging,
+)
 from pySDC.implementations.problem_classes.boussinesq_helpers.unflatten import unflatten
 
 
@@ -29,51 +38,69 @@ class boussinesq_2d_imex(ptype):
 
         # these parameters will be used later, so assert their existence
         essential_keys = [
-            'nvars',
-            'c_s',
-            'u_adv',
-            'Nfreq',
-            'x_bounds',
-            'z_bounds',
-            'order_upw',
-            'order',
-            'gmres_maxiter',
-            'gmres_restart',
-            'gmres_tol_limit',
+            "nvars",
+            "c_s",
+            "u_adv",
+            "Nfreq",
+            "x_bounds",
+            "z_bounds",
+            "order_upw",
+            "order",
+            "gmres_maxiter",
+            "gmres_restart",
+            "gmres_tol_limit",
         ]
         for key in essential_keys:
             if key not in problem_params:
-                msg = 'need %s to instantiate problem, only got %s' % (key, str(problem_params.keys()))
+                msg = "need %s to instantiate problem, only got %s" % (
+                    key,
+                    str(problem_params.keys()),
+                )
                 raise ParameterError(msg)
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
         super(boussinesq_2d_imex, self).__init__(
-            (problem_params['nvars'], None, np.dtype('float64')), dtype_u, dtype_f, problem_params
+            (problem_params["nvars"], None, np.dtype("float64")),
+            dtype_u,
+            dtype_f,
+            problem_params,
         )
 
         self.N = [self.params.nvars[1], self.params.nvars[2]]
 
         self.bc_hor = [
-            ['periodic', 'periodic'],
-            ['periodic', 'periodic'],
-            ['periodic', 'periodic'],
-            ['periodic', 'periodic'],
+            ["periodic", "periodic"],
+            ["periodic", "periodic"],
+            ["periodic", "periodic"],
+            ["periodic", "periodic"],
         ]
         self.bc_ver = [
-            ['neumann', 'neumann'],
-            ['dirichlet', 'dirichlet'],
-            ['dirichlet', 'dirichlet'],
-            ['neumann', 'neumann'],
+            ["neumann", "neumann"],
+            ["dirichlet", "dirichlet"],
+            ["dirichlet", "dirichlet"],
+            ["neumann", "neumann"],
         ]
 
         self.xx, self.zz, self.h = get2DMesh(
-            self.N, self.params.x_bounds, self.params.z_bounds, self.bc_hor[0], self.bc_ver[0]
+            self.N,
+            self.params.x_bounds,
+            self.params.z_bounds,
+            self.bc_hor[0],
+            self.bc_ver[0],
         )
 
         self.Id, self.M = getBoussinesq2DMatrix(
-            self.N, self.h, self.bc_hor, self.bc_ver, self.params.c_s, self.params.Nfreq, self.params.order
+            self.N,
+            self.h,
+            self.bc_hor,
+            self.bc_ver,
+            self.params.c_s,
+            self.params.Nfreq,
+            self.params.order,
         )
-        self.D_upwind = getBoussinesq2DUpwindMatrix(self.N, self.h[0], self.params.u_adv, self.params.order_upw)
+        self.D_upwind = getBoussinesq2DUpwindMatrix(
+            self.N, self.h[0], self.params.u_adv, self.params.order_upw
+        )
 
         self.gmres_logger = logging()
 
@@ -178,7 +205,7 @@ class boussinesq_2d_imex(ptype):
         Returns:
             dtype_u: exact solution
         """
-        assert t == 0, 'ERROR: u_exact only valid for t=0'
+        assert t == 0, "ERROR: u_exact only valid for t=0"
 
         dtheta = 0.01
         H = 10.0
@@ -191,6 +218,10 @@ class boussinesq_2d_imex(ptype):
         # me[2,:,:] = 0.0*self.xx
         # me[3,:,:] = np.exp(-0.5*(self.xx-0.0)**2.0/0.15**2.0)*np.exp(-0.5*(self.zz-0.5)**2/0.15**2)
         # me[2,:,:] = np.exp(-0.5*(self.xx-0.0)**2.0/0.05**2.0)*np.exp(-0.5*(self.zz-0.5)**2/0.2**2)
-        me[2, :, :] = dtheta * np.sin(np.pi * self.zz / H) / (1.0 + np.square(self.xx - x_c) / (a * a))
+        me[2, :, :] = (
+            dtheta
+            * np.sin(np.pi * self.zz / H)
+            / (1.0 + np.square(self.xx - x_c) / (a * a))
+        )
         me[3, :, :] = 0.0 * self.xx
         return me

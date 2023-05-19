@@ -9,19 +9,19 @@ def test_pendulum_u_exact_main():
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['newton_tol'] = 1e-3  # tollerance for implicit solver
-    problem_params['nvars'] = 5
+    problem_params["newton_tol"] = 1e-3  # tollerance for implicit solver
+    problem_params["nvars"] = 5
 
     # instantiate problem
     prob = pendulum_2d(**problem_params)
 
     # ignore using warning while checking error
-    warnings.filterwarnings('ignore')
+    warnings.filterwarnings("ignore")
     u_test = prob.u_exact(5.0)
     assert np.array_equal(u_test, np.zeros(5))
 
     # change warning status to error
-    warnings.filterwarnings('error')
+    warnings.filterwarnings("error")
     try:
         u_test = prob.u_exact(5.0)
     except UserWarning:
@@ -34,23 +34,25 @@ def test_pendulum_u_exact_main():
 
 @pytest.mark.base
 def test_one_transistor_amplifier_u_exact_main():
-    from pySDC.projects.DAE.problems.transistor_amplifier import one_transistor_amplifier
+    from pySDC.projects.DAE.problems.transistor_amplifier import (
+        one_transistor_amplifier,
+    )
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['newton_tol'] = 1e-12  # tollerance for implicit solver
-    problem_params['nvars'] = 5
+    problem_params["newton_tol"] = 1e-12  # tollerance for implicit solver
+    problem_params["nvars"] = 5
 
     # instantiate problem
     prob = one_transistor_amplifier(**problem_params)
 
     # ignore using warning while checking error
-    warnings.filterwarnings('ignore')
+    warnings.filterwarnings("ignore")
     u_test = prob.u_exact(5.0)
     assert np.array_equal(u_test, np.zeros(5))
 
     # change warning status to error
-    warnings.filterwarnings('error')
+    warnings.filterwarnings("error")
     try:
         u_test = prob.u_exact(5.0)
     except UserWarning:
@@ -63,23 +65,25 @@ def test_one_transistor_amplifier_u_exact_main():
 
 @pytest.mark.base
 def test_two_transistor_amplifier_u_exact_main():
-    from pySDC.projects.DAE.problems.transistor_amplifier import two_transistor_amplifier
+    from pySDC.projects.DAE.problems.transistor_amplifier import (
+        two_transistor_amplifier,
+    )
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['newton_tol'] = 1e-3  # tollerance for implicit solver
-    problem_params['nvars'] = 8
+    problem_params["newton_tol"] = 1e-3  # tollerance for implicit solver
+    problem_params["nvars"] = 8
 
     # instantiate problem
     prob = two_transistor_amplifier(**problem_params)
 
     # ignore using warning while checking error
-    warnings.filterwarnings('ignore')
+    warnings.filterwarnings("ignore")
     u_test = prob.u_exact(5.0)
     assert np.array_equal(u_test, np.zeros(8))
 
     # change warning status to error
-    warnings.filterwarnings('error')
+    warnings.filterwarnings("error")
     try:
         u_test = prob.u_exact(5.0)
     except UserWarning:
@@ -96,45 +100,49 @@ def test_two_transistor_amplifier_u_exact_main():
 @pytest.mark.base
 def test_pendulum_main():
     from pySDC.projects.DAE.problems.simple_DAE import pendulum_2d
-    from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
+    from pySDC.implementations.controller_classes.controller_nonMPI import (
+        controller_nonMPI,
+    )
     from pySDC.projects.DAE.sweepers.fully_implicit_DAE import fully_implicit_DAE
     from pySDC.projects.DAE.misc.HookClass_DAE import error_hook
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-6
-    level_params['dt'] = 5e-2
+    level_params["restol"] = 1e-6
+    level_params["dt"] = 5e-2
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['newton_tol'] = 1e-3  # tollerance for implicit solver
-    problem_params['nvars'] = 5
+    problem_params["newton_tol"] = 1e-3  # tollerance for implicit solver
+    problem_params["nvars"] = 5
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 200
+    step_params["maxiter"] = 200
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30
-    controller_params['hook_class'] = error_hook
+    controller_params["logger_level"] = 30
+    controller_params["hook_class"] = error_hook
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = pendulum_2d
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = fully_implicit_DAE
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
-    description['step_params'] = step_params
+    description["problem_class"] = pendulum_2d
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = fully_implicit_DAE
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
+    description["step_params"] = step_params
 
     # instantiate the controller
-    controller = controller_nonMPI(num_procs=1, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=1, controller_params=controller_params, description=description
+    )
 
     # set time parameters
     t0 = 0.0
@@ -147,7 +155,7 @@ def test_pendulum_main():
 
     # call main function to get things done...
     # ignore warning from non-existent reference solution
-    warnings.filterwarnings('ignore')
+    warnings.filterwarnings("ignore")
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
     uend_ref = [0.98613917, -0.16592027, 0.29956023, 1.77825875, 4.82500525]
 
@@ -158,46 +166,52 @@ def test_pendulum_main():
 
 @pytest.mark.base
 def test_one_transistor_amplifier_main():
-    from pySDC.projects.DAE.problems.transistor_amplifier import one_transistor_amplifier
-    from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
+    from pySDC.projects.DAE.problems.transistor_amplifier import (
+        one_transistor_amplifier,
+    )
+    from pySDC.implementations.controller_classes.controller_nonMPI import (
+        controller_nonMPI,
+    )
     from pySDC.projects.DAE.sweepers.fully_implicit_DAE import fully_implicit_DAE
     from pySDC.projects.DAE.misc.HookClass_DAE import error_hook
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-6
-    level_params['dt'] = 1e-4
+    level_params["restol"] = 1e-6
+    level_params["dt"] = 1e-4
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['newton_tol'] = 1e-3  # tollerance for implicit solver
-    problem_params['nvars'] = 5
+    problem_params["newton_tol"] = 1e-3  # tollerance for implicit solver
+    problem_params["nvars"] = 5
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30
-    controller_params['hook_class'] = error_hook
+    controller_params["logger_level"] = 30
+    controller_params["hook_class"] = error_hook
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = one_transistor_amplifier
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = fully_implicit_DAE
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
-    description['step_params'] = step_params
+    description["problem_class"] = one_transistor_amplifier
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = fully_implicit_DAE
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
+    description["step_params"] = step_params
 
     # instantiate the controller
-    controller = controller_nonMPI(num_procs=1, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=1, controller_params=controller_params, description=description
+    )
 
     # set time parameters
     t0 = 0.0
@@ -209,7 +223,7 @@ def test_one_transistor_amplifier_main():
 
     # call main function to get things done...
     # ignore warning from non-existent reference solution
-    warnings.filterwarnings('ignore')
+    warnings.filterwarnings("ignore")
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
     warnings.resetwarnings()
 
@@ -222,46 +236,52 @@ def test_one_transistor_amplifier_main():
 
 @pytest.mark.base
 def test_two_transistor_amplifier_main():
-    from pySDC.projects.DAE.problems.transistor_amplifier import two_transistor_amplifier
-    from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
+    from pySDC.projects.DAE.problems.transistor_amplifier import (
+        two_transistor_amplifier,
+    )
+    from pySDC.implementations.controller_classes.controller_nonMPI import (
+        controller_nonMPI,
+    )
     from pySDC.projects.DAE.sweepers.fully_implicit_DAE import fully_implicit_DAE
     from pySDC.projects.DAE.misc.HookClass_DAE import error_hook
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-6
-    level_params['dt'] = 1e-4
+    level_params["restol"] = 1e-6
+    level_params["dt"] = 1e-4
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['newton_tol'] = 1e-3  # tollerance for implicit solver
-    problem_params['nvars'] = 8
+    problem_params["newton_tol"] = 1e-3  # tollerance for implicit solver
+    problem_params["nvars"] = 8
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30
-    controller_params['hook_class'] = error_hook
+    controller_params["logger_level"] = 30
+    controller_params["hook_class"] = error_hook
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = two_transistor_amplifier
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = fully_implicit_DAE
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
-    description['step_params'] = step_params
+    description["problem_class"] = two_transistor_amplifier
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = fully_implicit_DAE
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
+    description["step_params"] = step_params
 
     # instantiate the controller
-    controller = controller_nonMPI(num_procs=1, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=1, controller_params=controller_params, description=description
+    )
 
     # set time parameters
     t0 = 0.0
@@ -273,7 +293,7 @@ def test_two_transistor_amplifier_main():
 
     # call main function to get things done...
     # ignore warning from non-existent reference solution
-    warnings.filterwarnings('ignore')
+    warnings.filterwarnings("ignore")
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
     warnings.resetwarnings()
 
@@ -295,46 +315,52 @@ def test_two_transistor_amplifier_main():
 
 @pytest.mark.base
 def test_synchgen_infinite_bus_main():
-    from pySDC.projects.DAE.problems.synchronous_machine import synchronous_machine_infinite_bus
-    from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
+    from pySDC.projects.DAE.problems.synchronous_machine import (
+        synchronous_machine_infinite_bus,
+    )
+    from pySDC.implementations.controller_classes.controller_nonMPI import (
+        controller_nonMPI,
+    )
     from pySDC.projects.DAE.sweepers.fully_implicit_DAE import fully_implicit_DAE
     from pySDC.projects.DAE.misc.HookClass_DAE import error_hook
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-6
-    level_params['dt'] = 1e-1
+    level_params["restol"] = 1e-6
+    level_params["dt"] = 1e-1
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['newton_tol'] = 1e-3  # tollerance for implicit solver
-    problem_params['nvars'] = 14
+    problem_params["newton_tol"] = 1e-3  # tollerance for implicit solver
+    problem_params["nvars"] = 14
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 50
+    step_params["maxiter"] = 50
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['logger_level'] = 30
-    controller_params['hook_class'] = error_hook
+    controller_params["logger_level"] = 30
+    controller_params["hook_class"] = error_hook
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = synchronous_machine_infinite_bus
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = fully_implicit_DAE
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
-    description['step_params'] = step_params
+    description["problem_class"] = synchronous_machine_infinite_bus
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = fully_implicit_DAE
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
+    description["step_params"] = step_params
 
     # instantiate the controller
-    controller = controller_nonMPI(num_procs=1, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=1, controller_params=controller_params, description=description
+    )
 
     # set time parameters
     t0 = 0.0
@@ -346,7 +372,7 @@ def test_synchgen_infinite_bus_main():
 
     # call main function to get things done...
     # ignore warning from non-existent reference solution
-    warnings.filterwarnings('ignore')
+    warnings.filterwarnings("ignore")
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
     warnings.resetwarnings()
 

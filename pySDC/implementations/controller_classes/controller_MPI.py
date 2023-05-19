@@ -4,7 +4,9 @@ from mpi4py import MPI
 from pySDC.core.Controller import controller
 from pySDC.core.Errors import ControllerError
 from pySDC.core.Step import step
-from pySDC.implementations.convergence_controller_classes.basic_restarting import BasicRestarting
+from pySDC.implementations.convergence_controller_classes.basic_restarting import (
+    BasicRestarting,
+)
 
 
 class controller_MPI(controller):
@@ -44,7 +46,11 @@ class controller_MPI(controller):
             self.add_convergence_controller(convergence_controller, description)
 
         if self.params.dump_setup and rank == 0:
-            self.dump_setup(step=self.S, controller_params=controller_params, description=description)
+            self.dump_setup(
+                step=self.S,
+                controller_params=controller_params,
+                description=description,
+            )
 
         num_levels = len(self.S.levels)
 
@@ -58,14 +64,18 @@ class controller_MPI(controller):
         if num_procs > 1 and num_levels > 1:
             for L in self.S.levels:
                 if not L.sweep.coll.right_is_node or L.sweep.params.do_coll_update:
-                    raise ControllerError("For PFASST to work, we assume uend^k = u_M^k")
+                    raise ControllerError(
+                        "For PFASST to work, we assume uend^k = u_M^k"
+                    )
 
         if num_levels == 1 and self.params.predict_type is not None:
             self.logger.warning(
-                'you have specified a predictor type but only a single level.. predictor will be ignored'
+                "you have specified a predictor type but only a single level.. predictor will be ignored"
             )
 
-        for C in [self.convergence_controllers[i] for i in self.convergence_controller_order]:
+        for C in [
+            self.convergence_controllers[i] for i in self.convergence_controller_order
+        ]:
             C.setup_status_variables(self, comm=comm)
 
     def run(self, u0, t0, Tend):
@@ -95,7 +105,7 @@ class controller_MPI(controller):
         all_active = all_time < Tend - 10 * np.finfo(float).eps
 
         if not any(all_active):
-            raise ControllerError('Nothing to do, check t0, dt and Tend')
+            raise ControllerError("Nothing to do, check t0, dt and Tend")
 
         active = all_active[rank]
         if not all(all_active):
@@ -128,25 +138,39 @@ class controller_MPI(controller):
 
             # determine where to restart
             restarts = comm_active.allgather(self.S.status.restart)
-            restart_at = np.where(restarts)[0][0] if True in restarts else comm_active.size - 1
+            restart_at = (
+                np.where(restarts)[0][0] if True in restarts else comm_active.size - 1
+            )
 
             # communicate time and solution to be used as next initial conditions
             if True in restarts:
                 uend = self.S.levels[0].u[0].bcast(root=restart_at, comm=comm_active)
                 tend = comm_active.bcast(self.S.time, root=restart_at)
-                self.logger.info(f'Starting next block with initial conditions from step {restart_at}')
+                self.logger.info(
+                    f"Starting next block with initial conditions from step {restart_at}"
+                )
             else:
                 time += self.S.dt
                 uend = self.S.levels[0].uend.bcast(root=num_procs - 1, comm=comm_active)
-                tend = comm_active.bcast(self.S.time + self.S.dt, root=comm_active.size - 1)
+                tend = comm_active.bcast(
+                    self.S.time + self.S.dt, root=comm_active.size - 1
+                )
 
             # do convergence controller stuff
             if not self.S.status.restart:
-                for C in [self.convergence_controllers[i] for i in self.convergence_controller_order]:
+                for C in [
+                    self.convergence_controllers[i]
+                    for i in self.convergence_controller_order
+                ]:
                     C.post_step_processing(self, self.S)
 
-            for C in [self.convergence_controllers[i] for i in self.convergence_controller_order]:
-                C.prepare_next_block(self, self.S, self.S.status.time_size, time, Tend, comm=comm_active)
+            for C in [
+                self.convergence_controllers[i]
+                for i in self.convergence_controller_order
+            ]:
+                C.prepare_next_block(
+                    self, self.S, self.S.status.time_size, time, Tend, comm=comm_active
+                )
 
             all_dt = comm_active.allgather(self.S.dt)
             all_time = [tend + sum(all_dt[0:i]) for i in range(num_procs)]
@@ -199,7 +223,7 @@ class controller_MPI(controller):
         # reset some values
         self.S.status.done = False
         self.S.status.iter = 0
-        self.S.status.stage = 'SPREAD'
+        self.S.status.stage = "SPREAD"
         for l in self.S.levels:
             l.tag = None
         self.req_status = None
@@ -210,7 +234,9 @@ class controller_MPI(controller):
         self.S.status.prev_done = False
         self.S.status.force_done = False
 
-        for C in [self.convergence_controllers[i] for i in self.convergence_controller_order]:
+        for C in [
+            self.convergence_controllers[i] for i in self.convergence_controller_order
+        ]:
             C.reset_status_variables(self, comm=comm)
 
         self.S.status.time_size = size
@@ -258,7 +284,7 @@ class controller_MPI(controller):
 
         if not self.S.status.last:
             self.logger.debug(
-                'isend data: process %s, stage %s, time %s, target %s, tag %s, iter %s'
+                "isend data: process %s, stage %s, time %s, target %s, tag %s, iter %s"
                 % (
                     self.S.status.slot,
                     self.S.status.stage,
@@ -293,7 +319,7 @@ class controller_MPI(controller):
             hook.pre_comm(step=self.S, level_number=level)
         if not self.S.status.first and not self.S.status.prev_done:
             self.logger.debug(
-                'recv data: process %s, stage %s, time %s, source %s, tag %s, iter %s'
+                "recv data: process %s, stage %s, time %s, source %s, tag %s, iter %s"
                 % (
                     self.S.status.slot,
                     self.S.status.stage,
@@ -303,7 +329,12 @@ class controller_MPI(controller):
                     self.S.status.iter,
                 )
             )
-            self.recv(target=self.S.levels[level], source=self.S.prev, tag=level * 100 + self.S.status.iter, comm=comm)
+            self.recv(
+                target=self.S.levels[level],
+                source=self.S.prev,
+                tag=level * 100 + self.S.status.iter,
+                comm=comm,
+            )
 
         for hook in self.hooks:
             hook.post_comm(step=self.S, level_number=level, add_to_stats=add_to_stats)
@@ -318,8 +349,10 @@ class controller_MPI(controller):
         if request is not None and self.req_ibcast is not None:
             while not request.Test():
                 if self.req_ibcast.Test():
-                    self.logger.debug(f'{self.S.status.slot} has been cancelled during {self.S.status.stage}..')
-                    self.S.status.stage = f'CANCELLED_{self.S.status.stage}'
+                    self.logger.debug(
+                        f"{self.S.status.slot} has been cancelled during {self.S.status.stage}.."
+                    )
+                    self.S.status.stage = f"CANCELLED_{self.S.status.stage}"
                     self.S.status.force_done = True
                     return None
         if request is not None:
@@ -355,15 +388,29 @@ class controller_MPI(controller):
             if self.S.status.force_done:
                 return None
             self.logger.debug(
-                'recv diff: status %s, process %s, time %s, source %s, tag %s, iter %s'
-                % (prev_diff, self.S.status.slot, self.S.time, self.S.prev, 999, self.S.status.iter)
+                "recv diff: status %s, process %s, time %s, source %s, tag %s, iter %s"
+                % (
+                    prev_diff,
+                    self.S.status.slot,
+                    self.S.time,
+                    self.S.prev,
+                    999,
+                    self.S.status.iter,
+                )
             )
             diff_new = max(prev_diff[0], diff_new)
 
         if not self.S.status.last:
             self.logger.debug(
-                'isend diff: status %s, process %s, time %s, target %s, tag %s, iter %s'
-                % (diff_new, self.S.status.slot, self.S.time, self.S.next, 999, self.S.status.iter)
+                "isend diff: status %s, process %s, time %s, target %s, tag %s, iter %s"
+                % (
+                    diff_new,
+                    self.S.status.slot,
+                    self.S.time,
+                    self.S.next,
+                    999,
+                    self.S.status.iter,
+                )
             )
             tmp = np.array(diff_new, dtype=float)
             self.req_diff = comm.Issend((tmp, MPI.DOUBLE), dest=self.S.next, tag=999)
@@ -380,23 +427,29 @@ class controller_MPI(controller):
             Ltilde_loc = min(diff_new / self.S.status.diff_old_loc, 0.9)
             self.S.status.diff_old_loc = diff_new
             alpha = 1 / (1 - Ltilde_loc) * self.S.status.diff_first_loc
-            Kest_loc = np.log(self.S.params.errtol / alpha) / np.log(Ltilde_loc) * 1.05  # Safety factor!
+            Kest_loc = (
+                np.log(self.S.params.errtol / alpha) / np.log(Ltilde_loc) * 1.05
+            )  # Safety factor!
             self.logger.debug(
-                f'LOCAL: {L.time:8.4f}, {self.S.status.iter}: {int(np.ceil(Kest_loc))}, '
-                f'{Ltilde_loc:8.6e}, {Kest_loc:8.6e}, '
-                f'{Ltilde_loc ** self.S.status.iter * alpha:8.6e}'
+                f"LOCAL: {L.time:8.4f}, {self.S.status.iter}: {int(np.ceil(Kest_loc))}, "
+                f"{Ltilde_loc:8.6e}, {Kest_loc:8.6e}, "
+                f"{Ltilde_loc ** self.S.status.iter * alpha:8.6e}"
             )
             Kest_glob = Kest_loc
             # If condition is met, send interrupt
             if np.ceil(Kest_glob) <= self.S.status.iter:
                 if self.S.status.last:
-                    self.logger.debug(f'{self.S.status.slot} is done, broadcasting..')
+                    self.logger.debug(f"{self.S.status.slot} is done, broadcasting..")
                     for hook in self.hooks:
                         hook.pre_comm(step=self.S, level_number=0)
-                    comm.Ibcast((np.array([1]), MPI.INT), root=self.S.status.slot).Wait()
+                    comm.Ibcast(
+                        (np.array([1]), MPI.INT), root=self.S.status.slot
+                    ).Wait()
                     for hook in self.hooks:
                         hook.post_comm(step=self.S, level_number=0, add_to_stats=True)
-                    self.logger.debug(f'{self.S.status.slot} is done, broadcasting done')
+                    self.logger.debug(
+                        f"{self.S.status.slot} is done, broadcasting done"
+                    )
                     self.S.status.done = True
                 else:
                     for hook in self.hooks:
@@ -417,20 +470,28 @@ class controller_MPI(controller):
 
         stage = self.S.status.stage
 
-        self.logger.debug(stage + ' - process ' + str(self.S.status.slot))
+        self.logger.debug(stage + " - process " + str(self.S.status.slot))
 
         # Wait for interrupt, if iteration estimator is used
-        if self.params.use_iteration_estimator and stage == 'SPREAD' and not self.S.status.last:
+        if (
+            self.params.use_iteration_estimator
+            and stage == "SPREAD"
+            and not self.S.status.last
+        ):
             done = np.empty(1)
             self.req_ibcast = comm.Ibcast((done, MPI.INT), root=comm.Get_size() - 1)
 
         # If interrupt is there, cleanup and finish
-        if self.params.use_iteration_estimator and not self.S.status.last and self.req_ibcast.Test():
-            self.logger.debug(f'{self.S.status.slot} is done..')
+        if (
+            self.params.use_iteration_estimator
+            and not self.S.status.last
+            and self.req_ibcast.Test()
+        ):
+            self.logger.debug(f"{self.S.status.slot} is done..")
             self.S.status.done = True
 
-            if not stage == 'IT_CHECK':
-                self.logger.debug(f'Rewinding {self.S.status.slot} after {stage}..')
+            if not stage == "IT_CHECK":
+                self.logger.debug(f"Rewinding {self.S.status.slot} after {stage}..")
                 self.S.levels[0].u[1:] = self.S.levels[0].uold[1:]
 
             for hook in self.hooks:
@@ -444,20 +505,20 @@ class controller_MPI(controller):
             if self.req_diff is not None and self.req_diff != MPI.REQUEST_NULL:
                 self.req_diff.Cancel()
 
-            self.S.status.stage = 'DONE'
+            self.S.status.stage = "DONE"
             for hook in self.hooks:
                 hook.post_step(step=self.S, level_number=0)
 
         else:
             # Start cycling, if not interrupted
             switcher = {
-                'SPREAD': self.spread,
-                'PREDICT': self.predict,
-                'IT_CHECK': self.it_check,
-                'IT_FINE': self.it_fine,
-                'IT_DOWN': self.it_down,
-                'IT_COARSE': self.it_coarse,
-                'IT_UP': self.it_up,
+                "SPREAD": self.spread,
+                "PREDICT": self.predict,
+                "IT_CHECK": self.it_check,
+                "IT_FINE": self.it_fine,
+                "IT_DOWN": self.it_down,
+                "IT_COARSE": self.it_coarse,
+                "IT_UP": self.it_up,
             }
 
             switcher.get(stage, self.default)(comm, num_procs)
@@ -480,11 +541,13 @@ class controller_MPI(controller):
 
         # update stage
         if len(self.S.levels) > 1:  # MLSDC or PFASST with predict
-            self.S.status.stage = 'PREDICT'
+            self.S.status.stage = "PREDICT"
         else:
-            self.S.status.stage = 'IT_CHECK'
+            self.S.status.stage = "IT_CHECK"
 
-        for C in [self.convergence_controllers[i] for i in self.convergence_controller_order]:
+        for C in [
+            self.convergence_controllers[i] for i in self.convergence_controller_order
+        ]:
             C.post_spread_processing(self, self.S, comm=comm)
 
     def predict(self, comm, num_procs):
@@ -498,7 +561,7 @@ class controller_MPI(controller):
         if self.params.predict_type is None:
             pass
 
-        elif self.params.predict_type == 'fine_only':
+        elif self.params.predict_type == "fine_only":
             # do a fine sweep only
             self.S.levels[0].sweep.update_nodes()
 
@@ -539,7 +602,7 @@ class controller_MPI(controller):
         #     # end with a fine sweep
         #     self.S.levels[0].sweep.update_nodes()
 
-        elif self.params.predict_type == 'pfasst_burnin':
+        elif self.params.predict_type == "pfasst_burnin":
             # restrict to coarsest level
             for l in range(1, len(self.S.levels)):
                 self.S.transfer(source=self.S.levels[l - 1], target=self.S.levels[l])
@@ -555,7 +618,10 @@ class controller_MPI(controller):
                 self.S.levels[-1].sweep.compute_end_point()
 
                 self.send_full(
-                    comm=comm, blocking=True, level=len(self.S.levels) - 1, add_to_stats=(p == self.S.status.slot)
+                    comm=comm,
+                    blocking=True,
+                    level=len(self.S.levels) - 1,
+                    add_to_stats=(p == self.S.status.slot),
                 )
                 if self.S.status.force_done:
                     return None
@@ -575,18 +641,20 @@ class controller_MPI(controller):
             # end this with a fine sweep
             self.S.levels[0].sweep.update_nodes()
 
-        elif self.params.predict_type == 'fmg':
+        elif self.params.predict_type == "fmg":
             # TODO: implement FMG predictor
-            raise NotImplementedError('FMG predictor is not yet implemented')
+            raise NotImplementedError("FMG predictor is not yet implemented")
 
         else:
-            raise ControllerError('Wrong predictor type, got %s' % self.params.predict_type)
+            raise ControllerError(
+                "Wrong predictor type, got %s" % self.params.predict_type
+            )
 
         for hook in self.hooks:
             hook.post_predict(step=self.S, level_number=0)
 
         # update stage
-        self.S.status.stage = 'IT_CHECK'
+        self.S.status.stage = "IT_CHECK"
 
     def it_check(self, comm, num_procs):
         """
@@ -603,7 +671,7 @@ class controller_MPI(controller):
             return None
 
         # compute the residual
-        self.S.levels[0].sweep.compute_residual(stage='IT_CHECK')
+        self.S.levels[0].sweep.compute_residual(stage="IT_CHECK")
 
         if self.params.use_iteration_estimator:
             # TODO: replace with convergence controller
@@ -617,7 +685,9 @@ class controller_MPI(controller):
                 hook.post_iteration(step=self.S, level_number=0)
 
         # decide if the step is done, needs to be restarted and other things convergence related
-        for C in [self.convergence_controllers[i] for i in self.convergence_controller_order]:
+        for C in [
+            self.convergence_controllers[i] for i in self.convergence_controller_order
+        ]:
             C.post_iteration_processing(self, self.S, comm=comm)
             C.convergence_control(self, self.S, comm=comm)
 
@@ -628,7 +698,10 @@ class controller_MPI(controller):
 
             for hook in self.hooks:
                 hook.pre_iteration(step=self.S, level_number=0)
-            for C in [self.convergence_controllers[i] for i in self.convergence_controller_order]:
+            for C in [
+                self.convergence_controllers[i]
+                for i in self.convergence_controller_order
+            ]:
                 C.pre_iteration_processing(self, self.S, comm=comm)
 
             if self.params.use_iteration_estimator:
@@ -636,12 +709,14 @@ class controller_MPI(controller):
                 self.S.levels[0].uold[1:] = self.S.levels[0].u[1:]
 
             if len(self.S.levels) > 1:  # MLSDC or PFASST
-                self.S.status.stage = 'IT_DOWN'
+                self.S.status.stage = "IT_DOWN"
             else:
-                if num_procs == 1 or self.params.mssdc_jac:  # SDC or parallel MSSDC (Jacobi-like)
-                    self.S.status.stage = 'IT_FINE'
+                if (
+                    num_procs == 1 or self.params.mssdc_jac
+                ):  # SDC or parallel MSSDC (Jacobi-like)
+                    self.S.status.stage = "IT_FINE"
                 else:
-                    self.S.status.stage = 'IT_COARSE'  # serial MSSDC (Gauss-like)
+                    self.S.status.stage = "IT_COARSE"  # serial MSSDC (Gauss-like)
 
         else:
             if not self.params.use_iteration_estimator:
@@ -665,7 +740,7 @@ class controller_MPI(controller):
 
             for hook in self.hooks:
                 hook.post_step(step=self.S, level_number=0)
-            self.S.status.stage = 'DONE'
+            self.S.status.stage = "DONE"
 
     def it_fine(self, comm, num_procs):
         """
@@ -693,12 +768,12 @@ class controller_MPI(controller):
             for hook in self.hooks:
                 hook.pre_sweep(step=self.S, level_number=0)
             self.S.levels[0].sweep.update_nodes()
-            self.S.levels[0].sweep.compute_residual(stage='IT_FINE')
+            self.S.levels[0].sweep.compute_residual(stage="IT_FINE")
             for hook in self.hooks:
                 hook.post_sweep(step=self.S, level_number=0)
 
         # update stage
-        self.S.status.stage = 'IT_CHECK'
+        self.S.status.stage = "IT_CHECK"
 
     def it_down(self, comm, num_procs):
         """
@@ -723,7 +798,7 @@ class controller_MPI(controller):
                 for hook in self.hooks:
                     hook.pre_sweep(step=self.S, level_number=l)
                 self.S.levels[l].sweep.update_nodes()
-                self.S.levels[l].sweep.compute_residual(stage='IT_DOWN')
+                self.S.levels[l].sweep.compute_residual(stage="IT_DOWN")
                 for hook in self.hooks:
                     hook.post_sweep(step=self.S, level_number=l)
 
@@ -731,7 +806,7 @@ class controller_MPI(controller):
             self.S.transfer(source=self.S.levels[l], target=self.S.levels[l + 1])
 
         # update stage
-        self.S.status.stage = 'IT_COARSE'
+        self.S.status.stage = "IT_COARSE"
 
     def it_coarse(self, comm, num_procs):
         """
@@ -747,25 +822,27 @@ class controller_MPI(controller):
         for hook in self.hooks:
             hook.pre_sweep(step=self.S, level_number=len(self.S.levels) - 1)
         assert self.S.levels[-1].params.nsweeps == 1, (
-            'ERROR: this controller can only work with one sweep on the coarse level, got %s'
+            "ERROR: this controller can only work with one sweep on the coarse level, got %s"
             % self.S.levels[-1].params.nsweeps
         )
         self.S.levels[-1].sweep.update_nodes()
-        self.S.levels[-1].sweep.compute_residual(stage='IT_COARSE')
+        self.S.levels[-1].sweep.compute_residual(stage="IT_COARSE")
         for hook in self.hooks:
             hook.post_sweep(step=self.S, level_number=len(self.S.levels) - 1)
         self.S.levels[-1].sweep.compute_end_point()
 
         # send to next step
-        self.send_full(comm=comm, blocking=True, level=len(self.S.levels) - 1, add_to_stats=True)
+        self.send_full(
+            comm=comm, blocking=True, level=len(self.S.levels) - 1, add_to_stats=True
+        )
         if self.S.status.force_done:
             return None
 
         # update stage
         if len(self.S.levels) > 1:  # MLSDC or PFASST
-            self.S.status.stage = 'IT_UP'
+            self.S.status.stage = "IT_UP"
         else:
-            self.S.status.stage = 'IT_CHECK'  # MSSDC
+            self.S.status.stage = "IT_CHECK"  # MSSDC
 
     def it_up(self, comm, num_procs):
         """
@@ -786,22 +863,24 @@ class controller_MPI(controller):
                     if self.S.status.force_done:
                         return None
 
-                    self.recv_full(comm=comm, level=l - 1, add_to_stats=(k == nsweeps - 1))
+                    self.recv_full(
+                        comm=comm, level=l - 1, add_to_stats=(k == nsweeps - 1)
+                    )
                     if self.S.status.force_done:
                         return None
 
                     for hook in self.hooks:
                         hook.pre_sweep(step=self.S, level_number=l - 1)
                     self.S.levels[l - 1].sweep.update_nodes()
-                    self.S.levels[l - 1].sweep.compute_residual(stage='IT_UP')
+                    self.S.levels[l - 1].sweep.compute_residual(stage="IT_UP")
                     for hook in self.hooks:
                         hook.post_sweep(step=self.S, level_number=l - 1)
 
         # update stage
-        self.S.status.stage = 'IT_FINE'
+        self.S.status.stage = "IT_FINE"
 
     def default(self, num_procs):
         """
         Default routine to catch wrong status
         """
-        raise ControllerError('Weird stage, got %s' % self.S.status.stage)
+        raise ControllerError("Weird stage, got %s" % self.S.status.stage)

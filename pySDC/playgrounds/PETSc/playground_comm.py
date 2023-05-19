@@ -54,16 +54,18 @@ def main():
     (xs, xe), (ys, ye) = da.getRanges()
     for i in range(xs, xe):
         for j in range(ys, ye):
-            xa[i, j] = np.sin(2 * np.pi * (i + 1) / (n + 1)) * np.sin(2 * np.pi * (j + 1) / (n + 1))
-    print('x=', x.getArray())
-    print('x:', x.getSizes(), da.getRanges())
+            xa[i, j] = np.sin(2 * np.pi * (i + 1) / (n + 1)) * np.sin(
+                2 * np.pi * (j + 1) / (n + 1)
+            )
+    print("x=", x.getArray())
+    print("x:", x.getSizes(), da.getRanges())
     print()
 
     if time_rank == 0:
-        print('send', time_rank)
+        print("send", time_rank)
         time_comm.send(x.getArray(), dest=1, tag=0)
     else:
-        print('recv', time_rank)
+        print("recv", time_rank)
         y = da.createGlobalVec()
         y.setArray(time_comm.recv(source=0, tag=0))
         print(type(y.getArray()))

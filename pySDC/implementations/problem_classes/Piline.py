@@ -22,9 +22,18 @@ class piline(ptype):
 
         nvars = 3
         # invoke super init, passing number of dofs
-        super().__init__(init=(nvars, None, np.dtype('float64')))
+        super().__init__(init=(nvars, None, np.dtype("float64")))
         self._makeAttributeAndRegister(
-            'nvars', 'Vs', 'Rs', 'C1', 'Rpi', 'Lpi', 'C2', 'Rl', localVars=locals(), readOnly=True
+            "nvars",
+            "Vs",
+            "Rs",
+            "C1",
+            "Rpi",
+            "Lpi",
+            "C2",
+            "Rl",
+            localVars=locals(),
+            readOnly=True,
         )
 
         # compute dx and get discretization matrix A
@@ -96,8 +105,8 @@ class piline(ptype):
             if u_init is not None:
                 if t_init is None:
                     raise ValueError(
-                        'Please supply `t_init` when you want to get the exact solution from a point that \
-is not 0!'
+                        "Please supply `t_init` when you want to get the exact solution from a point that \
+is not 0!"
                     )
                 me = u_init
             else:

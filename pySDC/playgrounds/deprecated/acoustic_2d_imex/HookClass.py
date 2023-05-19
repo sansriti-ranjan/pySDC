@@ -39,14 +39,25 @@ class plot_solution(hooks):
             zz = self.level.prob.zz
             self.fig.clear()
             CS = plt.contourf(
-                xx, zz, yplot[2, :, :], rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0, antialiased=False
+                xx,
+                zz,
+                yplot[2, :, :],
+                rstride=1,
+                cstride=1,
+                cmap=cm.coolwarm,
+                linewidth=0,
+                antialiased=False,
             )
             cbar = plt.colorbar(CS)
-            plt.axes().set_xlim(xmin=self.level.prob.x_bounds[0], xmax=self.level.prob.x_bounds[1])
-            plt.axes().set_ylim(ymin=self.level.prob.z_bounds[0], ymax=self.level.prob.z_bounds[1])
-            plt.axes().set_aspect('equal')
-            plt.xlabel('x')
-            plt.ylabel('z')
+            plt.axes().set_xlim(
+                xmin=self.level.prob.x_bounds[0], xmax=self.level.prob.x_bounds[1]
+            )
+            plt.axes().set_ylim(
+                ymin=self.level.prob.z_bounds[0], ymax=self.level.prob.z_bounds[1]
+            )
+            plt.axes().set_aspect("equal")
+            plt.xlabel("x")
+            plt.ylabel("z")
             # plt.tight_layout()
             plt.show(block=False)
             plt.pause(0.00001)

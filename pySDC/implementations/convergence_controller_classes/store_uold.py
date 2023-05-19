@@ -20,7 +20,10 @@ class StoreUOld(ConvergenceController):
         Returns:
             (dict): The updated params dictionary
         """
-        return {"control_order": +90, **super().setup(controller, params, description, **kwargs)}
+        return {
+            "control_order": +90,
+            **super().setup(controller, params, description, **kwargs),
+        }
 
     def post_iteration_processing(self, controller, S, **kwargs):
         """

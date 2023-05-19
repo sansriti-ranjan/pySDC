@@ -5,7 +5,9 @@ import numpy as np
 
 from pySDC.core.BaseTransfer import base_transfer
 from pySDC.helpers.pysdc_helper import FrozenClass
-from pySDC.implementations.convergence_controller_classes.check_convergence import CheckConvergence
+from pySDC.implementations.convergence_controller_classes.check_convergence import (
+    CheckConvergence,
+)
 from pySDC.implementations.hooks.default_hook import DefaultHooks
 
 
@@ -18,7 +20,7 @@ class _Pars(FrozenClass):
         self.logger_level = 20
         self.log_to_file = False
         self.dump_setup = True
-        self.fname = 'run_pid' + str(os.getpid()) + '.log'
+        self.fname = "run_pid" + str(os.getpid()) + ".log"
         self.use_iteration_estimator = False
 
         for k, v in params.items():
@@ -44,21 +46,27 @@ class controller(object):
         # check if we have a hook on this list. If not, use default class.
         self.__hooks = []
         hook_classes = [DefaultHooks]
-        user_hooks = controller_params.get('hook_class', [])
+        user_hooks = controller_params.get("hook_class", [])
         hook_classes += user_hooks if type(user_hooks) == list else [user_hooks]
         [self.add_hook(hook) for hook in hook_classes]
-        controller_params['hook_class'] = controller_params.get('hook_class', hook_classes)
+        controller_params["hook_class"] = controller_params.get(
+            "hook_class", hook_classes
+        )
 
         for hook in self.hooks:
             hook.pre_setup(step=None, level_number=None)
 
         self.params = _Pars(controller_params)
 
-        self.__setup_custom_logger(self.params.logger_level, self.params.log_to_file, self.params.fname)
-        self.logger = logging.getLogger('controller')
+        self.__setup_custom_logger(
+            self.params.logger_level, self.params.log_to_file, self.params.fname
+        )
+        self.logger = logging.getLogger("controller")
 
         if self.params.use_iteration_estimator and self.params.all_to_done:
-            self.logger.warning('all_to_done and use_iteration_estimator set, will ignore all_to_done')
+            self.logger.warning(
+                "all_to_done and use_iteration_estimator set, will ignore all_to_done"
+            )
 
         self.base_convergence_controllers = [CheckConvergence]
         self.setup_convergence_controllers(description)
@@ -79,22 +87,22 @@ class controller(object):
         # specify formats and handlers
         if log_to_file:
             file_formatter = logging.Formatter(
-                fmt='%(asctime)s - %(name)s - %(module)s - %(funcName)s - %(lineno)d - %(levelname)s: %(message)s'
+                fmt="%(asctime)s - %(name)s - %(module)s - %(funcName)s - %(lineno)d - %(levelname)s: %(message)s"
             )
             if os.path.isfile(fname):
-                file_handler = logging.FileHandler(fname, mode='a')
+                file_handler = logging.FileHandler(fname, mode="a")
             else:
-                file_handler = logging.FileHandler(fname, mode='w')
+                file_handler = logging.FileHandler(fname, mode="w")
             file_handler.setFormatter(file_formatter)
         else:
             file_handler = None
 
-        std_formatter = logging.Formatter(fmt='%(name)s - %(levelname)s: %(message)s')
+        std_formatter = logging.Formatter(fmt="%(name)s - %(levelname)s: %(message)s")
         std_handler = logging.StreamHandler(sys.stdout)
         std_handler.setFormatter(std_formatter)
 
         # instantiate logger
-        logger = logging.getLogger('')
+        logger = logging.getLogger("")
 
         # remove handlers from previous calls to controller
         for handler in logger.handlers[:]:
@@ -156,78 +164,84 @@ class controller(object):
         """
 
         self.welcome_message()
-        out = 'Setup overview (--> user-defined, -> dependency) -- BEGIN'
+        out = "Setup overview (--> user-defined, -> dependency) -- BEGIN"
         self.logger.info(out)
-        out = '----------------------------------------------------------------------------------------------------\n\n'
-        out += 'Controller: %s\n' % self.__class__
+        out = "----------------------------------------------------------------------------------------------------\n\n"
+        out += "Controller: %s\n" % self.__class__
         for k, v in vars(self.params).items():
-            if not k.startswith('_'):
+            if not k.startswith("_"):
                 if k in controller_params:
-                    out += '--> %s = %s\n' % (k, v)
+                    out += "--> %s = %s\n" % (k, v)
                 else:
-                    out += '    %s = %s\n' % (k, v)
+                    out += "    %s = %s\n" % (k, v)
 
-        out += '\nStep: %s\n' % step.__class__
+        out += "\nStep: %s\n" % step.__class__
         for k, v in vars(step.params).items():
-            if not k.startswith('_'):
-                if k in description['step_params']:
-                    out += '--> %s = %s\n' % (k, v)
+            if not k.startswith("_"):
+                if k in description["step_params"]:
+                    out += "--> %s = %s\n" % (k, v)
                 else:
-                    out += '    %s = %s\n' % (k, v)
+                    out += "    %s = %s\n" % (k, v)
 
-        out += '    Level: %s\n' % step.levels[0].__class__
+        out += "    Level: %s\n" % step.levels[0].__class__
         for L in step.levels:
-            out += '        Level %2i\n' % L.level_index
+            out += "        Level %2i\n" % L.level_index
             for k, v in vars(L.params).items():
-                if not k.startswith('_'):
-                    if k in description['level_params']:
-                        out += '-->         %s = %s\n' % (k, v)
+                if not k.startswith("_"):
+                    if k in description["level_params"]:
+                        out += "-->         %s = %s\n" % (k, v)
                     else:
-                        out += '            %s = %s\n' % (k, v)
-            out += '-->         Problem: %s\n' % L.prob.__class__
+                        out += "            %s = %s\n" % (k, v)
+            out += "-->         Problem: %s\n" % L.prob.__class__
             for k, v in L.prob.params.items():
-                if k in description['problem_params']:
-                    out += '-->             %s = %s\n' % (k, v)
+                if k in description["problem_params"]:
+                    out += "-->             %s = %s\n" % (k, v)
                 else:
-                    out += '                %s = %s\n' % (k, v)
-            out += '-->             Data type u: %s\n' % L.prob.dtype_u
-            out += '-->             Data type f: %s\n' % L.prob.dtype_f
-            out += '-->             Sweeper: %s\n' % L.sweep.__class__
+                    out += "                %s = %s\n" % (k, v)
+            out += "-->             Data type u: %s\n" % L.prob.dtype_u
+            out += "-->             Data type f: %s\n" % L.prob.dtype_f
+            out += "-->             Sweeper: %s\n" % L.sweep.__class__
             for k, v in vars(L.sweep.params).items():
-                if not k.startswith('_'):
-                    if k in description['sweeper_params']:
-                        out += '-->                 %s = %s\n' % (k, v)
+                if not k.startswith("_"):
+                    if k in description["sweeper_params"]:
+                        out += "-->                 %s = %s\n" % (k, v)
                     else:
-                        out += '                    %s = %s\n' % (k, v)
-            out += '-->                 Collocation: %s\n' % L.sweep.coll.__class__
+                        out += "                    %s = %s\n" % (k, v)
+            out += "-->                 Collocation: %s\n" % L.sweep.coll.__class__
 
         if len(step.levels) > 1:
-            if 'base_transfer_class' in description and description['base_transfer_class'] is not base_transfer:
-                out += '-->     Base Transfer: %s\n' % step.base_transfer.__class__
+            if (
+                "base_transfer_class" in description
+                and description["base_transfer_class"] is not base_transfer
+            ):
+                out += "-->     Base Transfer: %s\n" % step.base_transfer.__class__
             else:
-                out += '        Base Transfer: %s\n' % step.base_transfer.__class__
+                out += "        Base Transfer: %s\n" % step.base_transfer.__class__
             for k, v in vars(step.base_transfer.params).items():
-                if not k.startswith('_'):
-                    if k in description['base_transfer_params']:
-                        out += '-->         %s = %s\n' % (k, v)
+                if not k.startswith("_"):
+                    if k in description["base_transfer_params"]:
+                        out += "-->         %s = %s\n" % (k, v)
                     else:
-                        out += '            %s = %s\n' % (k, v)
-            out += '-->     Space Transfer: %s\n' % step.base_transfer.space_transfer.__class__
+                        out += "            %s = %s\n" % (k, v)
+            out += (
+                "-->     Space Transfer: %s\n"
+                % step.base_transfer.space_transfer.__class__
+            )
             for k, v in vars(step.base_transfer.space_transfer.params).items():
-                if not k.startswith('_'):
-                    if k in description['space_transfer_params']:
-                        out += '-->         %s = %s\n' % (k, v)
+                if not k.startswith("_"):
+                    if k in description["space_transfer_params"]:
+                        out += "-->         %s = %s\n" % (k, v)
                     else:
-                        out += '            %s = %s\n' % (k, v)
+                        out += "            %s = %s\n" % (k, v)
 
-        out += '\n'
+        out += "\n"
         out += self.get_convergence_controllers_as_table(description)
-        out += '\n'
+        out += "\n"
         self.logger.info(out)
 
-        out = '----------------------------------------------------------------------------------------------------'
+        out = "----------------------------------------------------------------------------------------------------"
         self.logger.info(out)
-        out = 'Setup overview (--> user-defined, -> dependency) -- END\n'
+        out = "Setup overview (--> user-defined, -> dependency) -- END\n"
         self.logger.info(out)
 
     def run(self, u0, t0, Tend):
@@ -239,7 +253,9 @@ class controller(object):
             t0 (float): starting time
             Tend (float): ending time
         """
-        raise NotImplementedError('ERROR: controller has to implement run(self, u0, t0, Tend)')
+        raise NotImplementedError(
+            "ERROR: controller has to implement run(self, u0, t0, Tend)"
+        )
 
     @property
     def hooks(self):
@@ -252,7 +268,7 @@ class controller(object):
         return self.__hooks
 
     def setup_convergence_controllers(self, description):
-        '''
+        """
         Setup variables needed for convergence controllers, notably a list containing all of them and a list containing
         their order. Also, we add the `CheckConvergence` convergence controller, which takes care of maximum iteration
         count or a residual based stopping criterion, as well as all convergence controllers added to the description.
@@ -262,19 +278,23 @@ class controller(object):
 
         Returns:
             None
-        '''
+        """
         self.convergence_controllers = []
         self.convergence_controller_order = []
-        conv_classes = description.get('convergence_controllers', {})
+        conv_classes = description.get("convergence_controllers", {})
 
         # instantiate the convergence controllers
         for conv_class, params in conv_classes.items():
-            self.add_convergence_controller(conv_class, description=description, params=params)
+            self.add_convergence_controller(
+                conv_class, description=description, params=params
+            )
 
         return None
 
-    def add_convergence_controller(self, convergence_controller, description, params=None, allow_double=False):
-        '''
+    def add_convergence_controller(
+        self, convergence_controller, description, params=None, allow_double=False
+    ):
+        """
         Add an individual convergence controller to the list of convergence controllers and instantiate it.
         Afterwards, the order of the convergence controllers is updated.
 
@@ -286,22 +306,30 @@ class controller(object):
 
         Returns:
             None
-        '''
+        """
         # check if we passed any sort of special params
-        params = {**({} if params is None else params), 'useMPI': self.useMPI}
+        params = {**({} if params is None else params), "useMPI": self.useMPI}
 
         # check if we already have the convergence controller or if we want to have it multiple times
-        if convergence_controller not in [type(me) for me in self.convergence_controllers] or allow_double:
-            self.convergence_controllers.append(convergence_controller(self, params, description))
+        if (
+            convergence_controller
+            not in [type(me) for me in self.convergence_controllers]
+            or allow_double
+        ):
+            self.convergence_controllers.append(
+                convergence_controller(self, params, description)
+            )
 
             # update ordering
             orders = [C.params.control_order for C in self.convergence_controllers]
-            self.convergence_controller_order = np.arange(len(self.convergence_controllers))[np.argsort(orders)]
+            self.convergence_controller_order = np.arange(
+                len(self.convergence_controllers)
+            )[np.argsort(orders)]
 
         return None
 
     def get_convergence_controllers_as_table(self, description):
-        '''
+        """
         This function is for debugging purposes to keep track of the different convergence controllers and their order.
 
         Args:
@@ -309,22 +337,24 @@ class controller(object):
 
         Returns:
             str: Table of convergence controllers as a string
-        '''
-        out = 'Active convergence controllers:'
-        out += '\n    |  # | order | convergence controller'
-        out += '\n----+----+-------+---------------------------------------------------------------------------------------'
+        """
+        out = "Active convergence controllers:"
+        out += "\n    |  # | order | convergence controller"
+        out += "\n----+----+-------+---------------------------------------------------------------------------------------"
         for i in range(len(self.convergence_controllers)):
             C = self.convergence_controllers[self.convergence_controller_order[i]]
 
             # figure out how the convergence controller was added
-            if type(C) in description.get('convergence_controllers', {}).keys():  # added by user
-                user_added = '--> '
+            if (
+                type(C) in description.get("convergence_controllers", {}).keys()
+            ):  # added by user
+                user_added = "--> "
             elif type(C) in self.base_convergence_controllers:  # added by default
-                user_added = '    '
+                user_added = "    "
             else:  # added as dependency
-                user_added = ' -> '
+                user_added = " -> "
 
-            out += f'\n{user_added}|{i:3} | {C.params.control_order:5} | {type(C).__name__}'
+            out += f"\n{user_added}|{i:3} | {C.params.control_order:5} | {type(C).__name__}"
 
         return out
 

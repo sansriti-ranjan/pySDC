@@ -24,6 +24,6 @@ class LogRestarts(hooks):
             level=L.level_index,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='restart',
-            value=int(step.status.get('restart')),
+            type="restart",
+            value=int(step.status.get("restart")),
         )

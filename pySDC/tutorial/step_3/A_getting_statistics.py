@@ -16,32 +16,34 @@ def main():
     stats = run_simulation()
 
     Path("data").mkdir(parents=True, exist_ok=True)
-    f = open('data/step_3_A_out.txt', 'w')
-    out = 'List of registered statistic types: %s' % get_list_of_types(stats)
-    f.write(out + '\n')
+    f = open("data/step_3_A_out.txt", "w")
+    out = "List of registered statistic types: %s" % get_list_of_types(stats)
+    f.write(out + "\n")
     print(out)
 
     # filter statistics by first time interval and type (residual)
-    residuals = get_sorted(stats, time=0.1, type='residual_post_iteration', sortby='iter')
+    residuals = get_sorted(
+        stats, time=0.1, type="residual_post_iteration", sortby="iter"
+    )
 
     for item in residuals:
-        out = 'Residual in iteration %2i: %8.4e' % item
-        f.write(out + '\n')
+        out = "Residual in iteration %2i: %8.4e" % item
+        f.write(out + "\n")
         print(out)
 
     # get and convert filtered statistics to list of iterations count, sorted by time
     # the get_sorted function is just a shortcut for sort_stats(filter_stats()) with all the same arguments
-    iter_counts = get_sorted(stats, type='niter', sortby='time')
+    iter_counts = get_sorted(stats, type="niter", sortby="time")
 
     for item in iter_counts:
-        out = 'Number of iterations at time %4.2f: %2i' % item
-        f.write(out + '\n')
+        out = "Number of iterations at time %4.2f: %2i" % item
+        f.write(out + "\n")
         print(out)
 
     f.close()
 
     assert all(item[1] == 12 for item in iter_counts), (
-        'ERROR: number of iterations are not as expected, got %s' % iter_counts
+        "ERROR: number of iterations are not as expected, got %s" % iter_counts
     )
 
 
@@ -51,40 +53,42 @@ def run_simulation():
     """
     # initialize level parameters
     level_params = {}
-    level_params['restol'] = 1e-10
-    level_params['dt'] = 0.1
+    level_params["restol"] = 1e-10
+    level_params["dt"] = 0.1
 
     # initialize sweeper parameters
     sweeper_params = {}
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
-    sweeper_params['num_nodes'] = 3
+    sweeper_params["quad_type"] = "RADAU-RIGHT"
+    sweeper_params["num_nodes"] = 3
 
     # initialize problem parameters
     problem_params = {}
-    problem_params['nu'] = 0.1  # diffusion coefficient
-    problem_params['freq'] = 4  # frequency for the test value
-    problem_params['nvars'] = 1023  # number of degrees of freedom
-    problem_params['bc'] = 'dirichlet-zero'  # boundary conditions
+    problem_params["nu"] = 0.1  # diffusion coefficient
+    problem_params["freq"] = 4  # frequency for the test value
+    problem_params["nvars"] = 1023  # number of degrees of freedom
+    problem_params["bc"] = "dirichlet-zero"  # boundary conditions
 
     # initialize step parameters
     step_params = {}
-    step_params['maxiter'] = 20
+    step_params["maxiter"] = 20
 
     # initialize controller parameters (<-- this is new!)
     controller_params = {}
-    controller_params['logger_level'] = 30  # reduce verbosity of each run
+    controller_params["logger_level"] = 30  # reduce verbosity of each run
 
     # Fill description dictionary for easy hierarchy creation
     description = {}
-    description['problem_class'] = heatNd_forced
-    description['problem_params'] = problem_params
-    description['sweeper_class'] = imex_1st_order
-    description['sweeper_params'] = sweeper_params
-    description['level_params'] = level_params
-    description['step_params'] = step_params
+    description["problem_class"] = heatNd_forced
+    description["problem_params"] = problem_params
+    description["sweeper_class"] = imex_1st_order
+    description["sweeper_params"] = sweeper_params
+    description["level_params"] = level_params
+    description["step_params"] = step_params
 
     # instantiate the controller (no controller parameters used here)
-    controller = controller_nonMPI(num_procs=1, controller_params=controller_params, description=description)
+    controller = controller_nonMPI(
+        num_procs=1, controller_params=controller_params, description=description
+    )
 
     # set time parameters
     t0 = 0.1

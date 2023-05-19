@@ -19,7 +19,10 @@ class LogWork(hooks):
         """
         if level_number == 0:
             self.__work_last_step = [
-                {key: step.levels[i].prob.work_counters[key].niter for key in step.levels[i].prob.work_counters.keys()}
+                {
+                    key: step.levels[i].prob.work_counters[key].niter
+                    for key in step.levels[i].prob.work_counters.keys()
+                }
                 for i in range(len(step.levels))
             ]
 
@@ -42,6 +45,7 @@ class LogWork(hooks):
                 level=L.level_index,
                 iter=step.status.iter,
                 sweep=L.status.sweep,
-                type=f'work_{key}',
-                value=L.prob.work_counters[key].niter - self.__work_last_step[level_number][key],
+                type=f"work_{key}",
+                value=L.prob.work_counters[key].niter
+                - self.__work_last_step[level_number][key],
             )

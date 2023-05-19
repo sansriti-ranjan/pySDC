@@ -45,9 +45,14 @@ class one_transistor_amplifier(ptype_dae):
         f = self.dtype_f(self.init)
         f[:] = (
             (u_e - u[0]) / r_0 + c_1 * (du[1] - du[0]),
-            (u_b - u[1]) / r_k - u[1] / r_k + c_1 * (du[0] - du[1]) - (1 - alpha) * _transistor(u[1] - u[2]),
+            (u_b - u[1]) / r_k
+            - u[1] / r_k
+            + c_1 * (du[0] - du[1])
+            - (1 - alpha) * _transistor(u[1] - u[2]),
             _transistor(u[1] - u[2]) - u[2] / r_k - c_2 * du[2],
-            (u_b - u[3]) / r_k + c_3 * (du[4] - du[3]) - alpha * _transistor(u[1] - u[2]),
+            (u_b - u[3]) / r_k
+            + c_3 * (du[4] - du[3])
+            - alpha * _transistor(u[1] - u[2]),
             -u[4] / r_k + c_3 * (du[3] - du[4]),
         )
         return f
@@ -67,7 +72,9 @@ class one_transistor_amplifier(ptype_dae):
         elif t < self.t_end:
             me[:] = self.u_ref(t)
         else:
-            warnings.warn("Requested time exceeds domain of the reference solution. Returning zero.")
+            warnings.warn(
+                "Requested time exceeds domain of the reference solution. Returning zero."
+            )
             me[:] = (0, 0, 0, 0, 0)
         return me
 
@@ -107,12 +114,22 @@ class two_transistor_amplifier(ptype_dae):
         f = self.dtype_f(self.init)
         f[:] = (
             (u_e - u[0]) / r_0 - c_1 * (du[0] - du[1]),
-            (u_b - u[1]) / r_k - u[1] / r_k + c_1 * (du[0] - du[1]) + (alpha - 1) * _transistor(u[1] - u[2]),
+            (u_b - u[1]) / r_k
+            - u[1] / r_k
+            + c_1 * (du[0] - du[1])
+            + (alpha - 1) * _transistor(u[1] - u[2]),
             _transistor(u[1] - u[2]) - u[2] / r_k - c_2 * du[2],
-            (u_b - u[3]) / r_k - c_3 * (du[3] - du[4]) - alpha * _transistor(u[1] - u[2]),
-            (u_b - u[4]) / r_k - u[4] / r_k + c_3 * (du[3] - du[4]) + (alpha - 1) * _transistor(u[4] - u[5]),
+            (u_b - u[3]) / r_k
+            - c_3 * (du[3] - du[4])
+            - alpha * _transistor(u[1] - u[2]),
+            (u_b - u[4]) / r_k
+            - u[4] / r_k
+            + c_3 * (du[3] - du[4])
+            + (alpha - 1) * _transistor(u[4] - u[5]),
             _transistor(u[4] - u[5]) - u[5] / r_k - c_4 * du[5],
-            (u_b - u[6]) / r_k - c_5 * (du[6] - du[7]) - alpha * _transistor(u[4] - u[5]),
+            (u_b - u[6]) / r_k
+            - c_5 * (du[6] - du[7])
+            - alpha * _transistor(u[4] - u[5]),
             -u[7] / r_k + c_5 * (du[6] - du[7]),
         )
         return f
@@ -134,6 +151,8 @@ class two_transistor_amplifier(ptype_dae):
         elif t < self.t_end:
             me[:] = self.u_ref(t)
         else:
-            warnings.warn("Requested time exceeds domain of the reference solution. Returning zero.")
+            warnings.warn(
+                "Requested time exceeds domain of the reference solution. Returning zero."
+            )
             me[:] = (0, 0, 0, 0, 0, 0, 0, 0)
         return me

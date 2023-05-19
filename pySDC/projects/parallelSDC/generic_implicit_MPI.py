@@ -19,8 +19,8 @@ class generic_implicit_MPI(sweeper):
             params: parameters for the sweeper
         """
 
-        if 'QI' not in params:
-            params['QI'] = 'IE'
+        if "QI" not in params:
+            params["QI"] = "IE"
 
         # call parent's initialization routine
         super(generic_implicit_MPI, self).__init__(params)
@@ -46,11 +46,17 @@ class generic_implicit_MPI(sweeper):
         for m in range(self.coll.num_nodes):
             if m == self.rank:
                 self.params.comm.Reduce(
-                    L.dt * self.coll.Qmat[m + 1, self.rank + 1] * L.f[self.rank + 1], me, root=m, op=MPI.SUM
+                    L.dt * self.coll.Qmat[m + 1, self.rank + 1] * L.f[self.rank + 1],
+                    me,
+                    root=m,
+                    op=MPI.SUM,
                 )
             else:
                 self.params.comm.Reduce(
-                    L.dt * self.coll.Qmat[m + 1, self.rank + 1] * L.f[self.rank + 1], None, root=m, op=MPI.SUM
+                    L.dt * self.coll.Qmat[m + 1, self.rank + 1] * L.f[self.rank + 1],
+                    None,
+                    root=m,
+                    op=MPI.SUM,
                 )
 
         return me
@@ -96,7 +102,9 @@ class generic_implicit_MPI(sweeper):
             L.time + L.dt * self.coll.nodes[self.rank],
         )
         # update function values
-        L.f[self.rank + 1] = P.eval_f(L.u[self.rank + 1], L.time + L.dt * self.coll.nodes[self.rank])
+        L.f[self.rank + 1] = P.eval_f(
+            L.u[self.rank + 1], L.time + L.dt * self.coll.nodes[self.rank]
+        )
 
         # indicate presence of new values at this level
         L.status.updated = True
@@ -119,9 +127,13 @@ class generic_implicit_MPI(sweeper):
         # check if Mth node is equal to right point and do_coll_update is false, perform a simple copy
         if self.coll.right_is_node and not self.params.do_coll_update:
             # a copy is sufficient
-            L.uend = self.params.comm.bcast(L.u[self.rank + 1], root=self.params.comm.Get_size() - 1)
+            L.uend = self.params.comm.bcast(
+                L.u[self.rank + 1], root=self.params.comm.Get_size() - 1
+            )
         else:
-            raise NotImplementedError('require last node to be identical with right interval boundary')
+            raise NotImplementedError(
+                "require last node to be identical with right interval boundary"
+            )
 
         return None
 
@@ -179,9 +191,11 @@ class generic_implicit_MPI(sweeper):
         # evaluate RHS at left point
         L.f[0] = P.eval_f(L.u[0], L.time)
 
-        if self.params.initial_guess == 'spread':
+        if self.params.initial_guess == "spread":
             L.u[self.rank + 1] = P.dtype_u(L.u[0])
-            L.f[self.rank + 1] = P.eval_f(L.u[self.rank + 1], L.time + L.dt * self.coll.nodes[self.rank])
+            L.f[self.rank + 1] = P.eval_f(
+                L.u[self.rank + 1], L.time + L.dt * self.coll.nodes[self.rank]
+            )
         else:
             L.u[self.rank + 1] = P.dtype_u(init=P.init, val=0.0)
             L.f[self.rank + 1] = P.dtype_f(init=P.init, val=0.0)

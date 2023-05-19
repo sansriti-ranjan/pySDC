@@ -25,15 +25,15 @@ class logistics_equation(ptype):
     def __init__(self, u0, newton_maxiter, newton_tol, direct, lam=1, stop_at_nan=True):
         nvars = 1
 
-        super().__init__((nvars, None, np.dtype('float64')))
+        super().__init__((nvars, None, np.dtype("float64")))
         self._makeAttributeAndRegister(
-            'u0',
-            'lam',
-            'newton_maxiter',
-            'newton_tol',
-            'direct',
-            'nvars',
-            'stop_at_nan',
+            "u0",
+            "lam",
+            "newton_maxiter",
+            "newton_tol",
+            "direct",
+            "nvars",
+            "stop_at_nan",
             localVars=locals(),
             readOnly=True,
         )
@@ -49,7 +49,11 @@ class logistics_equation(ptype):
         """
 
         me = self.dtype_u(self.init)
-        me[:] = self.u0 * np.exp(self.lam * t) / (1 - self.u0 + self.u0 * np.exp(self.lam * t))
+        me[:] = (
+            self.u0
+            * np.exp(self.lam * t)
+            / (1 - self.u0 + self.u0 * np.exp(self.lam * t))
+        )
         return me
 
     def eval_f(self, u, t):
@@ -110,11 +114,16 @@ class logistics_equation(ptype):
                 n += 1
 
             if np.isnan(res) and self.stop_at_nan:
-                raise ProblemError('Newton got nan after %i iterations, aborting...' % n)
+                raise ProblemError(
+                    "Newton got nan after %i iterations, aborting..." % n
+                )
             elif np.isnan(res):
-                self.logger.warning('Newton got nan after %i iterations...' % n)
+                self.logger.warning("Newton got nan after %i iterations..." % n)
 
             if n == self.newton_maxiter:
-                raise ProblemError('Newton did not converge after %i iterations, error is %s' % (n, res))
+                raise ProblemError(
+                    "Newton did not converge after %i iterations, error is %s"
+                    % (n, res)
+                )
 
             return u

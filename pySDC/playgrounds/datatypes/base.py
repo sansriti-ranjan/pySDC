@@ -54,7 +54,7 @@ class DataTypeF(object):
             obj = super().__new__(cls)
             for name in parts:
                 super().__setattr__(obj, name, dataType.clone())
-            super().__setattr__(obj, '_parts', set(parts))
+            super().__setattr__(obj, "_parts", set(parts))
             obj._dataType = dataType
             obj.parts = tuple(obj.__getattribute__(name) for name in obj._parts)
             return obj
@@ -65,12 +65,15 @@ class DataTypeF(object):
 
     def __setattr__(self, name, value):
         if name in self._parts:
-            raise ValueError(f'{name} is read-only')
+            raise ValueError(f"{name} is read-only")
         super().__setattr__(name, value)
 
     def __repr__(self):
-        return '{' + ',\n '.join(
-            f'{c}: {getattr(self, c).__repr__()}' for c in self._parts) + '}'
+        return (
+            "{"
+            + ",\n ".join(f"{c}: {getattr(self, c).__repr__()}" for c in self._parts)
+            + "}"
+        )
 
     def toDataType(self):
         parts = self.parts

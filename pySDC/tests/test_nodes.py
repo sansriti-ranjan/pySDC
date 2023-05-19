@@ -26,7 +26,7 @@ def chebyNodes(kind, n):
 
 
 REF_NODES = {
-    'LEGENDRE': {
+    "LEGENDRE": {
         2: (-1 / 3**0.5, 1 / 3**0.5),
         3: (-((3 / 5) ** 0.5), 0, (3 / 5) ** 0.5),
         4: (
@@ -45,15 +45,15 @@ REF_NODES = {
     }
 }
 
-nTests = list(REF_NODES['LEGENDRE'].keys())
+nTests = list(REF_NODES["LEGENDRE"].keys())
 for kind in [1, 2, 3, 4]:
-    REF_NODES[f'CHEBY-{kind}'] = {n: chebyNodes(kind, n) for n in nTests}
+    REF_NODES[f"CHEBY-{kind}"] = {n: chebyNodes(kind, n) for n in nTests}
 
 
 @pytest.mark.base
 @pytest.mark.parametrize("node_type", REF_NODES.keys())
 def test_nodesGeneration(node_type):
-    gen = NodesGenerator(node_type=node_type, quad_type='GAUSS')
+    gen = NodesGenerator(node_type=node_type, quad_type="GAUSS")
     ref = REF_NODES[node_type]
     for n, nodes in ref.items():
         assert np.allclose(nodes, gen.getNodes(n))

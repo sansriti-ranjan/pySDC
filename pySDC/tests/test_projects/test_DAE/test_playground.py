@@ -13,6 +13,6 @@ def test_problematic_main():
 def test_synch_gen_playground_main():
     from pySDC.projects.DAE.run.synchronous_machine_playground import main
 
-    warnings.filterwarnings('ignore')
+    warnings.filterwarnings("ignore")
     main()
     warnings.resetwarnings()

@@ -12,7 +12,7 @@ def _send():
 comm = MPI.COMM_WORLD
 
 reqlist = []
-data = ['myid_particles:' + str(comm.rank)] * 10000000
+data = ["myid_particles:" + str(comm.rank)] * 10000000
 otherrank = 1 if comm.rank == 0 else 0
 
 send_thread = threading.Thread(target=_send)
@@ -27,5 +27,5 @@ time2 = time.perf_counter() - time0
 a = comm.recv(source=otherrank, tag=1)
 time3 = time.perf_counter() - time0
 send_thread.join()
-print(str(comm.rank) + ': send at t = ' + str(time1))
-print(str(comm.rank) + ': recv at t = (' + str(time2) + ',' + str(time3) + ')')
+print(str(comm.rank) + ": send at t = " + str(time1))
+print(str(comm.rank) + ": recv at t = (" + str(time2) + "," + str(time3) + ")")

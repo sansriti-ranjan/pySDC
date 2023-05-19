@@ -40,16 +40,16 @@ def figsize_by_journal(journal, scale, ratio):  # pragma: no cover
     """
     # store text width in points here, get this from LaTeX using \the\textwidth
     textwidths = {
-        'JSC_beamer': 426.79135,
-        'Springer_Numerical_Algorithms': 338.58778,
+        "JSC_beamer": 426.79135,
+        "Springer_Numerical_Algorithms": 338.58778,
     }
     # store text height in points here, get this from LaTeX using \the\textheight
     textheights = {
-        'JSC_beamer': 214.43411,
+        "JSC_beamer": 214.43411,
     }
     assert (
         journal in textwidths.keys()
-    ), f"Textwidth only available for {list(textwidths.keys())}. Please implement one for \"{journal}\"! Get the textwidth using \"\\the\\textwidth\" in your tex file."
+    ), f'Textwidth only available for {list(textwidths.keys())}. Please implement one for "{journal}"! Get the textwidth using "\\the\\textwidth" in your tex file.'
 
     # see if the figure fits on the page or if we need to apply the scaling to the height instead
     if scale * ratio * textwidths[journal] > textheights.get(journal, 1e9):
@@ -86,7 +86,7 @@ def setup_mpl(font_size=8, reset=False):
         "lines.markersize": 4,
         "lines.markeredgewidth": 0.5,
         "grid.linewidth": 0.5,
-        "grid.linestyle": '-',
+        "grid.linestyle": "-",
         "grid.alpha": 0.25,
         "figure.subplot.hspace": 0.0,
         "savefig.pad_inches": 0.01,
@@ -94,7 +94,7 @@ def setup_mpl(font_size=8, reset=False):
 
     mpl.rcParams.update(style_options)
 
-    if find_executable('latex'):
+    if find_executable("latex"):
         latex_support = {
             "pgf.texsystem": "pdflatex",  # change this if using xetex or lautex
             "text.usetex": True,  # use LaTeX to write all text
@@ -118,10 +118,10 @@ def newfig(textwidth, scale, ratio=0.6180339887):
 
 
 def savefig(filename, save_pdf=True, save_pgf=True, save_png=True):
-    if save_pgf and find_executable('latex'):
-        plt.savefig('{}.pgf'.format(filename), bbox_inches='tight')
+    if save_pgf and find_executable("latex"):
+        plt.savefig("{}.pgf".format(filename), bbox_inches="tight")
     if save_pdf:
-        plt.savefig('{}.pdf'.format(filename), bbox_inches='tight')
+        plt.savefig("{}.pdf".format(filename), bbox_inches="tight")
     if save_png:
-        plt.savefig('{}.png'.format(filename), bbox_inches='tight')
+        plt.savefig("{}.png".format(filename), bbox_inches="tight")
     plt.close()

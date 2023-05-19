@@ -26,7 +26,7 @@ class monitor(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='bx_max',
+            type="bx_max",
             value=bx_max,
         )
 
@@ -52,6 +52,6 @@ class monitor(hooks):
             level=-1,
             iter=step.status.iter,
             sweep=L.status.sweep,
-            type='bx_max',
+            type="bx_max",
             value=bx_max,
         )

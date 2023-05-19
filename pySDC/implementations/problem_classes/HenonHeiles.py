@@ -16,7 +16,7 @@ class henon_heiles(ptype):
     def __init__(self):
         """Initialization routine"""
         # invoke super init, passing nparts
-        super().__init__((2, None, np.dtype('float64')))
+        super().__init__((2, None, np.dtype("float64")))
 
     def eval_f(self, u, t):
         """
@@ -42,7 +42,7 @@ class henon_heiles(ptype):
         Returns:
             dtype_u: exact/initial position and velocity
         """
-        assert t == 0.0, 'error, u_exact only works for the initial time t0=0'
+        assert t == 0.0, "error, u_exact only works for the initial time t0=0"
         me = self.dtype_u(self.init)
 
         q1 = 0.0
