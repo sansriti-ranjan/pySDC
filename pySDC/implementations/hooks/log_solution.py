@@ -29,7 +29,7 @@ class LogSolution(hooks):
             iter=step.status.iter,
             sweep=L.status.sweep,
             type='u',
-            value=L.uend,
+            value=L.uend[:],
         )
 
 

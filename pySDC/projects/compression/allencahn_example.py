@@ -6,33 +6,32 @@ from pySDC.helpers.stats_helper import get_sorted
 from mpi4py import MPI
 from pySDC.implementations.hooks.log_errors import LogGlobalErrorPostRun
 from pySDC.implementations.hooks.log_solution import LogSolution
-from pySDC.projects.compression.compressed_problems import heat_ND_compressed
+from pySDC.projects.compression.compressed_problems import AllenCahn_MPIFFT_Compressed, allencahn_imex_timeforcing
 from pySDC.projects.compression.log_datatype_creations import LogDatatypeCreations
 from pySDC.projects.compression.compression_convergence_controller import Compression_Conv_Controller
 
 
-def run_heat(residual_tolerance = 1e-4,errBound=1e-8,resolution=64,Tend=1):
+def run_AC(Tend=1):
     # setup communicator
     # comm = MPI.COMM_WORLD if comm is None else comm
-    
     # initialize problem parameters
     problem_params = {}
-    problem_params["nu"] = 1.0
-    problem_params["freq"] = (4, 4, 4)
-    problem_params["order"] = 4
-    problem_params["lintol"] = 1e-7
-    problem_params["liniter"] = 99
-    problem_params["solver_type"] = "CG"
-    problem_params["nvars"] = (resolution, resolution, resolution)  # Have to be the same, Nx = Ny = Nz
-    problem_params["bc"] = "periodic"
+    problem_params["eps"] = 0.04
+    problem_params["radius"] = 0.25
+    problem_params["spectral"] = False
+    problem_params["dw"] = 0.0
+    problem_params["L"] = 10
+    problem_params["init_type"] = 'circle_rand'
+    problem_params["nvars"] = (128, 128)  # Have to be the same, Nx = Ny
+    problem_params["comm"] = MPI.COMM_SELF
 
     convergence_controllers = {}
-    convergence_controllers[Compression_Conv_Controller] = {'errBound':errBound}
+    convergence_controllers[Compression_Conv_Controller] = {'errBound':1e-9}
 
     # initialize level parameters
     level_params = {}
-    level_params["restol"] = residual_tolerance
-    level_params["dt"] = 1e-01
+    level_params["restol"] = 5e-07
+    level_params["dt"] = 1e-03
     level_params["nsweeps"] = 1
 
     # initialize sweeper parameters
@@ -46,21 +45,20 @@ def run_heat(residual_tolerance = 1e-4,errBound=1e-8,resolution=64,Tend=1):
 
     # initialize step parameters
     step_params = {}
-    step_params["maxiter"] = 50  # 50
+    step_params["maxiter"] = 50
 
     # initialize controller parameters
     controller_params = {}
     controller_params["logger_level"] = 15
     controller_params["hook_class"] = [
         LogSolution,
-        LogGlobalErrorPostRun,
         #LogDatatypeCreations,
     ]
 
     # fill description dictionary for easy step instantiation
     description = {}
-    #description['problem_class'] = heatNd_forced#     heat_ND_compressed
-    description["problem_class"] = heat_ND_compressed
+    #description['problem_class'] = AllenCahn_MPIFFT_Compressed
+    description["problem_class"] = allencahn_imex_timeforcing
     description["problem_params"] = problem_params
     description["sweeper_class"] = imex_1st_order
     description["sweeper_params"] = sweeper_params
@@ -86,18 +84,18 @@ def run_heat(residual_tolerance = 1e-4,errBound=1e-8,resolution=64,Tend=1):
 def main():
     from pySDC.helpers.stats_helper import get_list_of_types, sort_stats, filter_stats
 
-    stats = run_heat(Tend=0.3)
-    error = max([me[1] for me in get_sorted(stats, type="e_global_post_run")])
-    # print(get_list_of_types(stats))
+    stats = run_AC(Tend=0.002)
+    print(get_list_of_types(stats))
     # print("filter_stats", filter_stats(stats, type="u"))
     # print("sort_stats", sort_stats(filter_stats(stats, type="u"), sortby="time"))
-    # u = get_sorted(stats, type="num_datatype_creations")
-    # print(u)
-    print(error)
-    # import matplotlib.pyplot as plt
+    u = get_sorted(stats, type="u")
+    #print(u)
+    import matplotlib.pyplot as plt
 
     # plt.plot([me[0] for me in u], [me[1] for me in u])
     # plt.show()
+    plt.imshow(u[-1][1]) 
+    plt.savefig('result_AC')
 
 
 if __name__ == "__main__":
